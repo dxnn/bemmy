@@ -91,6 +91,28 @@
         padding: 1px 4px; border: 1px solid #d0d7de; border-radius: 3px;
         background: #f6f8fa;
       }
+      .pages {
+        display: flex; flex-wrap: wrap; gap: 0.25rem;
+        padding: 0.35rem 0.75rem;
+        background: #f6f8fa; border-bottom: 1px solid #d0d7de;
+      }
+      .pages .page {
+        display: inline-flex; align-items: center;
+        padding: 0.1rem 0.5rem; border: 1px solid #d0d7de; border-radius: 4px;
+        background: #fff; font-size: 0.75rem; user-select: none;
+      }
+      .pages .page.active { background: #1f883d; color: #fff; border-color: #1a7f37; }
+      .pages .page-name { cursor: pointer; }
+      .pages .page-x {
+        margin-left: 0.4rem; cursor: pointer; opacity: 0.55; font-weight: bold;
+      }
+      .pages .page-x:hover { opacity: 1; }
+      .pages .page-add {
+        padding: 0.1rem 0.55rem; font-size: 0.75rem;
+        background: transparent; color: #57606a;
+        border: 1px dashed #c0c8d0; border-radius: 4px; cursor: pointer;
+      }
+      .pages .page-add:hover { background: #fff; color: #1f883d; }
     </style>
   </head>
   <body>

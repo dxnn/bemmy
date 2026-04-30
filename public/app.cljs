@@ -4,7 +4,7 @@
          '[reagent.dom :as rdom]
          '[emmy.env :refer :all])
 
-(def initial-source
+(def default-page
   ";; SICM playground — Emmy in the browser via SCI.
 ;; emmy.env is pre-referred, so D, square, ->TeX, etc. are in scope.
 ;; Cmd-Enter (or Ctrl-Enter) to evaluate.
@@ -13,8 +13,64 @@
 ((D (fn [x] (square x))) 'x)
 ")
 
+;; --- Pages: named source buffers persisted in localStorage. ----------------
+
+(def storage-key "emmy-playground/v1")
+
+(defn- load-state []
+  (or (try (when-let [s (.getItem js/localStorage storage-key)]
+             (let [obj (js/JSON.parse s)]
+               {:pages   (js->clj (.-pages obj))
+                :current (.-current obj)}))
+           (catch :default _ nil))
+      {:pages {"Default" default-page} :current "Default"}))
+
+(defn- save-state! [{:keys [pages current]}]
+  (.setItem js/localStorage storage-key
+            (js/JSON.stringify #js {:pages   (clj->js pages)
+                                    :current current})))
+
+(defonce !pages (r/atom (load-state)))
+(defonce _persist (add-watch !pages :persist
+                             (fn [_ _ _ new] (save-state! new))))
+
+(defn- current-page-source []
+  (get-in @!pages [:pages (:current @!pages)] ""))
+
+(defn- update-current-source! [src]
+  (let [cur (:current @!pages)]
+    (when (not= src (get-in @!pages [:pages cur]))
+      (swap! !pages assoc-in [:pages cur] src))))
+
 (defonce !view   (atom nil))            ; the CodeMirror EditorView
 (defonce !result (r/atom {:status :idle}))
+
+(defn- switch-page! [name]
+  (when-let [view @!view]
+    (when-let [src (get-in @!pages [:pages name])]
+      (swap! !pages assoc :current name)
+      (.dispatch view #js {:changes #js {:from   0
+                                         :to     (.. view -state -doc -length)
+                                         :insert src}}))))
+
+(defn- new-page! []
+  (when-let [name (some-> (js/prompt "Page name:")
+                          .trim
+                          not-empty)]
+    (when-not (contains? (:pages @!pages) name)
+      (swap! !pages assoc-in [:pages name] ";; New page\n"))
+    (switch-page! name)))
+
+(defn- delete-page! [name]
+  (when (and (> (count (:pages @!pages)) 1)
+             (js/confirm (str "Delete \"" name "\"?")))
+    (let [{:keys [pages current]} @!pages
+          new-pages   (dissoc pages name)
+          new-current (if (= current name)
+                        (first (sort (keys new-pages)))
+                        current)]
+      (reset! !pages {:pages new-pages :current new-current})
+      (when (= current name) (switch-page! new-current)))))
 
 (defn- normalize-ws
   "SCI's reader treats non-ASCII whitespace (NBSP, em-space, line-separator
@@ -69,9 +125,15 @@
           ;; other keymap) can't shadow it.
           user-keymap (cond->> (.of js/CM.keymap #js [eval-cmd])
                         js/CM.Prec (.highest js/CM.Prec))
+          ;; Persist edits to the current page on every doc change.
+          save-listener (.of (.. js/CM -EditorView -updateListener)
+                             (fn [update]
+                               (when (.-docChanged update)
+                                 (update-current-source!
+                                  (.. update -state -doc toString)))))
           ;; Compose extensions ourselves; skip anything the ESM didn't deliver.
           ;; Vim is conditionally prepended below so its keymap goes first.
-          exts (cond-> [user-keymap]
+          exts (cond-> [user-keymap save-listener]
                  js/CM.lineNumbers         (conj (js/CM.lineNumbers))
                  js/CM.history             (conj (js/CM.history))
                  js/CM.drawSelection       (conj (js/CM.drawSelection))
@@ -87,7 +149,8 @@
           exts (cond->> exts
                  js/CM.vim (into [(js/CM.vim)]))
           state (.create js/CM.EditorState
-                         #js {:doc initial-source :extensions (clj->js exts)})
+                         #js {:doc        (current-page-source)
+                              :extensions (clj->js exts)})
           view  (js/CM.EditorView. #js {:parent el :state state})]
       (reset! !view view))))
 
@@ -98,6 +161,18 @@
                               (reset! !view nil))
     :reagent-render
     (fn [_] [:div.cm-host {:ref mount-cm!}])}))
+
+(defn- pages-bar []
+  (let [{:keys [pages current]} @!pages]
+    [:div.pages
+     (for [name (sort (keys pages))]
+       ^{:key name}
+       [:span.page {:class (when (= name current) "active")}
+        [:span.page-name {:on-click #(switch-page! name)} name]
+        (when (> (count pages) 1)
+          [:span.page-x {:on-click #(delete-page! name)
+                         :title    (str "Delete " name)} "×"])])
+     [:button.page-add {:on-click new-page! :title "New page"} "+"]]))
 
 (defn- result-pane []
   (let [{:keys [status err pr tex]} @!result]
@@ -118,6 +193,7 @@
    [:div.panes
     [:div.pane
      [:div.label "Code"]
+     [pages-bar]
      [cm-editor]
      [:div.toolbar
       [:button {:on-click eval!} "Evaluate"]]]
