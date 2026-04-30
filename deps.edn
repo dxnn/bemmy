@@ -1,0 +1,5 @@
+{:deps
+ {io.github.babashka/scittle
+  {:git/url "https://github.com/babashka/scittle"
+   :git/sha "465cc3251af411a2c34503e5ed0558d1ba218ea8"}
+  org.mentat/emmy {:mvn/version "0.32.0"}}}

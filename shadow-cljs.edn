@@ -1,0 +1,14 @@
+{:deps      {:aliases [:dev]}
+ :dev-http  {8000 "public"}
+ :builds
+ {:main
+  {:target     :browser
+   :js-options {:resolve {"react"     {:target :global :global "React"}
+                          "react-dom" {:target :global :global "ReactDOM"}}}
+   :modules
+   {:scittle         {:entries [scittle.core]}
+    :scittle.reagent {:entries    [scittle.reagent]
+                      :depends-on #{:scittle}}
+    :scittle.pprint  {:entries    [scittle.pprint]
+                      :depends-on #{:scittle}}}
+   :output-dir "public/js"}}}

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Emmy in the Browser — SICM Playground</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                     Roboto, Helvetica, Arial, sans-serif;
+        background: #fafafa;
+        color: #222;
+      }
+      #app { height: 100vh; display: flex; flex-direction: column; }
+      header {
+        padding: 0.5rem 1rem;
+        background: #1f2933;
+        color: #fff;
+        display: flex; justify-content: space-between; align-items: baseline;
+      }
+      header h1 { font-size: 1rem; font-weight: 600; margin: 0; }
+      header .hint { font-size: 0.75rem; opacity: 0.75; }
+      .panes { flex: 1; display: flex; min-height: 0; }
+      .pane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+      .pane + .pane { border-left: 1px solid #d0d7de; }
+      .pane > .label {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+        color: #57606a; background: #eef1f4; border-bottom: 1px solid #d0d7de;
+      }
+      .editor, .result {
+        flex: 1; min-height: 0; overflow: auto;
+        padding: 0.75rem 1rem;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        font-size: 13px; line-height: 1.5;
+      }
+      .editor {
+        width: 100%; border: 0; resize: none; outline: none;
+        background: #fff; tab-size: 2;
+      }
+      .result { background: #fff; white-space: pre-wrap; }
+      .result .err { color: #b42318; }
+      .result .tex { font-family: inherit; font-size: 1rem; }
+      .toolbar {
+        padding: 0.5rem 0.75rem; border-top: 1px solid #d0d7de;
+        display: flex; gap: 0.5rem; background: #f6f8fa;
+      }
+      button {
+        font: inherit; padding: 0.25rem 0.75rem; cursor: pointer;
+        background: #1f883d; color: #fff; border: 0; border-radius: 4px;
+      }
+      button:hover { background: #1a7f37; }
+      kbd {
+        font-family: ui-monospace, monospace; font-size: 0.75rem;
+        padding: 1px 4px; border: 1px solid #d0d7de; border-radius: 3px;
+        background: #f6f8fa;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- React must load before scittle.reagent (shadow externalizes it as a global) -->
+    <script crossorigin
+            src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Stock scittle + reagent + pprint built locally by `bb release` -->
+    <script src="js/scittle.js"></script>
+    <script src="js/scittle.pprint.js"></script>
+    <script src="js/scittle.reagent.js"></script>
+    <!-- Our custom plugin: Emmy in SCI -->
+    <script src="js/scittle.emmy.js"></script>
+    <!-- KaTeX for rendering Emmy's TeX output -->
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+    <!-- Application code: the playground UI itself, evaluated by Scittle -->
+    <script type="application/x-scittle" src="app.cljs"></script>
+  </body>
+</html>

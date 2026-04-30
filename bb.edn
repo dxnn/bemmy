@@ -1,0 +1,27 @@
+{:deps
+ {io.github.babashka/scittle.build
+  {:git/url "https://github.com/babashka/scittle"
+   :git/sha "465cc3251af411a2c34503e5ed0558d1ba218ea8"
+   :deps/root "build"}
+  io.github.babashka/http-server
+  {:git/sha "b38c1f16ad2c618adae2c3b102a5520c261a7dd3"}}
+
+ :tasks
+ {:requires ([scittle.build :as build])
+
+  watch   {:doc  "Watch build (recompile on save)"
+           :task (build/build {:action "watch"})}
+
+  serve   {:doc  "Serve public/ as static files"
+           :requires ([babashka.http-server :as http])
+           :task (do (http/serve {:port 1341 :dir "public"})
+                     (println "Serving at http://localhost:1341"))}
+
+  -dev    {:depends [watch serve]}
+
+  dev     {:doc  "Watch + serve in parallel"
+           :task (do (run '-dev {:parallel true})
+                     (deref (promise)))}
+
+  release {:doc  "Advanced-compiled release build"
+           :task (build/build {})}}}

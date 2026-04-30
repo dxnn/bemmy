@@ -1,0 +1,7 @@
+[{:name          scittle/emmy
+  :namespaces    [emmy.env]
+  :js            "./scittle.emmy.js"
+  :shadow-config {:modules
+                  {:scittle.emmy {:init-fn    scittle.emmy/init
+                                  :depends-on #{:scittle}
+                                  :entries    [scittle.emmy emmy.sci]}}}}]
