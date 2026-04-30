@@ -1,0 +1,7 @@
+# Clojure / shadow-cljs build caches
+/.cpcache/
+/.shadow-cljs/
+/node_modules/
+
+# Per-user Claude Code settings
+.claude/settings.local.json
