@@ -88,21 +88,75 @@
     (.. v -state -doc toString)))
 
 (defn- eval-with-tex [src]
-  (let [src     (normalize-ws src)
-        wrapped (str "(let [v# (do " src ")]\n"
+  (let [wrapped (str "(let [v# (do " src ")]\n"
                      "  [v# (try (emmy.expression.render/->TeX v#)\n"
                      "           (catch :default _ nil))])")
         [v tex] (js/scittle.core.eval_string wrapped)]
     {:value v :tex tex}))
 
+(defn- ws-char? [c]
+  (case c (" " "\n" "\t" "\r" ",") true false))
+
+(defn- split-top-forms
+  "Split src into a vector of top-level form strings. Tracks bracket depth,
+   strings, line comments, and char-literal escapes (\\( \\) \\\" etc.).
+   Naked top-level forms (e.g. a bare symbol) are also captured."
+  [src]
+  (let [n (count src)]
+    (loop [i 0 start nil depth 0
+           in-str false in-cmt false esc false
+           acc []]
+      (if (>= i n)
+        (cond-> acc
+          start (conj (clojure.string/trim (subs src start n))))
+        (let [c (.charAt src i)]
+          (cond
+            esc      (recur (inc i) start depth in-str in-cmt false acc)
+            in-str   (case c
+                       "\\" (recur (inc i) start depth true in-cmt true  acc)
+                       "\"" (recur (inc i) start depth false in-cmt false acc)
+                       (recur (inc i) start depth true in-cmt false acc))
+            in-cmt   (if (= c "\n")
+                       (recur (inc i) start depth false false false acc)
+                       (recur (inc i) start depth false true  false acc))
+            (= c "\\") (recur (+ i 2) (or start i) depth false false false acc)
+            (= c ";")  (recur (inc i) start depth false true  false acc)
+            (= c "\"") (recur (inc i) (or start i) depth true  false false acc)
+            (or (= c "(") (= c "[") (= c "{"))
+            (recur (inc i) (or start i) (inc depth) false false false acc)
+            (or (= c ")") (= c "]") (= c "}"))
+            (let [d' (dec depth) end (inc i)]
+              (if (and start (zero? d'))
+                (recur end nil 0 false false false
+                       (conj acc (clojure.string/trim (subs src start end))))
+                (recur end start d' false false false acc)))
+            (and start (zero? depth) (ws-char? c))
+            (recur (inc i) nil 0 false false false
+                   (conj acc (clojure.string/trim (subs src start i))))
+            (and (nil? start) (not (ws-char? c)))
+            (recur (inc i) i depth false false false acc)
+            :else (recur (inc i) start depth false false false acc)))))))
+
+(defn- top-forms [src]
+  (filterv (complement clojure.string/blank?)
+           (split-top-forms (normalize-ws src))))
+
 (defn eval! []
   (when-let [src (current-source)]
-    (try
-      (let [{:keys [value tex]} (eval-with-tex src)]
-        (reset! !result {:status :ok :pr (pr-str value) :tex tex}))
-      (catch :default e
-        (reset! !result {:status :err
-                         :err    (or (.-message e) (str e))})))))
+    (let [results (reduce
+                   (fn [acc form-src]
+                     (try
+                       (let [{:keys [value tex]} (eval-with-tex form-src)]
+                         (conj acc {:form form-src
+                                    :pr   (pr-str value)
+                                    :tex  tex}))
+                       (catch :default e
+                         (reduced
+                          (conj acc {:form form-src
+                                     :err  (or (.-message e) (str e))})))))
+                   []
+                   (top-forms src))]
+      (reset! !result {:status :ok :results results}))))
 
 (defn- katex-block [tex]
   (let [!node   (atom nil)
@@ -174,16 +228,26 @@
                          :title    (str "Delete " name)} "×"])])
      [:button.page-add {:on-click new-page! :title "New page"} "+"]]))
 
+(defn- result-row [{:keys [form pr tex err]}]
+  [:div.result-row
+   [:pre.form-snippet form]
+   (if err
+     [:div.err err]
+     [:<>
+      (when tex [katex-block ^String tex])
+      [:div.pr pr]])])
+
 (defn- result-pane []
-  (let [{:keys [status err pr tex]} @!result]
+  (let [{:keys [status results]} @!result]
     [:div.result
      (case status
        :idle [:span "Press " [:kbd "Cmd-Enter"] " or " [:kbd "Ctrl-Enter"]
               " to evaluate."]
-       :err  [:span.err err]
-       :ok   [:<>
-              (when tex [katex-block ^String tex])
-              [:div {:style {:color "#57606a" :margin-top "0.5rem"}} pr]])]))
+       :ok   (if (empty? results)
+               [:span {:style {:color "#57606a"}} "(no forms)"]
+               [:<>
+                (for [[i r] (map-indexed vector results)]
+                  ^{:key i} [result-row r])]))]))
 
 (defn- app []
   [:<>
