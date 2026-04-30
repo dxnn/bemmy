@@ -1,41 +1,55 @@
-(ns playground
-  (:require [reagent.core :as r]
-            [reagent.dom :as rdom]
-            [scittle.core]))
+;; No (ns ...) form: stay in `user` so the plugin init's
+;; (require '[emmy.env :refer :all]) carries over to user-typed code.
+(require '[reagent.core :as r]
+         '[reagent.dom :as rdom]
+         '[emmy.env :refer :all])
 
 (def initial-source
   ";; SICM playground — Emmy in the browser via SCI.
+;; emmy.env is pre-referred, so D, square, ->TeX, etc. are in scope.
 ;; Cmd-Enter (or Ctrl-Enter) to evaluate.
-
-(require '[emmy.env :as e :refer :all])
 
 ;; symbolic derivative of x²
 ((D (fn [x] (square x))) 'x)
 ")
 
-(defonce !source (r/atom initial-source))
+(defonce !view   (atom nil))            ; the CodeMirror EditorView
 (defonce !result (r/atom {:status :idle}))
 
-(defn- eval-with-tex
-  "Evaluate user source in SCI; return {:value v :tex t} where t is the TeX
-   form of v (or nil if Emmy can't render it). Wrapped so user source runs
-   exactly once."
-  [src]
-  (let [wrapped (str "(let [v# (do " src ")]\n"
+(defn- normalize-ws
+  "SCI's reader treats non-ASCII whitespace (NBSP, em-space, line-separator
+   etc.) as token characters and chokes when they appear in pasted source.
+   Replace common offenders with regular spaces; preserve newlines."
+  [s]
+  (-> s
+      (.replace (js/RegExp.
+                 "[\\u00A0\\u1680\\u2000-\\u200B\\u202F\\u205F\\u3000\\uFEFF]"
+                 "g") " ")
+      (.replace (js/RegExp. "[\\u2028\\u2029]" "g") "\n")))
+
+(defn- current-source []
+  (when-let [v @!view]
+    (.. v -state -doc toString)))
+
+(defn- eval-with-tex [src]
+  (let [src     (normalize-ws src)
+        wrapped (str "(let [v# (do " src ")]\n"
                      "  [v# (try (emmy.expression.render/->TeX v#)\n"
                      "           (catch :default _ nil))])")
-        [v tex] (scittle.core/eval-string wrapped)]
+        [v tex] (js/scittle.core.eval_string wrapped)]
     {:value v :tex tex}))
 
 (defn eval! []
-  (try
-    (let [{:keys [value tex]} (eval-with-tex @!source)]
-      (reset! !result {:status :ok :pr (pr-str value) :tex tex}))
-    (catch :default e
-      (reset! !result {:status :err :err (or (.-message e) (str e))}))))
+  (when-let [src (current-source)]
+    (try
+      (let [{:keys [value tex]} (eval-with-tex src)]
+        (reset! !result {:status :ok :pr (pr-str value) :tex tex}))
+      (catch :default e
+        (reset! !result {:status :err
+                         :err    (or (.-message e) (str e))})))))
 
 (defn- katex-block [tex]
-  (let [!node (atom nil)
+  (let [!node   (atom nil)
         render! (fn []
                   (when-let [el @!node]
                     (when (exists? js/katex)
@@ -48,17 +62,36 @@
       (fn [_]
         [:div.tex {:ref #(reset! !node %)}])})))
 
-(defn- editor []
-  [:textarea.editor
-   {:value         @!source
-    :spell-check   false
-    :auto-complete "off"
-    :on-change     #(reset! !source (.. % -target -value))
-    :on-key-down   (fn [e]
-                     (when (and (or (.-metaKey e) (.-ctrlKey e))
-                                (= "Enter" (.-key e)))
-                       (.preventDefault e)
-                       (eval!)))}])
+(defn- mount-cm! [el]
+  (when (and el (nil? @!view) (exists? js/CM))
+    (let [eval-cmd #js {:key "Mod-Enter" :run (fn [_] (eval!) true)}
+          user-keymap (.of js/CM.keymap #js [eval-cmd])
+          ;; Compose extensions ourselves; skip anything the ESM didn't deliver.
+          exts (cond-> [user-keymap]
+                 js/CM.lineNumbers         (conj (js/CM.lineNumbers))
+                 js/CM.history             (conj (js/CM.history))
+                 js/CM.drawSelection       (conj (js/CM.drawSelection))
+                 js/CM.highlightActiveLine (conj (js/CM.highlightActiveLine))
+                 js/CM.bracketMatching     (conj (js/CM.bracketMatching))
+                 js/CM.defaultExtensions   (conj js/CM.defaultExtensions)
+                 js/CM.defaultKeymap       (conj (.of js/CM.keymap
+                                                      js/CM.defaultKeymap))
+                 js/CM.historyKeymap       (conj (.of js/CM.keymap
+                                                      js/CM.historyKeymap))
+                 js/CM.completeKeymap      (conj (.of js/CM.keymap
+                                                      js/CM.completeKeymap)))
+          state (.create js/CM.EditorState
+                         #js {:doc initial-source :extensions (clj->js exts)})
+          view  (js/CM.EditorView. #js {:parent el :state state})]
+      (reset! !view view))))
+
+(defn- cm-editor []
+  (r/create-class
+   {:component-will-unmount (fn [_]
+                              (when-let [v @!view] (.destroy v))
+                              (reset! !view nil))
+    :reagent-render
+    (fn [_] [:div.cm-host {:ref mount-cm!}])}))
 
 (defn- result-pane []
   (let [{:keys [status err pr tex]} @!result]
@@ -79,11 +112,18 @@
    [:div.panes
     [:div.pane
      [:div.label "Code"]
-     [editor]
+     [cm-editor]
      [:div.toolbar
       [:button {:on-click eval!} "Evaluate"]]]
     [:div.pane
      [:div.label "Result"]
      [result-pane]]]])
 
-(rdom/render [app] (.getElementById js/document "app"))
+;; Wait for the ESM-loaded CodeMirror modules before mounting.
+(.then js/window.cm_ready
+       (fn [_]
+         (rdom/render [app] (.getElementById js/document "app")))
+       (fn [err]
+         (js/console.error "CodeMirror failed to load" err)
+         (set! (.. (.getElementById js/document "app") -innerHTML)
+               "Failed to load CodeMirror — check console.")))

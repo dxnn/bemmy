@@ -6,6 +6,36 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+    <!-- CodeMirror 6 + nextjournal/clojure-mode loaded via esm.sh.
+         The "codemirror" meta-package's basicSetup didn't survive esm.sh's
+         wrapper, so we import the constituent @codemirror/* packages
+         directly and compose our own setup. -->
+    <script type="module">
+      window.cm_ready = (async () => {
+        const [view, state, commands, language, cljs] = await Promise.all([
+          import("https://esm.sh/@codemirror/view@6"),
+          import("https://esm.sh/@codemirror/state@6"),
+          import("https://esm.sh/@codemirror/commands@6"),
+          import("https://esm.sh/@codemirror/language@6"),
+          import("https://esm.sh/@nextjournal/clojure-mode")
+        ]);
+        window.CM = {
+          EditorView:          view.EditorView,
+          EditorState:         state.EditorState,
+          keymap:              view.keymap,
+          lineNumbers:         view.lineNumbers,
+          drawSelection:       view.drawSelection,
+          highlightActiveLine: view.highlightActiveLine,
+          history:             commands.history,
+          defaultKeymap:       commands.defaultKeymap,
+          historyKeymap:       commands.historyKeymap,
+          bracketMatching:     language.bracketMatching,
+          defaultExtensions:   cljs.default_extensions,
+          completeKeymap:      cljs.complete_keymap
+        };
+      })();
+    </script>
     <style>
       * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; height: 100%; }
@@ -32,17 +62,16 @@
         font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
         color: #57606a; background: #eef1f4; border-bottom: 1px solid #d0d7de;
       }
-      .editor, .result {
+      .cm-host, .result {
         flex: 1; min-height: 0; overflow: auto;
-        padding: 0.75rem 1rem;
         font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
         font-size: 13px; line-height: 1.5;
       }
-      .editor {
-        width: 100%; border: 0; resize: none; outline: none;
-        background: #fff; tab-size: 2;
-      }
-      .result { background: #fff; white-space: pre-wrap; }
+      .cm-host { background: #fff; }
+      .cm-host .cm-editor { height: 100%; outline: none; }
+      .cm-host .cm-editor.cm-focused { outline: none; }
+      .cm-host .cm-content { padding: 0.75rem 1rem; }
+      .result { background: #fff; white-space: pre-wrap; padding: 0.75rem 1rem; }
       .result .err { color: #b42318; }
       .result .tex { font-family: inherit; font-size: 1rem; }
       .toolbar {
