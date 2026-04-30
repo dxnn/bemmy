@@ -65,8 +65,12 @@
 (defn- mount-cm! [el]
   (when (and el (nil? @!view) (exists? js/CM))
     (let [eval-cmd #js {:key "Mod-Enter" :run (fn [_] (eval!) true)}
-          user-keymap (.of js/CM.keymap #js [eval-cmd])
+          ;; Wrap our Cmd-Enter binding in Prec.highest so vim mode (or any
+          ;; other keymap) can't shadow it.
+          user-keymap (cond->> (.of js/CM.keymap #js [eval-cmd])
+                        js/CM.Prec (.highest js/CM.Prec))
           ;; Compose extensions ourselves; skip anything the ESM didn't deliver.
+          ;; Vim is conditionally prepended below so its keymap goes first.
           exts (cond-> [user-keymap]
                  js/CM.lineNumbers         (conj (js/CM.lineNumbers))
                  js/CM.history             (conj (js/CM.history))
@@ -80,6 +84,8 @@
                                                       js/CM.historyKeymap))
                  js/CM.completeKeymap      (conj (.of js/CM.keymap
                                                       js/CM.completeKeymap)))
+          exts (cond->> exts
+                 js/CM.vim (into [(js/CM.vim)]))
           state (.create js/CM.EditorState
                          #js {:doc initial-source :extensions (clj->js exts)})
           view  (js/CM.EditorView. #js {:parent el :state state})]

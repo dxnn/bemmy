@@ -13,16 +13,18 @@
          directly and compose our own setup. -->
     <script type="module">
       window.cm_ready = (async () => {
-        const [view, state, commands, language, cljs] = await Promise.all([
+        const [view, state, commands, language, cljs, vim] = await Promise.all([
           import("https://esm.sh/@codemirror/view@6"),
           import("https://esm.sh/@codemirror/state@6"),
           import("https://esm.sh/@codemirror/commands@6"),
           import("https://esm.sh/@codemirror/language@6"),
-          import("https://esm.sh/@nextjournal/clojure-mode")
+          import("https://esm.sh/@nextjournal/clojure-mode"),
+          import("https://esm.sh/@replit/codemirror-vim")
         ]);
         window.CM = {
           EditorView:          view.EditorView,
           EditorState:         state.EditorState,
+          Prec:                state.Prec,
           keymap:              view.keymap,
           lineNumbers:         view.lineNumbers,
           drawSelection:       view.drawSelection,
@@ -32,7 +34,8 @@
           historyKeymap:       commands.historyKeymap,
           bracketMatching:     language.bracketMatching,
           defaultExtensions:   cljs.default_extensions,
-          completeKeymap:      cljs.complete_keymap
+          completeKeymap:      cljs.complete_keymap,
+          vim:                 vim.vim
         };
       })();
     </script>
