@@ -336,8 +336,8 @@
     [:div.pane
      [:div.label "Code"]
      [pages-bar]
-     [shelf]
      [cm-editor]
+     [shelf]
      [:div.toolbar
       [:button {:on-click eval!} "Evaluate"]
       [:button.shelf-toggle
