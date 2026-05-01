@@ -77,12 +77,12 @@
     ;; Inline the frame test rather than naming it — emmy.env already
     ;; exports a `frame?` (manifold reference-frame predicate), and a
     ;; defn here collides at SCI analysis time, aborting the rest of
-    ;; this eval-string.
+    ;; this eval-string. Use try/deref instead of (instance? Atom v)
+    ;; because cljs.core/Atom isn't exposed as a SCI-resolvable symbol.
     (defn maybe-show [v]
-      (if (and (some? v)
-               (try (and (instance? cljs.core/Atom v)
-                         (let [m (deref v)]
-                           (and (map? m) (vector? (:drawables m)))))
-                    (catch :default _ false)))
-        (show v)
-        v))"))
+      (let [m (try (deref v) (catch :default _ ::not-deref))]
+        (if (and (not= m ::not-deref)
+                 (map? m)
+                 (vector? (:drawables m)))
+          (show v)
+          v)))"))
