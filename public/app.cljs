@@ -5,12 +5,106 @@
          '[emmy.env :refer :all])
 
 (def default-page
-  ";; SICM playground — Emmy in the browser via SCI.
-;; emmy.env is pre-referred, so D, square, ->TeX, etc. are in scope.
-;; Cmd-Enter (or Ctrl-Enter) to evaluate.
+  ";; BEmmy — Emmy in the browser. Cmd-Enter (or Ctrl-Enter) to evaluate.
+;; emmy.env is pre-referred, so D, square, ->TeX, cos, sin, up, etc. are
+;; all in scope. The Graphics page (left) has the visualization tour.
 
 ;; symbolic derivative of x²
 ((D (fn [x] (square x))) 'x)
+")
+
+(def graphics-page
+  ";; ====================================================================
+;; GRAPHICS — visualization tour
+;; ====================================================================
+;; Three layers, simplest to most flexible:
+;;
+;;   plot               one-shot plot of y = f(x)
+;;   plot-with-params   plot with slider-controlled parameters
+;;   frame + plot-fn    SICM-book imperative graphics model
+;;
+;; Plus the underlying Mafs hiccup for finer control.
+;; Evaluate sections individually with Cmd-Enter on a single form.
+;; ====================================================================
+
+
+;; ----- Layer 1: plot ----------------------------------------------------
+;; Anything callable that returns a number for numeric x: a Clojure fn,
+;; an Emmy polynomial, a path returned from find-path, Math/sin, ...
+;; Domain defaults to [-5,5] x [-5,5]; pass extra args to override.
+
+(plot Math/sin)
+
+(plot Math/cos [(- Math/PI) Math/PI])
+
+(plot (fn [x] (* x x x)) [-3 3] [-10 10])
+
+;; The path returned by Emmy's find-path is just a callable polynomial:
+(let [path (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)]
+  (plot path [0 (/ Math/PI 2)] [0 1.2]))
+
+
+;; ----- Layer 2: plot-with-params ---------------------------------------
+;; A Leva slider panel plus a plot. f receives (params, x); the params
+;; come from the panel's current values. Drag a slider and the curve
+;; updates in real time.
+
+(plot-with-params
+  (fn [{:keys [m k]} t] (* m (Math/sin (* k t))))
+  {:m {:value 1 :min 0   :max 5 :step 0.05}
+   :k {:value 1 :min 0.1 :max 5 :step 0.05}}
+  [0 (* 2 Math/PI)]
+  [-5 5])
+
+;; The schema map is straight Leva config: :value seeds the initial
+;; slider position, :min/:max/:step shape the range. Any keys f
+;; destructures must appear in the schema.
+
+
+;; ----- Layer 3: SICM-book imperative graphics --------------------------
+;; (frame x-min x-max y-min y-max) returns a graphics window — a Reagent
+;; atom holding a viewBox and a vector of drawables. The book's
+;; graphics-clear / plot-function / plot-point all mutate it. (show win)
+;; renders it, and BEmmy auto-shows when the last form returns a frame.
+
+(def gfx-win (frame -3 3 -3 3))
+
+(graphics-clear gfx-win)
+(plot-function gfx-win Math/sin -3 3 0.05)
+(plot-function gfx-win Math/cos -3 3 0.05)
+gfx-win   ; auto-shows the accumulated curves
+
+;; (plot-path win path t0 t1) is a one-liner for the common case of
+;; 'clear, plot one curve, return win':
+
+(let [win  (frame 0 (/ Math/PI 2) 0 1.2)
+      path (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)]
+  (plot-path win path 0 (/ Math/PI 2)))
+
+
+;; ----- Underlying Mafs hiccup ------------------------------------------
+;; All the helpers above produce Reagent hiccup using mafs.cljs. Drop
+;; down to that level for full control. Note: VECTORS, not parens —
+;; these are Reagent components, not function calls.
+
+[mafs/Mafs {:viewBox {:x [-2 2] :y [-2 2]}}
+ [mafs.coordinates/Cartesian]
+ [mafs.plot/Parametric
+  {:t  [0 (* 2 Math/PI)]
+   :xy (fn [t] [(Math/cos t) (Math/sin t)])}]]
+
+
+;; ----- emmy-viewers high-level helpers ---------------------------------
+;; emmy.mafs/parametric, emmy.mafs/of-x and friends compile their f
+;; through Emmy's expression machinery. They expect SYMBOLIC Emmy
+;; primitives (cos, sin, up, ...), not raw JS Math/cos. Wrap with
+;; emmy.mafs/mafs to provide the Mafs context.
+
+(emmy.mafs/mafs
+  {:viewBox {:x [-2 2] :y [-2 2]}}
+  (emmy.mafs/parametric
+    {:t [0 6.28]
+     :xy (fn [t] (up (cos t) (sin t)))}))
 ")
 
 ;; --- Pages: named source buffers persisted in localStorage. ----------------
@@ -23,7 +117,12 @@
                {:pages   (js->clj (.-pages obj))
                 :current (.-current obj)}))
            (catch :default _ nil))
-      {:pages {"Default" default-page} :current "Default"}))
+      ;; First-time visitors get both seed pages. Returning users keep
+      ;; whatever they have — including any edits to or deletion of
+      ;; Graphics.
+      {:pages   {"Default"  default-page
+                 "Graphics" graphics-page}
+       :current "Default"}))
 
 (defn- save-state! [{:keys [pages current]}]
   (.setItem js/localStorage storage-key
@@ -44,6 +143,22 @@
 
 (defonce !view   (atom nil))            ; the CodeMirror EditorView
 (defonce !result (r/atom {:status :idle}))
+
+;; --- UI prefs (vim mode etc.), persisted separately from page content ---
+(def ui-storage-key "emmy-playground/ui")
+
+(defn- load-ui []
+  (or (try (when-let [s (.getItem js/localStorage ui-storage-key)]
+             (js->clj (js/JSON.parse s) :keywordize-keys true))
+           (catch :default _ nil))
+      {:vim-on false}))
+
+(defonce !ui (r/atom (load-ui)))
+(defonce _persist-ui
+  (add-watch !ui :save
+             (fn [_ _ _ new]
+               (.setItem js/localStorage ui-storage-key
+                         (js/JSON.stringify (clj->js new))))))
 
 (defn- switch-page! [name]
   (when-let [view @!view]
@@ -272,7 +387,7 @@
                  js/CM.completeKeymap      (conj (.of js/CM.keymap
                                                       js/CM.completeKeymap)))
           exts (cond->> exts
-                 js/CM.vim (into [(js/CM.vim)]))
+                 (and js/CM.vim (:vim-on @!ui)) (into [(js/CM.vim)]))
           state (.create js/CM.EditorState
                          #js {:doc        (current-page-source)
                               :extensions (clj->js exts)})
@@ -398,13 +513,15 @@
 (defn- app []
   [:<>
    [:header
-    [:h1 "Emmy + SCI · SICM playground"]
-    [:span.hint "Cmd-Enter / Ctrl-Enter to evaluate"]]
+    [:h1 "BEmmy"]
+    [:span.hint "Emmy in the Browser · Cmd-Enter to evaluate"]]
    [:div.panes
     [:div.pane
      [:div.label "Code"]
      [pages-bar]
-     [cm-editor]
+     ;; Key on vim-on so toggling the vim button forces CM to remount;
+     ;; CM6's vim extension is set at editor construction time.
+     ^{:key (str "cm-vim-" (:vim-on @!ui))} [cm-editor]
      [shelf]
      [:div.toolbar
       [:button {:on-click eval!} "Evaluate"]
@@ -412,7 +529,12 @@
        {:class    (when (:open? @!shelf) "active")
         :on-click #(swap! !shelf update :open? not)
         :title    "Toggle SICM → Emmy translator"}
-       "SICM → Emmy"]]]
+       "SICM → Emmy"]
+      [:button.shelf-toggle
+       {:class    (when (:vim-on @!ui) "active")
+        :on-click #(swap! !ui update :vim-on not)
+        :title    "Toggle vim keybindings (persisted)"}
+       "vim"]]]
     [:div.pane
      [:div.label "Result"]
      [result-pane]]]])
