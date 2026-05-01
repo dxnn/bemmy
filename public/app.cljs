@@ -158,17 +158,25 @@
                    (top-forms src))]
       (reset! !result {:status :ok :results results}))))
 
+(defn- escape-html [s]
+  (-> s
+      (.replace (js/RegExp. "&" "g") "&amp;")
+      (.replace (js/RegExp. "<" "g") "&lt;")
+      (.replace (js/RegExp. ">" "g") "&gt;")))
+
 (defn- highlight-clojure
   "Render a Clojure source string as a span of HTML with hljs's tokens.
-   Falls back to a safely-escaped plain string if hljs hasn't loaded."
+   Falls back to a safely-escaped plain string if hljs or its Clojure
+   language module aren't loaded, or if highlighting throws for any
+   other reason — never let a display issue tank evaluation."
   [s]
-  (if (exists? js/hljs)
-    (.-value (.highlight js/hljs s #js {:language "clojure"
-                                        :ignoreIllegals true}))
-    (-> s
-        (.replace (js/RegExp. "&" "g") "&amp;")
-        (.replace (js/RegExp. "<" "g") "&lt;")
-        (.replace (js/RegExp. ">" "g") "&gt;"))))
+  (or (when (and (exists? js/hljs)
+                 (.getLanguage js/hljs "clojure"))
+        (try
+          (.-value (.highlight js/hljs s #js {:language       "clojure"
+                                              :ignoreIllegals true}))
+          (catch :default _ nil)))
+      (escape-html s)))
 
 (defn- katex-block [tex]
   (let [!node   (atom nil)

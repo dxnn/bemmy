@@ -11,6 +11,8 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <!-- Clojure isn't in hljs's "common" bundle; load it explicitly. -->
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/clojure.min.js"></script>
 
     <!-- SICM (Scheme) → Emmy (Clojure) translator, exposes window.SicmToEmmy -->
     <script src="sicm2emmy.js"></script>
