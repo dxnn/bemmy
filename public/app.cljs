@@ -462,12 +462,19 @@ gfx-win   ; auto-shows the accumulated curves
   (let [{:keys [pages current]} @!pages]
     [:div.pages
      (for [name (sort (keys pages))]
-       ^{:key name}
-       [:span.page {:class (when (= name current) "active")}
-        [:span.page-name {:on-click #(switch-page! name)} name]
-        (when (> (count pages) 1)
-          [:span.page-x {:on-click #(delete-page! name)
-                         :title    (str "Delete " name)} "×"])])
+       (let [active? (= name current)]
+         ^{:key name}
+         [:span.page
+          {:class    (when active? "active")
+           :on-click (when-not active? #(switch-page! name))}
+          [:span.page-name name]
+          (when (> (count pages) 1)
+            [:span.page-x
+             {:on-click (fn [e]
+                          (.stopPropagation e)
+                          (delete-page! name))
+              :title    (str "Delete " name)}
+             "×"])]))
      [:button.page-add {:on-click new-page! :title "New page"} "+"]]))
 
 (defn- hiccup?
@@ -514,26 +521,27 @@ gfx-win   ; auto-shows the accumulated curves
   [:<>
    [:header
     [:h1 "BEmmy"]
-    [:span.hint "Emmy in the Browser · Cmd-Enter to evaluate"]]
+    [:span.tagline "Emmy in the Browser"]]
    [:div.panes
     [:div.pane
      [:div.label "Code"]
      [pages-bar]
-     ;; Key on vim-on so toggling the vim button forces CM to remount;
+     ;; Key on vim-on so toggling the vim checkbox forces CM to remount;
      ;; CM6's vim extension is set at editor construction time.
      ^{:key (str "cm-vim-" (:vim-on @!ui))} [cm-editor]
      [shelf]
      [:div.toolbar
-      [:button {:on-click eval!} "Evaluate"]
-      [:button.shelf-toggle
-       {:class    (when (:open? @!shelf) "active")
+      [:button.action {:on-click eval!} "Evaluate"]
+      [:button.btn
+       {:class    (when (:open? @!shelf) "is-on")
         :on-click #(swap! !shelf update :open? not)
         :title    "Toggle SICM → Emmy translator"}
        "SICM → Emmy"]
-      [:button.shelf-toggle
-       {:class    (when (:vim-on @!ui) "active")
-        :on-click #(swap! !ui update :vim-on not)
-        :title    "Toggle vim keybindings (persisted)"}
+      [:label.check
+       {:title "Vim keybindings (persisted across reloads)"}
+       [:input {:type      "checkbox"
+                :checked   (boolean (:vim-on @!ui))
+                :on-change #(swap! !ui update :vim-on not)}]
        "vim"]]]
     [:div.pane
      [:div.label "Result"]
