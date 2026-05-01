@@ -87,12 +87,33 @@
   (when-let [v @!view]
     (.. v -state -doc toString)))
 
+(defn- emmy-fragment?
+  "emmy-viewers helpers (parametric, of-x, vector-field, ...) return a
+   quoted reagent form tagged with :portal.viewer/reagent? metadata so a
+   downstream renderer (Clerk/Portal) knows to eval it. We replicate that
+   eval step ourselves."
+  [v]
+  (when-let [m (try (meta v) (catch :default _ nil))]
+    (or (:portal.viewer/reagent? m)
+        (contains? m :nextjournal.clerk.viewer/viewer))))
+
+(defn- expand-fragment
+  "Re-evaluate a fragment form through SCI so the embedded macros
+   (reagent.core/with-let etc.) expand and the symbol references
+   (mafs.plot/Parametric etc.) resolve to actual Reagent component fns."
+  [v]
+  (try
+    (js/scittle.core.eval_string (pr-str v))
+    (catch :default _ v)))
+
 (defn- eval-with-tex [src]
   (let [wrapped (str "(let [v# (do " src ")]\n"
                      "  [v# (try (emmy.expression.render/->TeX v#)\n"
                      "           (catch :default _ nil))])")
         [v tex] (js/scittle.core.eval_string wrapped)]
-    {:value v :tex tex}))
+    (if (emmy-fragment? v)
+      {:value (expand-fragment v) :tex nil}
+      {:value v :tex tex})))
 
 (defn- ws-char? [c]
   (case c (" " "\n" "\t" "\r" ",") true false))
