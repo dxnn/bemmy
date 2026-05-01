@@ -68,6 +68,17 @@
              [mafs.core/Point {:x (double x) :y (double y)}])
       win)
 
+    (defn plot-path
+      \"Clear win, plot path (any IFn-like — Clojure fn, Emmy polynomial,
+       etc.) from t0..t1 in one go, return win. The auto-show in the
+       playground displays the result.\"
+      ([win path t0 t1]
+       (plot-path win path t0 t1 (/ (- t1 t0) 100)))
+      ([win path t0 t1 step]
+       (graphics-clear win)
+       (plot-function win path t0 t1 step)
+       win))
+
     (defn show [win]
       (let [{:keys [viewBox drawables]} (deref win)]
         (into [mafs.core/Mafs {:viewBox viewBox}
