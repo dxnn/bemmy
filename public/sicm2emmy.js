@@ -154,6 +154,10 @@
     'display':'print', 'write':'pr', 'pp':'pprint',
     'for-each':'run!', 'void':'nil',
     'error-message':'ex-message',
+    // scmutils niceties — the playground TeX-renders results, so
+    // (show-expression x) is just (simplify x) under Emmy.
+    'show-expression':'simplify', 'simplify-expression':'simplify',
+    'print-expression':'simplify',
   };
 
   function txAtom(v) {
