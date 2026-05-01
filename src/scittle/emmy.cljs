@@ -32,7 +32,12 @@
   ;; emmy-viewers 2D high-level helpers (skips the 3D/interactive/UI/Clerk bits).
   (install-emmy-viewers-2d!)
   ;; Pre-refer / pre-alias common namespaces so user snippets are short.
+  ;; `mafs` aliases mafs.core (the low-level Reagent components) per the
+  ;; Mentat Collective convention. emmy-viewers' high-level helpers stay
+  ;; reachable via the full `emmy.mafs/...` namespace.
   (scittle/eval-string
    "(require '[emmy.env :refer :all]
-             '[emmy.mafs :as mafs]
-             '[emmy.viewer :as viewer])"))
+             '[mafs.core :as mafs]
+             '[mafs.coordinates]
+             '[mafs.plot]
+             '[mafs.line])"))

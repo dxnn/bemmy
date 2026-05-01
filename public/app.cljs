@@ -309,21 +309,15 @@
      [:button.page-add {:on-click new-page! :title "New page"} "+"]]))
 
 (defn- hiccup?
-  "Heuristic: a value is a Reagent hiccup component if it's a vector whose
-   first element is a keyword (:div etc.), a fn (a Reagent component fn), or
-   a symbol that looks like a Mafs/emmy-viewers component (e.g. mafs/Mafs).
-   Catches all the things emmy.mafs/* helpers actually return without
-   misfiring on plain Clojure vector data."
+  "Heuristic: a vector whose first element is a keyword (:div etc.) or a
+   function (a Reagent component reference). Symbols are deliberately
+   excluded — quoted forms returned by emmy-viewers helpers shouldn't
+   accidentally render as hiccup."
   [v]
   (and (vector? v)
        (pos? (count v))
        (let [h (first v)]
-         (or (keyword? h)
-             (fn? h)
-             (and (symbol? h)
-                  (when-let [n (namespace h)]
-                    (or (= "mafs" n)
-                        (clojure.string/starts-with? n "emmy."))))))))
+         (or (keyword? h) (fn? h)))))
 
 (defn- result-row [{:keys [form value pr tex err]}]
   [:div.result-row
