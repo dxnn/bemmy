@@ -211,6 +211,17 @@
       const sig = c[1].c;
       if (sig.length === 0) return L(A('defn'), ...c.slice(1).map(tx));
       const name = sig[0];
+      // Curried define:
+      //   (define ((inner...) outer-args...) body)
+      // ≡ (define (inner...) (lambda (outer-args...) body))
+      // Rebuild the AST and re-tx; recursion handles deeper curry too.
+      if (name && name.t === 'list') {
+        const outerArgs = sig.slice(1);
+        const lam = {t:'list', c: [A('lambda'),
+                                   {t:'list', c: outerArgs},
+                                   ...c.slice(2)]};
+        return tx({t:'list', c: [A('define'), name, lam]});
+      }
       const dotIdx = sig.findIndex(n => n.t==='atom' && n.v==='.');
       const args = dotIdx > -1
         ? V([...sig.slice(1,dotIdx).map(tx), A('&'), ...sig.slice(dotIdx+1).map(tx)])
