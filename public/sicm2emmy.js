@@ -160,6 +160,24 @@
     'print-expression':'simplify',
   };
 
+  // scmutils binds symbols like :pi/2 to numeric constants; in Clojure
+  // those parse as keywords, so we expand to numeric expressions instead.
+  // Returns AST nodes, not strings.
+  const PI = () => A('Math/PI');
+  const SCMUTILS_CONSTS = {
+    ':pi':    () => PI(),
+    ':2pi':   () => L(A('*'), A('2'),  PI()),
+    ':pi/2':  () => L(A('/'), PI(), A('2')),
+    ':pi/3':  () => L(A('/'), PI(), A('3')),
+    ':pi/4':  () => L(A('/'), PI(), A('4')),
+    ':pi/6':  () => L(A('/'), PI(), A('6')),
+    ':-pi':   () => L(A('-'), PI()),
+    ':-pi/2': () => L(A('-'), L(A('/'), PI(), A('2'))),
+    ':-pi/3': () => L(A('-'), L(A('/'), PI(), A('3'))),
+    ':-pi/4': () => L(A('-'), L(A('/'), PI(), A('4'))),
+    ':-pi/6': () => L(A('-'), L(A('/'), PI(), A('6'))),
+  };
+
   function txAtom(v) {
     if (v === '+inf.0') return '##Inf';
     if (v === '-inf.0') return '##-Inf';
@@ -201,7 +219,10 @@
 
   function tx(node) {
     if (!node) return node;
-    if (node.t === 'atom')  return A(txAtom(node.v));
+    if (node.t === 'atom') {
+      if (SCMUTILS_CONSTS[node.v]) return SCMUTILS_CONSTS[node.v]();
+      return A(txAtom(node.v));
+    }
     if (node.t === 'nl' || node.t === 'comment') return node;
     if (node.t === 'pfx')  return {t:'pfx', v:node.v, c:tx(node.c)};
     if (node.t === 'vec')  return V(node.c.map(tx));
