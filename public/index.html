@@ -7,6 +7,10 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 
+    <!-- Mafs's plot styling. Without these, Mafs renders unstyled. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mafs@0.21.0/core.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mafs@0.21.0/font.css">
+
     <!-- highlight.js for syntax highlighting in the result pane -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
@@ -101,6 +105,13 @@
         border-radius: 3px; white-space: pre-wrap; overflow-x: auto;
       }
       .result-row .pr { color: #57606a; margin-top: 0.3rem; }
+
+      /* Inline visualization (Mafs etc.) inside a result row. */
+      .viz {
+        margin: 0.4rem 0; min-height: 240px; max-height: 60vh;
+        overflow: hidden; border-radius: 4px; background: #fff;
+      }
+      .viz .MafsView { width: 100%; }
       .toolbar {
         padding: 0.5rem 0.75rem; border-top: 1px solid #d0d7de;
         display: flex; gap: 0.5rem; background: #f6f8fa;

@@ -1,7 +1,19 @@
-[{:name          scittle/emmy
-  :namespaces    [emmy.env]
-  :js            "./scittle.emmy.js"
-  :shadow-config {:modules
-                  {:scittle.emmy {:init-fn    scittle.emmy/init
-                                  :depends-on #{:scittle}
-                                  :entries    [scittle.emmy emmy.sci]}}}}]
+[{:name       scittle/emmy
+  :namespaces [emmy.env
+               emmy.mafs
+               emmy.viewer
+               emmy.viewer.compile
+               emmy.viewer.physics
+               mafs.core mafs.coordinates mafs.plot mafs.line mafs.vec]
+  :js         "./scittle.emmy.js"
+  :shadow-config
+  {:modules
+   {:scittle.emmy {:init-fn    scittle.emmy/init
+                   :depends-on #{:scittle}
+                   :entries    [scittle.emmy
+                                emmy.sci
+                                mafs.sci
+                                emmy.mafs
+                                emmy.viewer
+                                emmy.viewer.compile
+                                emmy.viewer.physics]}}}}]

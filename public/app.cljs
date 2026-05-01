@@ -147,9 +147,10 @@
                    (fn [acc form-src]
                      (try
                        (let [{:keys [value tex]} (eval-with-tex form-src)]
-                         (conj acc {:form form-src
-                                    :pr   (pr-str value)
-                                    :tex  tex}))
+                         (conj acc {:form  form-src
+                                    :value value      ; raw, for hiccup detection
+                                    :pr    (pr-str value)
+                                    :tex   tex}))
                        (catch :default e
                          (reduced
                           (conj acc {:form form-src
@@ -307,12 +308,31 @@
                          :title    (str "Delete " name)} "×"])])
      [:button.page-add {:on-click new-page! :title "New page"} "+"]]))
 
-(defn- result-row [{:keys [form pr tex err]}]
+(defn- hiccup?
+  "Heuristic: a value is a Reagent hiccup component if it's a vector whose
+   first element is a keyword (:div etc.), a fn (a Reagent component fn), or
+   a symbol that looks like a Mafs/emmy-viewers component (e.g. mafs/Mafs).
+   Catches all the things emmy.mafs/* helpers actually return without
+   misfiring on plain Clojure vector data."
+  [v]
+  (and (vector? v)
+       (pos? (count v))
+       (let [h (first v)]
+         (or (keyword? h)
+             (fn? h)
+             (and (symbol? h)
+                  (when-let [n (namespace h)]
+                    (or (= "mafs" n)
+                        (clojure.string/starts-with? n "emmy."))))))))
+
+(defn- result-row [{:keys [form value pr tex err]}]
   [:div.result-row
    [:pre.form-snippet
     {:dangerouslySetInnerHTML #js {:__html (highlight-clojure form)}}]
-   (if err
-     [:div.err err]
+   (cond
+     err          [:div.err err]
+     (hiccup? value) [:div.viz value]
+     :else
      [:<>
       (when tex [katex-block ^String tex])
       [:div.pr

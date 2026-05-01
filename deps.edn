@@ -3,4 +3,16 @@
   {:git/url "https://github.com/babashka/scittle"
    :git/sha "465cc3251af411a2c34503e5ed0558d1ba218ea8"}
   org.mentat/emmy {:mvn/version "0.32.0"
-                   :exclusions  [org.babashka/sci]}}}
+                   :exclusions  [org.babashka/sci]}
+  ;; emmy-viewers brings high-level Emmy → Mafs helpers (parametric,
+  ;; of-x, vector-field, ...). We exclude its 3D / interactive-geometry
+  ;; / UI-knob siblings so the bundle stays 2D-only for now. Our own
+  ;; emmy 0.32.0 wins over its 0.31.0 pin; Scittle's git-pinned sci wins.
+  org.mentat/emmy-viewers
+  {:mvn/version "0.3.2"
+   :exclusions  [org.mentat/emmy
+                 org.babashka/sci
+                 org.mentat/mathbox.cljs
+                 org.mentat/jsxgraph.cljs
+                 org.mentat/leva.cljs
+                 org.mentat/mathlive.cljs]}}}
