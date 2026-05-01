@@ -107,9 +107,13 @@
     (catch :default _ v)))
 
 (defn- eval-with-tex [src]
+  ;; maybe-show turns a SICM-style frame atom into Mafs hiccup so the
+  ;; user can leave `win2` (or any frame) as the last form and see the
+  ;; plot inline; non-frames pass through untouched.
   (let [wrapped (str "(let [v# (do " src ")]\n"
-                     "  [v# (try (emmy.expression.render/->TeX v#)\n"
-                     "           (catch :default _ nil))])")
+                     "  [(maybe-show v#)\n"
+                     "   (try (emmy.expression.render/->TeX v#)\n"
+                     "        (catch :default _ nil))])")
         [v tex] (js/scittle.core.eval_string wrapped)]
     (if (emmy-fragment? v)
       {:value (expand-fragment v) :tex nil}

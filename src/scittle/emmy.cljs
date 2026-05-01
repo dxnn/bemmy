@@ -40,4 +40,46 @@
              '[mafs.core :as mafs]
              '[mafs.coordinates]
              '[mafs.plot]
-             '[mafs.line])"))
+             '[mafs.line])")
+  ;; SICM-book imperative graphics shim. The book's `frame`,
+  ;; `graphics-clear`, `plot-function` etc. mutate a window object; we
+  ;; back that with a Reagent-friendly atom and add a `show` that turns
+  ;; current state into Mafs hiccup. Auto-show wraps eval so the user
+  ;; doesn't need to remember to call (show win) at the end.
+  (scittle/eval-string
+   "(defn frame [x-min x-max y-min y-max]
+      (atom {:viewBox   {:x [(double x-min) (double x-max)]
+                         :y [(double y-min) (double y-max)]}
+             :drawables []}))
+
+    (defn graphics-clear [win]
+      (swap! win assoc :drawables [])
+      win)
+
+    (defn plot-function [win f t-min t-max & _step]
+      (swap! win update :drawables conj
+             [mafs.plot/OfX
+              {:y      (fn [x] (double (f x)))
+               :domain [(double t-min) (double t-max)]}])
+      win)
+
+    (defn plot-point [win [x y]]
+      (swap! win update :drawables conj
+             [mafs.core/Point {:x (double x) :y (double y)}])
+      win)
+
+    (defn show [win]
+      (let [{:keys [viewBox drawables]} (deref win)]
+        (into [mafs.core/Mafs {:viewBox viewBox}
+               [mafs.coordinates/Cartesian]]
+              drawables)))
+
+    (defn frame? [v]
+      (and (some? v)
+           (try (and (instance? cljs.core/Atom v)
+                     (let [m (deref v)]
+                       (and (map? m) (vector? (:drawables m)))))
+                (catch :default _ false))))
+
+    (defn maybe-show [v]
+      (if (frame? v) (show v) v))"))
