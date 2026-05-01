@@ -85,6 +85,28 @@
                [mafs.coordinates/Cartesian]]
               drawables)))
 
+    (defn plot
+      \"Render y = f(x) inline. f is anything callable — a Clojure fn, an
+       Emmy polynomial, a path returned by find-path, etc. — that returns
+       a number for numeric x. Domain defaults to [-5, 5]; y-range to
+       [-5, 5]. Override either by passing extra args:
+
+         (plot Math/sin)
+         (plot Math/sin [(- Math/PI) Math/PI])
+         (plot (fn [x] (* x x x)) [-3 3] [-10 10])
+
+       For a symbolic Emmy expression with free symbols, simplify or
+       substitute numeric values for the parameters first — the plot
+       needs concrete numbers per x-sample.\"
+      ([f] (plot f [-5 5] [-5 5]))
+      ([f x-range] (plot f x-range [-5 5]))
+      ([f [x-min x-max] [y-min y-max]]
+       [mafs.core/Mafs {:viewBox {:x [(double x-min) (double x-max)]
+                                  :y [(double y-min) (double y-max)]}}
+        [mafs.coordinates/Cartesian]
+        [mafs.plot/OfX {:y      (fn [x] (double (f x)))
+                        :domain [(double x-min) (double x-max)]}]]))
+
     ;; Inline the frame test rather than naming it — emmy.env already
     ;; exports a `frame?` (manifold reference-frame predicate), and a
     ;; defn here collides at SCI analysis time, aborting the rest of
