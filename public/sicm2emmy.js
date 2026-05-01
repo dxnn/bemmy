@@ -558,8 +558,26 @@
 
         if (!BODY_SPECIAL.has(hs)) {
           if (rests.length===0) return '('+headStr+')';
-          const sp = ' '.repeat(ic);
-          return '('+headStr+' '+rests.join('\n'+sp)+')';
+          // Hanging indent (2 spaces from col) plus greedy fill: pack as
+          // many args as fit on each continuation line. Avoids the
+          // "single token per line" look you get when args are aligned
+          // after a long head name.
+          const indent = col + 2;
+          const pad = ' '.repeat(indent);
+          const lines = [];
+          let line = '';
+          for (const r of rests) {
+            const rIsMulti = r.indexOf('\n') >= 0;
+            if (line === '') { line = r; continue; }
+            if (rIsMulti || indent + line.length + 1 + r.length > 72) {
+              lines.push(line);
+              line = r;
+            } else {
+              line = line + ' ' + r;
+            }
+          }
+          if (line) lines.push(line);
+          return '('+headStr+'\n'+pad+lines.join('\n'+pad)+')';
         }
 
         if (hs==='defn'||hs==='defn-'||hs==='defmacro'||hs==='defmethod') {
