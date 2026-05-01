@@ -213,6 +213,9 @@
                  js/CM.drawSelection       (conj (js/CM.drawSelection))
                  js/CM.highlightActiveLine (conj (js/CM.highlightActiveLine))
                  js/CM.bracketMatching     (conj (js/CM.bracketMatching))
+                 (and js/CM.syntaxHighlighting js/CM.defaultHighlightStyle)
+                 (conj (js/CM.syntaxHighlighting
+                        js/CM.defaultHighlightStyle))
                  js/CM.defaultExtensions   (conj js/CM.defaultExtensions)
                  js/CM.defaultKeymap       (conj (.of js/CM.keymap
                                                       js/CM.defaultKeymap))
