@@ -235,6 +235,29 @@
     }
 
     if (hs === 'define' && c[1] && c[1].t === 'atom') {
+      // (define name (lambda (args) body)) → (defn name [args] body).
+      // SICM idiomatically uses both (define (foo ...) ...) and the
+      // explicit-lambda form interchangeably; collapse to defn so the
+      // output stays readable. (Borrowed from convert1.js.)
+      const val = c[2];
+      if (val && val.t === 'list' && val.c.length >= 2 &&
+          val.c[0] && val.c[0].t === 'atom' && val.c[0].v === 'lambda') {
+        const argsNode = val.c[1];
+        let args;
+        if (argsNode.t === 'atom') {
+          args = V(A('&'), tx(argsNode));
+        } else if (argsNode.t === 'list') {
+          const di = argsNode.c.findIndex(n => n.t==='atom' && n.v==='.');
+          args = di > -1
+            ? V([...argsNode.c.slice(0,di).map(tx), A('&'),
+                 ...argsNode.c.slice(di+1).map(tx)])
+            : V(argsNode.c.map(tx));
+        } else {
+          args = V();
+        }
+        return L(A('defn'), c[1], args,
+                 ...liftInternalDefs(val.c.slice(2).map(tx)));
+      }
       return L(A('def'), c[1], c.length >= 3 ? tx(c[2]) : A('nil'));
     }
 
