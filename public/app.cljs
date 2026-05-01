@@ -200,6 +200,25 @@
           (catch :default _ nil)))
       (escape-html s)))
 
+(defn- error-boundary
+  "React error boundary so a plot rendering error doesn't tear down the
+   whole page. The boundary's state is per-instance; pairing it with a
+   :key on the parent forces a fresh boundary each evaluation."
+  [_child]
+  (let [!err (r/atom nil)]
+    (r/create-class
+     {:display-name "PlotErrorBoundary"
+      :component-did-catch
+      (fn [_this err _info] (reset! !err err))
+      :reagent-render
+      (fn [child]
+        (if-let [e @!err]
+          [:div.err "Render error: "
+           [:pre {:style {:font-size "0.7rem" :white-space "pre-wrap"
+                          :margin    "0.25rem 0 0 0"}}
+            (str e)]]
+          child))})))
+
 (defn- katex-block [tex]
   (let [!node   (atom nil)
         render! (fn []
@@ -346,7 +365,7 @@
     {:dangerouslySetInnerHTML #js {:__html (highlight-clojure form)}}]
    (cond
      err          [:div.err err]
-     (hiccup? value) [:div.viz value]
+     (hiccup? value) [:div.viz [error-boundary value]]
      :else
      [:<>
       (when tex [katex-block ^String tex])
