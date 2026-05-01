@@ -166,9 +166,12 @@
   (filterv (complement clojure.string/blank?)
            (split-top-forms (normalize-ws src))))
 
+(defonce !eval-id (atom 0))
+
 (defn eval! []
   (when-let [src (current-source)]
-    (let [results (reduce
+    (let [eval-id (swap! !eval-id inc)
+          results (reduce
                    (fn [acc form-src]
                      (try
                        (let [{:keys [value tex]} (eval-with-tex form-src)]
@@ -182,7 +185,7 @@
                                      :err  (or (.-message e) (str e))})))))
                    []
                    (top-forms src))]
-      (reset! !result {:status :ok :results results}))))
+      (reset! !result {:status :ok :results results :eval-id eval-id}))))
 
 (defn- escape-html [s]
   (-> s
@@ -377,7 +380,7 @@
        {:dangerouslySetInnerHTML #js {:__html (highlight-clojure pr)}}]])])
 
 (defn- result-pane []
-  (let [{:keys [status results]} @!result]
+  (let [{:keys [status results eval-id]} @!result]
     [:div.result
      (case status
        :idle [:span "Press " [:kbd "Cmd-Enter"] " or " [:kbd "Ctrl-Enter"]
@@ -385,8 +388,12 @@
        :ok   (if (empty? results)
                [:span {:style {:color "#57606a"}} "(no forms)"]
                [:<>
+                ;; Prefix the key with eval-id so each evaluation forces a
+                ;; fresh remount — stateful viz components (Leva-driven
+                ;; plot-with-params, etc.) get rebuilt cleanly so the new
+                ;; code takes effect.
                 (for [[i r] (map-indexed vector results)]
-                  ^{:key i} [result-row r])]))]))
+                  ^{:key (str eval-id "-" i)} [result-row r])]))]))
 
 (defn- app []
   [:<>
