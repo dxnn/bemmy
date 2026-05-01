@@ -7,6 +7,11 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 
+    <!-- highlight.js for syntax highlighting in the result pane -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
     <!-- CodeMirror 6 + nextjournal/clojure-mode loaded via esm.sh.
          The "codemirror" meta-package's basicSetup didn't survive esm.sh's
          wrapper, so we import the constituent @codemirror/* packages
@@ -125,6 +130,15 @@
         border: 1px dashed #c0c8d0; border-radius: 4px; cursor: pointer;
       }
       .pages .page-add:hover { background: #fff; color: #1f883d; }
+
+      /* Tweaks for highlighted code in the result pane */
+      .form-snippet, .pr {
+        font-family: ui-monospace, SFMono-Regular, monospace;
+      }
+      .form-snippet .hljs, .pr .hljs {
+        background: transparent; padding: 0; display: inline;
+      }
+      .pr .hljs { font-size: 13px; }
     </style>
   </head>
   <body>

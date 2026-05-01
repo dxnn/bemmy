@@ -158,6 +158,18 @@
                    (top-forms src))]
       (reset! !result {:status :ok :results results}))))
 
+(defn- highlight-clojure
+  "Render a Clojure source string as a span of HTML with hljs's tokens.
+   Falls back to a safely-escaped plain string if hljs hasn't loaded."
+  [s]
+  (if (exists? js/hljs)
+    (.-value (.highlight js/hljs s #js {:language "clojure"
+                                        :ignoreIllegals true}))
+    (-> s
+        (.replace (js/RegExp. "&" "g") "&amp;")
+        (.replace (js/RegExp. "<" "g") "&lt;")
+        (.replace (js/RegExp. ">" "g") "&gt;"))))
+
 (defn- katex-block [tex]
   (let [!node   (atom nil)
         render! (fn []
@@ -230,12 +242,14 @@
 
 (defn- result-row [{:keys [form pr tex err]}]
   [:div.result-row
-   [:pre.form-snippet form]
+   [:pre.form-snippet
+    {:dangerouslySetInnerHTML #js {:__html (highlight-clojure form)}}]
    (if err
      [:div.err err]
      [:<>
       (when tex [katex-block ^String tex])
-      [:div.pr pr]])])
+      [:div.pr
+       {:dangerouslySetInnerHTML #js {:__html (highlight-clojure pr)}}]])])
 
 (defn- result-pane []
   (let [{:keys [status results]} @!result]
