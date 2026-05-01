@@ -115,18 +115,21 @@
     (defn ^:private plot-with-params-impl
       [f params-spec [x-min x-max] [y-min y-max]]
       ;; Form-2 component: outer fn runs once on mount and creates the
-      ;; params atom; inner fn re-runs on each slider change, derefing
-      ;; the atom and recomputing the OfX y-fn.
+      ;; params atom; inner fn re-runs on each slider change. The
+      ;; @!params MUST be dereferenced in the render scope (not deeper
+      ;; in the OfX :y callback) so Reagent's reactive context tracks
+      ;; the atom as a dependency.
       (let [defaults (into {} (map (fn [[k v]] [k (:value v)])) params-spec)
             !params  (reagent.core/atom defaults)]
         (fn []
-          [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
-           [leva.core/Controls {:atom !params :schema params-spec}]
-           [mafs.core/Mafs {:viewBox {:x [(double x-min) (double x-max)]
-                                      :y [(double y-min) (double y-max)]}}
-            [mafs.coordinates/Cartesian]
-            [mafs.plot/OfX {:y      (fn [x] (double (f (deref !params) x)))
-                            :domain [(double x-min) (double x-max)]}]]])))
+          (let [params @!params]
+            [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
+             [leva.core/Controls {:atom !params :schema params-spec}]
+             [mafs.core/Mafs {:viewBox {:x [(double x-min) (double x-max)]
+                                        :y [(double y-min) (double y-max)]}}
+              [mafs.coordinates/Cartesian]
+              [mafs.plot/OfX {:y      (fn [x] (double (f params x)))
+                              :domain [(double x-min) (double x-max)]}]]]))))
 
     (defn plot-with-params
       \"Render y = f(params, x) with a Leva control panel for params.
