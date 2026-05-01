@@ -1,10 +1,12 @@
 (ns scittle.emmy
   {:no-doc true}
-  (:require [emmy.mafs]
+  (:require [emmy.leva]
+            [emmy.mafs]
             [emmy.sci]
             [emmy.viewer]
             [emmy.viewer.compile]
             [emmy.viewer.physics]
+            [leva.sci]
             [mafs.sci]
             [sci.core :as sci]
             [sci.ctx-store]
@@ -19,7 +21,8 @@
   (sci.ctx-store/swap-ctx!
    sci/merge-opts
    {:namespaces
-    {'emmy.mafs            (sci/copy-ns emmy.mafs            (sci/create-ns 'emmy.mafs))
+    {'emmy.leva            (sci/copy-ns emmy.leva            (sci/create-ns 'emmy.leva))
+     'emmy.mafs            (sci/copy-ns emmy.mafs            (sci/create-ns 'emmy.mafs))
      'emmy.viewer          (sci/copy-ns emmy.viewer          (sci/create-ns 'emmy.viewer))
      'emmy.viewer.compile  (sci/copy-ns emmy.viewer.compile  (sci/create-ns 'emmy.viewer.compile))
      'emmy.viewer.physics  (sci/copy-ns emmy.viewer.physics  (sci/create-ns 'emmy.viewer.physics))}}))
@@ -29,6 +32,8 @@
   (scittle/register-plugin! ::emmy emmy.sci/config)
   ;; Mafs (registers mafs.core, mafs.plot, etc. + js/Math).
   (mafs.sci/install!)
+  ;; Leva — slider/input panel UI.
+  (leva.sci/install!)
   ;; emmy-viewers 2D high-level helpers (skips the 3D/interactive/UI/Clerk bits).
   (install-emmy-viewers-2d!)
   ;; Pre-refer / pre-alias common namespaces so user snippets are short.
@@ -106,6 +111,41 @@
         [mafs.coordinates/Cartesian]
         [mafs.plot/OfX {:y      (fn [x] (double (f x)))
                         :domain [(double x-min) (double x-max)]}]]))
+
+    (defn ^:private plot-with-params-impl
+      [f params-spec [x-min x-max] [y-min y-max]]
+      ;; Form-2 component: outer fn runs once on mount and creates the
+      ;; params atom; inner fn re-runs on each slider change, derefing
+      ;; the atom and recomputing the OfX y-fn.
+      (let [defaults (into {} (map (fn [[k v]] [k (:value v)])) params-spec)
+            !params  (reagent.core/atom defaults)]
+        (fn []
+          [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
+           [leva.core/Controls {:atom !params :schema params-spec}]
+           [mafs.core/Mafs {:viewBox {:x [(double x-min) (double x-max)]
+                                      :y [(double y-min) (double y-max)]}}
+            [mafs.coordinates/Cartesian]
+            [mafs.plot/OfX {:y      (fn [x] (double (f (deref !params) x)))
+                            :domain [(double x-min) (double x-max)]}]]])))
+
+    (defn plot-with-params
+      \"Render y = f(params, x) with a Leva control panel for params.
+
+         (plot-with-params
+           (fn [{:keys [m k]} t] (* m (Math/sin (* k t))))
+           {:m {:value 1 :min 0 :max 5 :step 0.05}
+            :k {:value 1 :min 0.1 :max 5 :step 0.05}}
+           [0 (* 2 Math/PI)]
+           [-5 5])
+
+       params-spec is a map of param-key → Leva control config. Each
+       :value seeds the initial slider value; :min, :max, :step shape
+       the slider. f receives the current params map as its first arg
+       and the x-sample as its second.\"
+      ([f params-spec] (plot-with-params f params-spec [-5 5] [-5 5]))
+      ([f params-spec x-range] (plot-with-params f params-spec x-range [-5 5]))
+      ([f params-spec x-range y-range]
+       [plot-with-params-impl f params-spec x-range y-range]))
 
     ;; Inline the frame test rather than naming it — emmy.env already
     ;; exports a `frame?` (manifold reference-frame predicate), and a

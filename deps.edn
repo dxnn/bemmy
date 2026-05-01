@@ -14,5 +14,4 @@
                  org.babashka/sci
                  org.mentat/mathbox.cljs
                  org.mentat/jsxgraph.cljs
-                 org.mentat/leva.cljs
                  org.mentat/mathlive.cljs]}}}

@@ -1,9 +1,11 @@
 [{:name       scittle/emmy
   :namespaces [emmy.env
                emmy.mafs
+               emmy.leva
                emmy.viewer
                emmy.viewer.compile
                emmy.viewer.physics
+               leva.core leva.schema
                mafs.core mafs.coordinates mafs.plot mafs.line mafs.vec]
   :js         "./scittle.emmy.js"
   :shadow-config
@@ -13,7 +15,9 @@
                    :entries    [scittle.emmy
                                 emmy.sci
                                 mafs.sci
+                                leva.sci
                                 emmy.mafs
+                                emmy.leva
                                 emmy.viewer
                                 emmy.viewer.compile
                                 emmy.viewer.physics]}}}}]
