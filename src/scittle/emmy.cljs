@@ -74,12 +74,15 @@
                [mafs.coordinates/Cartesian]]
               drawables)))
 
-    (defn frame? [v]
-      (and (some? v)
-           (try (and (instance? cljs.core/Atom v)
-                     (let [m (deref v)]
-                       (and (map? m) (vector? (:drawables m)))))
-                (catch :default _ false))))
-
+    ;; Inline the frame test rather than naming it — emmy.env already
+    ;; exports a `frame?` (manifold reference-frame predicate), and a
+    ;; defn here collides at SCI analysis time, aborting the rest of
+    ;; this eval-string.
     (defn maybe-show [v]
-      (if (frame? v) (show v) v))"))
+      (if (and (some? v)
+               (try (and (instance? cljs.core/Atom v)
+                         (let [m (deref v)]
+                           (and (map? m) (vector? (:drawables m)))))
+                    (catch :default _ false)))
+        (show v)
+        v))"))
