@@ -12,6 +12,9 @@
           href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
 
+    <!-- SICM (Scheme) → Emmy (Clojure) translator, exposes window.SicmToEmmy -->
+    <script src="sicm2emmy.js"></script>
+
     <!-- CodeMirror 6 + nextjournal/clojure-mode loaded via esm.sh.
          The "codemirror" meta-package's basicSetup didn't survive esm.sh's
          wrapper, so we import the constituent @codemirror/* packages
@@ -130,6 +133,54 @@
         border: 1px dashed #c0c8d0; border-radius: 4px; cursor: pointer;
       }
       .pages .page-add:hover { background: #fff; color: #1f883d; }
+
+      /* SICM → Emmy translator shelf */
+      .shelf {
+        display: flex; flex-direction: column;
+        max-height: 50%; flex-shrink: 0;
+        border-bottom: 1px solid #d0d7de; background: #f6f8fa;
+      }
+      .shelf-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0.4rem 0.75rem;
+        background: #fff; border-bottom: 1px solid #d0d7de;
+      }
+      .shelf-title { font-size: 0.75rem; font-weight: 600; color: #1f2933; }
+      .shelf-close {
+        background: none; border: 0; font-size: 1.25rem; line-height: 1;
+        cursor: pointer; color: #57606a; padding: 0 0.25rem;
+      }
+      .shelf-body { display: flex; flex: 1; min-height: 140px; }
+      .shelf-pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+      .shelf-pane + .shelf-pane { border-left: 1px solid #d0d7de; }
+      .shelf-sublabel {
+        padding: 0.2rem 0.6rem;
+        font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;
+        color: #57606a; background: #eef1f4; border-bottom: 1px solid #d0d7de;
+      }
+      .shelf-textarea {
+        flex: 1; min-height: 100px;
+        border: 0; outline: none; padding: 0.5rem 0.75rem;
+        font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px;
+        line-height: 1.5; background: #fff; resize: none; tab-size: 2;
+      }
+      .shelf-toolbar {
+        display: flex; gap: 0.75rem; align-items: center;
+        padding: 0.4rem 0.75rem;
+        background: #fff; border-top: 1px solid #d0d7de;
+      }
+      .shelf-toolbar .hint { font-size: 0.7rem; color: #57606a; }
+      .shelf-toggle {
+        margin-left: 0.5rem;
+        padding: 0.25rem 0.6rem; font-size: 0.75rem;
+        background: transparent; color: #57606a;
+        border: 1px dashed #c0c8d0; border-radius: 4px; cursor: pointer;
+      }
+      .shelf-toggle:hover { background: #fff; color: #1f883d; }
+      .shelf-toggle.active {
+        background: #1f883d; color: #fff;
+        border: 1px solid #1a7f37;
+      }
 
       /* Tweaks for highlighted code in the result pane */
       .form-snippet, .pr {

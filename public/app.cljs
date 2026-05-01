@@ -228,6 +228,62 @@
     :reagent-render
     (fn [_] [:div.cm-host {:ref mount-cm!}])}))
 
+;; --- SICM → Emmy translator shelf ------------------------------------------
+
+(defonce !shelf (r/atom {:open? false :input "" :output ""}))
+
+(defn- translate-scheme [src]
+  (try
+    (if (exists? js/SicmToEmmy)
+      (.translate js/SicmToEmmy src)
+      ";; SicmToEmmy not loaded — check sicm2emmy.js script tag.")
+    (catch :default e
+      (str ";; Translation error: " (or (.-message e) (str e))))))
+
+(defn- on-shelf-input [src]
+  (swap! !shelf assoc :input src :output (translate-scheme src)))
+
+(defn- insert-at-cursor! []
+  (when-let [view @!view]
+    (let [output (:output @!shelf)]
+      (when-not (clojure.string/blank? output)
+        (let [sel  (.. view -state -selection -main)
+              from (.-from sel)
+              to   (.-to sel)]
+          (.dispatch view #js {:changes #js {:from from :to to :insert output}})
+          (.focus view)
+          (swap! !shelf assoc :open? false))))))
+
+(defn- shelf []
+  (let [{:keys [open? input output]} @!shelf]
+    (when open?
+      [:div.shelf
+       [:div.shelf-header
+        [:span.shelf-title "SICM (Scheme) → Emmy (Clojure)"]
+        [:button.shelf-close
+         {:on-click #(swap! !shelf assoc :open? false)
+          :title    "Close"} "×"]]
+       [:div.shelf-body
+        [:div.shelf-pane
+         [:div.shelf-sublabel "Paste Scheme"]
+         [:textarea.shelf-textarea
+          {:value       input
+           :spell-check false
+           :placeholder ";; Paste SICM / scmutils Scheme here…"
+           :on-change   #(on-shelf-input (.. % -target -value))}]]
+        [:div.shelf-pane
+         [:div.shelf-sublabel "Translated Clojure"]
+         [:textarea.shelf-textarea
+          {:value     output
+           :read-only true
+           :spell-check false}]]]
+       [:div.shelf-toolbar
+        [:button {:on-click insert-at-cursor!
+                  :disabled (clojure.string/blank? output)}
+         "Insert at cursor"]
+        [:span.hint
+         "Drops the translated text where the editor caret is."]]])))
+
 (defn- pages-bar []
   (let [{:keys [pages current]} @!pages]
     [:div.pages
@@ -272,9 +328,15 @@
     [:div.pane
      [:div.label "Code"]
      [pages-bar]
+     [shelf]
      [cm-editor]
      [:div.toolbar
-      [:button {:on-click eval!} "Evaluate"]]]
+      [:button {:on-click eval!} "Evaluate"]
+      [:button.shelf-toggle
+       {:class    (when (:open? @!shelf) "active")
+        :on-click #(swap! !shelf update :open? not)
+        :title    "Toggle SICM → Emmy translator"}
+       "SICM → Emmy"]]]
     [:div.pane
      [:div.label "Result"]
      [result-pane]]]])
