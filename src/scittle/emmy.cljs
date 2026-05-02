@@ -126,21 +126,26 @@
 
     (defn ^:private animate-impl [f [x-min x-max] [y-min y-max] speed]
       ;; Form-2 component: outer mounts a 60Hz timer that advances a
-      ;; reagent atom; inner derefs it and rebuilds the OfX y-fn so the
-      ;; curve morphs over time. Cleans up the timer on unmount.
-      (let [!t    (reagent.core/atom 0)
-            !last (atom (.now js/Date))
-            timer (atom nil)]
+      ;; reagent atom from elapsed-since-mount; inner derefs it and
+      ;; rebuilds the OfX y-fn so the curve morphs over time. The timer
+      ;; uses cljs.core arithmetic explicitly — emmy.env's :refer :all
+      ;; shadows +, -, /, *, and emmy's / on integers preserves rationals
+      ;; that eventually overflow into BigInt, breaking Math/sin et al.
+      (let [!t     (reagent.core/atom 0)
+            !start (atom nil)
+            timer  (atom nil)]
         (reagent.core/create-class
           {:component-did-mount
            (fn [_]
+             (reset! !start (.now js/Date))
              (reset! timer
                (js/setInterval
                  (fn []
-                   (let [now (.now js/Date)
-                         dt  (/ (- now (deref !last)) 1000)]
-                     (reset! !last now)
-                     (swap! !t + (* speed dt))))
+                   (let [elapsed (cljs.core//
+                                  (cljs.core/- (.now js/Date)
+                                               (deref !start))
+                                  1000)]
+                     (reset! !t (cljs.core/* speed elapsed))))
                  16)))
            :component-will-unmount
            (fn [_] (when (deref timer) (js/clearInterval (deref timer))))
