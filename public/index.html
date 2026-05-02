@@ -254,6 +254,25 @@
       }
       .pages .page-add:hover { background: var(--tab-bg-hover); }
 
+      /* System pages dropdown — sits at the left of the page tabs row.
+         Visually a .page tab; clicking opens a small menu. */
+      .system-dropdown { position: relative; display: inline-block; }
+      .system-menu {
+        position: absolute; top: calc(100% + 4px); left: 0;
+        min-width: 140px; z-index: 10;
+        background: var(--surface); color: var(--text);
+        border: 1px solid var(--tab-active-bd); border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        padding: 0.15rem 0;
+      }
+      .system-menu-item {
+        padding: 0.25rem 0.65rem; font-size: 0.75rem; cursor: pointer;
+        white-space: nowrap;
+      }
+      .system-menu-item:hover {
+        background: var(--tab-bg-hover); color: var(--tab-active-fg);
+      }
+
       /* SICM → Emmy translator shelf (sits above the toolbar) */
       .shelf {
         display: flex; flex-direction: column;

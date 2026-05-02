@@ -107,39 +107,104 @@ gfx-win   ; auto-shows the accumulated curves
      :xy (fn [t] (up (cos t) (sin t)))}))
 ")
 
+;; --- System pages: read-only templates baked into the build. Editing
+;; one transparently forks it into a fresh user page so the template
+;; itself stays canonical and updates whenever we ship new content.
+(def system-pages
+  {"Default"  default-page
+   "Graphics" graphics-page})
+
 ;; --- Pages: named source buffers persisted in localStorage. ----------------
 
 (def storage-key "emmy-playground/v1")
 
+(defn- next-fork-name
+  "Generate 'base 1', 'base 2', ... that doesn't already exist."
+  [base existing]
+  (loop [n 1]
+    (let [candidate (str base " " n)]
+      (if (contains? existing candidate)
+        (recur (inc n))
+        candidate))))
+
+(defn- migrate-state
+  "Bring older state shapes forward.
+   - :current as a string (old shape) becomes [:user name].
+   - User pages whose name matches a system page get either dropped
+     (content matches exactly) or renamed to 'name 1' (user has edits)."
+  [{:keys [pages current] :as state}]
+  (let [pages (or pages {})
+        current* (cond
+                   (and (vector? current) (= 2 (count current)))
+                     [(keyword (first current)) (second current)]
+                   (string? current) [:user current]
+                   :else [:system "Default"])
+        [pages* current**]
+        (reduce
+         (fn [[ps cur] [sname scontent]]
+           (cond
+             (not (contains? ps sname)) [ps cur]
+             (= scontent (get ps sname))
+             [(dissoc ps sname)
+              (if (= cur [:user sname]) [:system sname] cur)]
+             :else
+             (let [nn (next-fork-name sname (dissoc ps sname))]
+               [(-> ps (dissoc sname) (assoc nn (get ps sname)))
+                (if (= cur [:user sname]) [:user nn] cur)])))
+         [pages current*]
+         system-pages)]
+    {:pages pages* :current current**}))
+
 (defn- load-state []
-  (or (try (when-let [s (.getItem js/localStorage storage-key)]
-             (let [obj (js/JSON.parse s)]
-               {:pages   (js->clj (.-pages obj))
-                :current (.-current obj)}))
-           (catch :default _ nil))
-      ;; First-time visitors get both seed pages. Returning users keep
-      ;; whatever they have — including any edits to or deletion of
-      ;; Graphics.
-      {:pages   {"Default"  default-page
-                 "Graphics" graphics-page}
-       :current "Default"}))
+  (-> (or (try (when-let [s (.getItem js/localStorage storage-key)]
+                 (let [obj (js/JSON.parse s)]
+                   {:pages   (js->clj (.-pages obj))
+                    :current (js->clj (.-current obj))}))
+               (catch :default _ nil))
+          ;; First-time visitor: no user pages yet, viewing the system
+          ;; Default. They can fork it by typing.
+          {:pages {} :current [:system "Default"]})
+      migrate-state))
 
 (defn- save-state! [{:keys [pages current]}]
   (.setItem js/localStorage storage-key
             (js/JSON.stringify #js {:pages   (clj->js pages)
-                                    :current current})))
+                                    :current (clj->js
+                                              [(name (first current))
+                                               (second current)])})))
 
 (defonce !pages (r/atom (load-state)))
 (defonce _persist (add-watch !pages :persist
                              (fn [_ _ _ new] (save-state! new))))
 
 (defn- current-page-source []
-  (get-in @!pages [:pages (:current @!pages)] ""))
+  (let [{:keys [current pages]} @!pages
+        [t n] current]
+    (case t
+      :user   (get pages n "")
+      :system (get system-pages n "")
+      "")))
 
-(defn- update-current-source! [src]
-  (let [cur (:current @!pages)]
-    (when (not= src (get-in @!pages [:pages cur]))
-      (swap! !pages assoc-in [:pages cur] src))))
+(defn- update-current-source!
+  "Persist edits to the current user page, or fork-on-edit if the
+   current view is a system page (template). The fork picks the next
+   unused 'base N' name in user pages and switches to it. Programmatic
+   loads of system content into CM produce an unchanged src and don't
+   trigger a fork."
+  [src]
+  (let [{:keys [current pages] :as state} @!pages
+        [t n] current]
+    (case t
+      :system
+      (let [system-src (get system-pages n)]
+        (when (not= src system-src)
+          (let [nn (next-fork-name n pages)]
+            (reset! !pages (-> state
+                               (assoc-in [:pages nn] src)
+                               (assoc :current [:user nn]))))))
+      :user
+      (when (not= src (get pages n))
+        (swap! !pages assoc-in [:pages n] src)))))
 
 (defonce !view   (atom nil))            ; the CodeMirror EditorView
 (defonce !result (r/atom {:status :idle}))
@@ -172,32 +237,41 @@ gfx-win   ; auto-shows the accumulated curves
                (.setItem js/localStorage ui-storage-key
                          (js/JSON.stringify (clj->js new))))))
 
-(defn- switch-page! [name]
+(defn- load-into-editor! [src]
   (when-let [view @!view]
-    (when-let [src (get-in @!pages [:pages name])]
-      (swap! !pages assoc :current name)
-      (.dispatch view #js {:changes #js {:from   0
-                                         :to     (.. view -state -doc -length)
-                                         :insert src}}))))
+    (.dispatch view #js {:changes #js {:from   0
+                                       :to     (.. view -state -doc -length)
+                                       :insert src}})))
+
+(defn- switch-to-user! [n]
+  (when (contains? (:pages @!pages) n)
+    (swap! !pages assoc :current [:user n])
+    (load-into-editor! (get-in @!pages [:pages n]))))
+
+(defn- switch-to-system! [n]
+  (when (contains? system-pages n)
+    (swap! !pages assoc :current [:system n])
+    (load-into-editor! (get system-pages n))))
 
 (defn- new-page! []
-  (when-let [name (some-> (js/prompt "Page name:")
-                          .trim
-                          not-empty)]
-    (when-not (contains? (:pages @!pages) name)
-      (swap! !pages assoc-in [:pages name] ";; New page\n"))
-    (switch-page! name)))
+  (when-let [n (some-> (js/prompt "Page name:") .trim not-empty)]
+    (when-not (contains? (:pages @!pages) n)
+      (swap! !pages assoc-in [:pages n] ";; New page\n"))
+    (switch-to-user! n)))
 
-(defn- delete-page! [name]
-  (when (and (> (count (:pages @!pages)) 1)
-             (js/confirm (str "Delete \"" name "\"?")))
+(defn- delete-page! [n]
+  (when (js/confirm (str "Delete \"" n "\"?"))
     (let [{:keys [pages current]} @!pages
-          new-pages   (dissoc pages name)
-          new-current (if (= current name)
-                        (first (sort (keys new-pages)))
-                        current)]
+          new-pages   (dissoc pages n)
+          deleting?   (= current [:user n])
+          new-current (cond
+                        (not deleting?)  current
+                        (seq new-pages)  [:user (first (sort (keys new-pages)))]
+                        :else            [:system "Default"])]
       (reset! !pages {:pages new-pages :current new-current})
-      (when (= current name) (switch-page! new-current)))))
+      (when deleting?
+        (let [[t nn] new-current]
+          (case t :user (switch-to-user! nn) :system (switch-to-system! nn)))))))
 
 (defn- normalize-ws
   "SCI's reader treats non-ASCII whitespace (NBSP, em-space, line-separator
@@ -472,23 +546,55 @@ gfx-win   ; auto-shows the accumulated curves
         [:span.hint
          "Drops the translated text where the editor caret is."]]])))
 
+(defonce !system-menu-open? (r/atom false))
+
+(defonce _close-system-menu-on-outside
+  (.addEventListener
+   js/document "mousedown"
+   (fn [e]
+     (when @!system-menu-open?
+       (let [dd (.querySelector js/document ".system-dropdown")]
+         (when (and dd (not (.contains dd (.-target e))))
+           (reset! !system-menu-open? false)))))))
+
+(defn- system-dropdown []
+  (let [[t cur-name]   (:current @!pages)
+        on-system?     (= t :system)
+        open?          @!system-menu-open?]
+    [:span.system-dropdown
+     [:span.page
+      {:class    (when on-system? "active")
+       :on-click #(swap! !system-menu-open? not)
+       :title    "System pages — read-only templates. Type to fork into your pages."}
+      [:span.page-name (str (if on-system? cur-name "System") " ▾")]]
+     (when open?
+       [:div.system-menu
+        (for [n (sort (keys system-pages))]
+          ^{:key n}
+          [:div.system-menu-item
+           {:on-click (fn []
+                        (switch-to-system! n)
+                        (reset! !system-menu-open? false))}
+           n])])]))
+
 (defn- pages-bar []
-  (let [{:keys [pages current]} @!pages]
+  (let [{:keys [pages current]} @!pages
+        [t cur-name] current]
     [:div.pages
-     (for [name (sort (keys pages))]
-       (let [active? (= name current)]
-         ^{:key name}
+     [system-dropdown]
+     (for [n (sort (keys pages))]
+       (let [active? (and (= t :user) (= n cur-name))]
+         ^{:key n}
          [:span.page
           {:class    (when active? "active")
-           :on-click (when-not active? #(switch-page! name))}
-          [:span.page-name name]
-          (when (> (count pages) 1)
-            [:span.page-x
-             {:on-click (fn [e]
-                          (.stopPropagation e)
-                          (delete-page! name))
-              :title    (str "Delete " name)}
-             "×"])]))
+           :on-click (when-not active? #(switch-to-user! n))}
+          [:span.page-name n]
+          [:span.page-x
+           {:on-click (fn [e]
+                        (.stopPropagation e)
+                        (delete-page! n))
+            :title    (str "Delete " n)}
+           "×"]]))
      [:button.page-add {:on-click new-page! :title "New page"} "+"]]))
 
 (defn- hiccup?
