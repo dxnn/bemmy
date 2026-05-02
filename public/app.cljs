@@ -154,6 +154,18 @@ gfx-win   ; auto-shows the accumulated curves
       {:vim-on false}))
 
 (defonce !ui (r/atom (load-ui)))
+
+(defn- prefers-dark? []
+  (try (.-matches (.matchMedia js/window "(prefers-color-scheme: dark)"))
+       (catch :default _ false)))
+
+(defonce !dark? (r/atom (prefers-dark?)))
+
+(defonce _theme-listener
+  (try
+    (.addEventListener (.matchMedia js/window "(prefers-color-scheme: dark)")
+                       "change" (fn [e] (reset! !dark? (.-matches e))))
+    (catch :default _ nil)))
 (defonce _persist-ui
   (add-watch !ui :save
              (fn [_ _ _ new]
@@ -386,6 +398,8 @@ gfx-win   ; auto-shows the accumulated curves
                                                       js/CM.historyKeymap))
                  js/CM.completeKeymap      (conj (.of js/CM.keymap
                                                       js/CM.completeKeymap)))
+          exts (cond-> exts
+                 (and js/CM.oneDark @!dark?) (conj js/CM.oneDark))
           exts (cond->> exts
                  (and js/CM.vim (:vim-on @!ui)) (into [(js/CM.vim)]))
           state (.create js/CM.EditorState
@@ -526,9 +540,10 @@ gfx-win   ; auto-shows the accumulated curves
     [:div.pane
      [:div.label "Code"]
      [pages-bar]
-     ;; Key on vim-on so toggling the vim checkbox forces CM to remount;
-     ;; CM6's vim extension is set at editor construction time.
-     ^{:key (str "cm-vim-" (:vim-on @!ui))} [cm-editor]
+     ;; Key on vim-on AND OS theme so toggling either forces CM to
+     ;; remount; CM6's vim extension and theme are baked in at editor
+     ;; construction time.
+     ^{:key (str "cm-" (:vim-on @!ui) "-" @!dark?)} [cm-editor]
      [shelf]
      [:div.toolbar
       [:button.action {:on-click eval!} "Evaluate"]

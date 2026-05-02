@@ -30,13 +30,14 @@
          directly and compose our own setup. -->
     <script type="module">
       window.cm_ready = (async () => {
-        const [view, state, commands, language, cljs, vim] = await Promise.all([
+        const [view, state, commands, language, cljs, vim, oneDark] = await Promise.all([
           import("https://esm.sh/@codemirror/view@6"),
           import("https://esm.sh/@codemirror/state@6"),
           import("https://esm.sh/@codemirror/commands@6"),
           import("https://esm.sh/@codemirror/language@6"),
           import("https://esm.sh/@nextjournal/clojure-mode"),
-          import("https://esm.sh/@replit/codemirror-vim")
+          import("https://esm.sh/@replit/codemirror-vim"),
+          import("https://esm.sh/@codemirror/theme-one-dark")
         ]);
         window.CM = {
           EditorView:          view.EditorView,
@@ -54,7 +55,8 @@
           defaultHighlightStyle: language.defaultHighlightStyle,
           defaultExtensions:   cljs.default_extensions,
           completeKeymap:      cljs.complete_keymap,
-          vim:                 vim.vim
+          vim:                 vim.vim,
+          oneDark:             oneDark.oneDark
         };
       })();
     </script>
@@ -189,19 +191,19 @@
       }
       button.action:hover { background: var(--action-bg-hover); }
 
-      /* Generic clickable button (page tabs, +, shelf toggle). Quiet
-         neutral — clearly clickable but doesn't fight the action button
-         for attention. */
+      /* Generic clickable button (page tabs, +, shelf toggle).
+         Outlined in the same blue used for the active state so all
+         clickables read as belonging to one family — fill kicks in
+         only when toggled on. */
       button.btn {
         font: inherit; padding: 0.15rem 0.55rem; cursor: pointer;
         background: var(--tab-bg); color: var(--text);
-        border: 1px solid var(--border); border-radius: 4px;
+        border: 1px solid var(--tab-active-bd); border-radius: 4px;
         font-size: 0.75rem;
       }
       button.btn:hover { background: var(--tab-bg-hover); }
       button.btn.is-on {
         background: var(--tab-active-bg); color: var(--tab-active-fg);
-        border-color: var(--tab-active-bd);
       }
 
       /* Checkbox toggle (vim mode). True binary state, semantically a
@@ -228,14 +230,14 @@
       .pages .page {
         display: inline-flex; align-items: center;
         padding: 0.1rem 0.5rem; font-size: 0.75rem;
-        border: 1px solid var(--border); border-radius: 4px;
+        border: 1px solid var(--tab-active-bd); border-radius: 4px;
         background: var(--tab-bg); color: var(--text);
         user-select: none;
       }
       .pages .page:hover { background: var(--tab-bg-hover); }
       .pages .page.active {
         background: var(--tab-active-bg); color: var(--tab-active-fg);
-        border-color: var(--tab-active-bd); cursor: default;
+        cursor: default;
       }
       .pages .page.active:hover { background: var(--tab-active-bg); }
       .pages .page-name { cursor: pointer; }
@@ -246,10 +248,11 @@
       .pages .page-x:hover { opacity: 1; }
       .pages .page-add {
         padding: 0.1rem 0.55rem; font-size: 0.75rem;
-        background: transparent; color: var(--text-muted);
-        border: 1px dashed var(--border); border-radius: 4px; cursor: pointer;
+        background: transparent; color: var(--tab-active-fg);
+        border: 1px dashed var(--tab-active-bd); border-radius: 4px;
+        cursor: pointer;
       }
-      .pages .page-add:hover { background: var(--surface); color: var(--text); }
+      .pages .page-add:hover { background: var(--tab-bg-hover); }
 
       /* SICM → Emmy translator shelf (sits above the toolbar) */
       .shelf {
