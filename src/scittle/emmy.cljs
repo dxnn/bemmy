@@ -10,6 +10,7 @@
             [emmy.viewer.physics]
             [leva.sci]
             [mafs.sci]
+            [mathbox.primitives]
             [mathbox.sci]
             [sci.core :as sci]
             [sci.ctx-store]
@@ -30,7 +31,8 @@
      'emmy.mathbox.plot    (sci/copy-ns emmy.mathbox.plot    (sci/create-ns 'emmy.mathbox.plot))
      'emmy.viewer          (sci/copy-ns emmy.viewer          (sci/create-ns 'emmy.viewer))
      'emmy.viewer.compile  (sci/copy-ns emmy.viewer.compile  (sci/create-ns 'emmy.viewer.compile))
-     'emmy.viewer.physics  (sci/copy-ns emmy.viewer.physics  (sci/create-ns 'emmy.viewer.physics))}}))
+     'emmy.viewer.physics  (sci/copy-ns emmy.viewer.physics  (sci/create-ns 'emmy.viewer.physics))
+     'mathbox.primitives   (sci/copy-ns mathbox.primitives   (sci/create-ns 'mathbox.primitives))}}))
 
 (defn init []
   ;; Emmy itself.
@@ -54,7 +56,8 @@
              '[mafs.coordinates]
              '[mafs.plot]
              '[mafs.line]
-             '[mathbox.core :as mathbox])")
+             '[mathbox.core :as mathbox]
+             '[mathbox.primitives :as mb])")
   ;; SICM-book imperative graphics shim. The book's `frame`,
   ;; `graphics-clear`, `plot-function` etc. mutate a window object; we
   ;; back that with a Reagent-friendly atom and add a `show` that turns

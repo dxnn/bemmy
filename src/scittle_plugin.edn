@@ -9,7 +9,7 @@
                emmy.viewer.physics
                leva.core leva.schema
                mafs.core mafs.coordinates mafs.plot mafs.line mafs.vec
-               mathbox.core]
+               mathbox.core mathbox.primitives]
   :js         "./scittle.emmy.js"
   :shadow-config
   {:modules
@@ -26,4 +26,5 @@
                                 emmy.mathbox.plot
                                 emmy.viewer
                                 emmy.viewer.compile
-                                emmy.viewer.physics]}}}}]
+                                emmy.viewer.physics
+                                mathbox.primitives]}}}}]
