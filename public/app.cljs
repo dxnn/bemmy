@@ -4,21 +4,22 @@
          '[reagent.dom :as rdom]
          '[emmy.env :refer :all])
 
-(def default-page
+(def basics-page
   ";; ====================================================================
-;; BEmmy — Emmy in the Browser
+;; BEmmy — Basics
 ;; ====================================================================
-;; Welcome. This is your scratch page; edits persist in localStorage.
-;; Cmd-Enter (or Ctrl-Enter) evaluates the top-level form your cursor
-;; is on (or all forms in your selection). Pick 'Default ▾' at top-left
-;; for the Graphics tour and any other system pages.
+;; Basic Clojure + Emmy. See SICM for mechanics, Graphics for 2D
+;; visualization, and 3D for WebGL / MathBox examples.
 ;;
 ;; emmy.env is pre-referred, so D, square, simplify, cos, sin, up, down,
-;; literal-function, definite-integral, find-path, etc. are all in scope.
+;; literal-function, definite-integral, etc. are all in scope.
+;;
+;; Cmd-Enter (or Ctrl-Enter) evaluates the top-level form your cursor
+;; is on (or all forms in your selection).
 ;; ====================================================================
 
 
-;; ----- Basic Clojure ---------------------------------------------------
+;; ----- Clojure: arithmetic, let, lambdas ------------------------------
 (+ 1 2 3)
 
 (* 2 3 4)
@@ -26,21 +27,22 @@
 (let [m 2 k 1]
   (Math/sqrt (/ k m)))           ; angular frequency of a harmonic osc.
 
+((fn [x] (* x x)) 7)
+
 
 ;; ----- Symbolic differentiation ---------------------------------------
 ;; D is the derivative operator. Apply it to any function — Clojure or
 ;; Emmy — and you get back a new function.
 
-((D (fn [x] (square x))) 'x)            ; symbolic — returns (* 2 x)
+((D (fn [x] (square x))) 'x)            ; symbolic — (* 2 x)
 
-((D (fn [x] (square x))) 3)             ; numeric  — returns 6
+((D (fn [x] (square x))) 3)             ; numeric  — 6
 
-((D (D (fn [x] (cube x)))) 'x)          ; second derivative of x³ → (* 6 x)
+((D (D (fn [x] (cube x)))) 'x)          ; second derivative of x³
 
 ((D sin) 'x)                            ; (cos x)
 
-;; Composing operators: D applied to a Clojure-only fn that uses
-;; emmy.env's generic +/-/*/sin/cos works seamlessly.
+;; D works on Clojure-only fns that use Emmy's generic ops:
 
 ((D (fn [x] (+ (sin x) (* x x)))) 'x)
 
@@ -53,11 +55,10 @@
   (+ (square (sin 'x))
      (square (cos 'x))))                ; → 1
 
-(simplify
-  ((D (fn [x] (* x x x))) 'x))
+(simplify ((D (fn [x] (* x x x))) 'x))
 
 
-;; ----- Vectors, tuples, structures -----------------------------------
+;; ----- Vectors, tuples, structures ------------------------------------
 ;; Emmy uses 'up' (column / position) and 'down' (row / momentum)
 ;; tuples to mirror the geometric distinction.
 
@@ -65,8 +66,26 @@
 (down 1 2 3)
 (* (down 1 2 3) (up 4 5 6))             ; inner product → 32
 
+;; Differentiating a vector-valued function gives a vector of partials.
 
-;; ----- Lagrangian mechanics, symbolically -----------------------------
+((D (fn [r] (up (cos r) (sin r)))) 't)
+")
+
+(def sicm-page
+  ";; ====================================================================
+;; BEmmy — SICM
+;; ====================================================================
+;; Lagrangian mechanics, action principles, find-path, etc. Lean on
+;; Emmy's emmy.env (pre-referred): D, square, sin, cos, up, down,
+;; coordinate, velocity, Lagrange-equations, find-path, etc.
+;;
+;; Translating SICM book code: click 'SICM → Emmy' in the toolbar to
+;; open a translator panel — paste scmutils Scheme on the left, click
+;; 'Insert at cursor' to drop the converted Clojure into this editor.
+;; ====================================================================
+
+
+;; ----- The harmonic-oscillator Lagrangian -----------------------------
 ;; A Lagrangian L(t, q, v) for the harmonic oscillator is m·v²/2 −
 ;; k·q²/2. Define it the SICM-book way: a curried function that takes
 ;; the parameters first and returns a function of the local tuple.
@@ -78,14 +97,16 @@
       (- (* 1/2 m (square v))
          (* 1/2 k (square q))))))
 
-;; Lagrange-equations turns a Lagrangian into the equations of motion
-;; as functions of t.
+
+;; ----- Equations of motion --------------------------------------------
+;; Lagrange-equations turns a Lagrangian into the Euler–Lagrange
+;; equations as functions of t.
 
 (((Lagrange-equations (L-harmonic 'm 'k))
   (literal-function 'q))
  't)
 
-;; The output is the EoM expression: m·q''(t) + k·q(t) = 0.
+;; That's m·q''(t) + k·q(t) = 0.
 
 
 ;; ----- Path-finding numerically ---------------------------------------
@@ -98,23 +119,86 @@
            2)
 
 ;; The result is a polynomial path you can call as a function:
+
 (let [path (find-path (L-harmonic 1.0 1.0)
                       0.0 1.0 (/ Math/PI 2) 0.0 2)]
-  (path 0.5))                          ; numeric value of q at t=0.5
+  (path 0.5))                          ; q(0.5)
 
 
-;; ----- Quick visualization --------------------------------------------
-;; (plot f) draws y = f(x). Defaults to [-5,5] × [-5,5].
-;; See the Graphics system page for the full tour.
+;; ----- Plot the path --------------------------------------------------
+;; (See Graphics for the full 2D visualization tour.)
 
-(plot Math/sin)
-
-(plot (fn [t] (Math/cos (* 2 t))) [(- Math/PI) Math/PI])
-
-;; The same find-path output, rendered:
 (let [path (find-path (L-harmonic 1.0 1.0)
                       0.0 1.0 (/ Math/PI 2) 0.0 2)]
   (plot path [0 (/ Math/PI 2)] [0 1.2]))
+")
+
+(def graphics-3d-page
+  ";; ====================================================================
+;; BEmmy — 3D Graphics
+;; ====================================================================
+;; 3D visualization via MathBox 2 (WebGL on Three.js). Click and drag
+;; the rendered scene to rotate; scroll to zoom.
+;;
+;; Two namespaces are pre-aliased:
+;;   mathbox  →  mathbox.core         the [mathbox/MathBox] container
+;;   mb       →  mathbox.primitives   Cartesian, Axis, Interval, ...
+;;
+;; MathBox uses a data → draw composition pattern: a 'data' primitive
+;; (Interval, Area, Volume) emits points; a 'draw' primitive (Line,
+;; Surface, Point) consumes them.
+;; ====================================================================
+
+
+;; ----- Cartesian with three axes --------------------------------------
+
+[mathbox/MathBox
+  {:container {:style {:height \"400px\" :width \"100%\"}}}
+  [mb/Cartesian
+    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1 :width 3}]
+    [mb/Axis {:axis 2 :width 3}]
+    [mb/Axis {:axis 3 :width 3}]]]
+
+
+;; ----- A 3D parametric helix ------------------------------------------
+;; Interval emits points along t; Line draws them as a curve.
+
+[mathbox/MathBox
+  {:container {:style {:height \"400px\" :width \"100%\"}}}
+  [mb/Cartesian
+    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}]
+    [mb/Axis {:axis 2}]
+    [mb/Axis {:axis 3}]
+    [mb/Interval
+      {:range    [0 (* 4 Math/PI)]
+       :width    256
+       :channels 3
+       :expr     (fn [emit t i time]
+                   (emit (Math/cos t) (* 0.2 t) (Math/sin t)))}]
+    [mb/Line {:width 4 :color \"#3090ff\"}]]]
+
+
+;; ----- A 3D surface z = f(x, y) ---------------------------------------
+;; Area emits a grid of points; Surface draws them.
+
+[mathbox/MathBox
+  {:container {:style {:height \"400px\" :width \"100%\"}}}
+  [mb/Cartesian
+    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}]
+    [mb/Axis {:axis 2}]
+    [mb/Axis {:axis 3}]
+    [mb/Area
+      {:rangeX   [-2 2]
+       :rangeY   [-2 2]
+       :width    32
+       :height   32
+       :channels 3
+       :expr     (fn [emit x y i j time]
+                   (emit x (Math/sin (* x y)) y))}]
+    [mb/Surface {:shaded true :color \"#3090ff\"}]]]
 ")
 
 (def graphics-page
@@ -226,8 +310,10 @@ gfx-win   ; auto-shows the accumulated curves
 ;; one transparently forks it into a fresh user page so the template
 ;; itself stays canonical and updates whenever we ship new content.
 (def system-pages
-  {"Default"  default-page
-   "Graphics" graphics-page})
+  {"Basics"   basics-page
+   "SICM"     sicm-page
+   "Graphics" graphics-page
+   "3D"       graphics-3d-page})
 
 ;; --- Pages: named source buffers persisted in localStorage. ----------------
 
@@ -289,7 +375,16 @@ gfx-win   ; auto-shows the accumulated curves
                             {:pages   (js->clj (.-pages obj))
                              :current [(keyword (first c)) (second c)]}))
                         (catch :default _ nil))
-                   {:pages {} :current [:system "Default"]})
+                   {:pages {} :current [:system "Basics"]})
+        ;; Validate :current — the page might point to a system page we
+        ;; renamed/removed. Fall back to Basics so the editor mounts.
+        [t cur-name] (:current stored)
+        valid?  (case t
+                  :user   (contains? (:pages stored) cur-name)
+                  :system (contains? system-pages cur-name)
+                  false)
+        stored  (cond-> stored
+                  (not valid?) (assoc :current [:system "Basics"]))
         shared (share-payload-from-url)]
     (if (and shared (string? (:src shared)))
       (let [taken  (into (set (keys (:pages stored)))
