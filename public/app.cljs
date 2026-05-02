@@ -293,11 +293,16 @@ gfx-win   ; auto-shows the accumulated curves
       (let [taken  (into (set (keys (:pages stored)))
                          (keys system-pages))
             target (next-free-name (or (not-empty (:name shared)) "Shared")
-                                   taken)]
+                                   taken)
+            state  (-> stored
+                       (assoc-in [:pages target] (:src shared))
+                       (assoc :current [:user target]))]
         (clear-url-hash!)
-        (-> stored
-            (assoc-in [:pages target] (:src shared))
-            (assoc :current [:user target])))
+        ;; Persist the imported page immediately. The :persist watch
+        ;; only fires on subsequent !pages changes, so without this an
+        ;; unedited imported page would vanish on the next reload.
+        (save-state! state)
+        state)
       stored)))
 
 (defn- save-state! [{:keys [pages current]}]
