@@ -242,16 +242,48 @@ gfx-win   ; auto-shows the accumulated curves
         (recur (inc n))
         candidate))))
 
+;; --- Share-by-URL ---------------------------------------------------------
+;; Source is base64-of-utf8 in the URL hash under #s=…
+;; On first load with such a hash, we drop the snippet into a fresh user
+;; page named "Shared" (or "Shared N") and clear the hash so refreshes
+;; don't keep re-importing.
+
+(defn- encode-share [s]
+  (.btoa js/window (js/unescape (js/encodeURIComponent s))))
+
+(defn- decode-share [b64]
+  (try (js/decodeURIComponent (js/escape (.atob js/window b64)))
+       (catch :default _ nil)))
+
+(defn- share-payload-from-url []
+  (let [h (.. js/window -location -hash)]
+    (when (and (string? h)
+               (.startsWith h "#s="))
+      (decode-share (subs h 3)))))
+
+(defn- clear-url-hash! []
+  (try
+    (.replaceState js/history nil ""
+                   (str (.. js/window -location -pathname)
+                        (.. js/window -location -search)))
+    (catch :default _ nil)))
+
 (defn- load-state []
-  (or (try (when-let [s (.getItem js/localStorage storage-key)]
-             (let [obj (js/JSON.parse s)
-                   c   (js->clj (.-current obj))]
-               {:pages   (js->clj (.-pages obj))
-                :current [(keyword (first c)) (second c)]}))
-           (catch :default _ nil))
-      ;; First-time visitor: no user pages yet, viewing the system
-      ;; Default. They can fork it by typing.
-      {:pages {} :current [:system "Default"]}))
+  (let [stored (or (try (when-let [s (.getItem js/localStorage storage-key)]
+                          (let [obj (js/JSON.parse s)
+                                c   (js->clj (.-current obj))]
+                            {:pages   (js->clj (.-pages obj))
+                             :current [(keyword (first c)) (second c)]}))
+                        (catch :default _ nil))
+                   {:pages {} :current [:system "Default"]})
+        shared (share-payload-from-url)]
+    (if shared
+      (let [n (next-fork-name "Shared" (:pages stored))]
+        (clear-url-hash!)
+        (-> stored
+            (assoc-in [:pages n] shared)
+            (assoc :current [:user n])))
+      stored)))
 
 (defn- save-state! [{:keys [pages current]}]
   (.setItem js/localStorage storage-key
@@ -306,6 +338,29 @@ gfx-win   ; auto-shows the accumulated curves
       {:vim-on false}))
 
 (defonce !ui (r/atom (load-ui)))
+
+;; A small ephemeral notification for things like "Share URL copied".
+(defonce !toast (r/atom nil))
+(defonce ^:private !toast-timer (atom nil))
+
+(defn- toast! [msg]
+  (reset! !toast msg)
+  (when-let [t @!toast-timer] (js/clearTimeout t))
+  (reset! !toast-timer
+          (js/setTimeout #(do (reset! !toast nil)
+                              (reset! !toast-timer nil))
+                         2200)))
+
+(defn- share-current! []
+  (when-let [src (current-source)]
+    (let [url (str (.. js/window -location -origin)
+                   (.. js/window -location -pathname)
+                   "#s=" (encode-share src))]
+      (-> (.. js/navigator -clipboard (writeText url))
+          (.then  (fn [_] (toast! "Share URL copied to clipboard")))
+          (.catch (fn [_]
+                    (js/prompt "Copy this URL:" url)
+                    (toast! "Copy this URL")))))))
 
 (defn- prefers-dark? []
   (try (.-matches (.matchMedia js/window "(prefers-color-scheme: dark)"))
@@ -755,10 +810,16 @@ gfx-win   ; auto-shows the accumulated curves
        [:input {:type      "checkbox"
                 :checked   (boolean (:vim-on @!ui))
                 :on-change #(swap! !ui update :vim-on not)}]
-       "vim"]]]
+       "vim"]
+      [:button.btn.share-btn
+       {:on-click share-current!
+        :title    "Copy a URL that loads this page's source for someone else"}
+       "Share"]]]
     [:div.pane
      [:div.label "Result"]
-     [result-pane]]]])
+     [result-pane]]]
+   (when-let [m @!toast]
+     [:div.toast m])])
 
 ;; Wait for the ESM-loaded CodeMirror modules before mounting.
 (.then js/window.cm_ready
