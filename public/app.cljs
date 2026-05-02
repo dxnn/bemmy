@@ -199,6 +199,95 @@
        :expr     (fn [emit x y i j time]
                    (emit x (Math/sin (* x y)) y))}]
     [mb/Surface {:shaded true :color \"#3090ff\"}]]]
+
+
+;; ====================================================================
+;; SICM exercises
+;; ====================================================================
+;;
+;; The 'time' arg in :expr callbacks is MathBox's global animation
+;; clock; reference it inside expr to animate without writing your own
+;; timer. The clock advances automatically.
+
+
+;; ----- Animated rotating helix ----------------------------------------
+;; Same helix as above, but rotated by `time` so it spins continuously.
+
+[mathbox/MathBox
+  {:container {:style {:height \"400px\" :width \"100%\"}}}
+  [mb/Cartesian
+    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    [mb/Interval
+      {:range    [0 (* 4 Math/PI)]
+       :width    256
+       :channels 3
+       :expr     (fn [emit t i time]
+                   (emit (Math/cos (+ t time))
+                         (* 0.2 t)
+                         (Math/sin (+ t time))))}]
+    [mb/Line {:width 4 :color \"#3090ff\"}]]]
+
+
+;; ----- 3D Lissajous knot ----------------------------------------------
+;; Three perpendicular harmonic oscillations with rational frequency
+;; ratios trace closed knot-like curves — what a particle in a 3D
+;; anisotropic harmonic well would do.
+
+[mathbox/MathBox
+  {:container {:style {:height \"400px\" :width \"100%\"}}}
+  [mb/Cartesian
+    {:range [[-1.5 1.5] [-1.5 1.5] [-1.5 1.5]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    [mb/Interval
+      {:range    [0 (* 2 Math/PI)]
+       :width    512
+       :channels 3
+       :expr     (fn [emit t i time]
+                   (emit (Math/cos (* 3 t))
+                         (Math/sin (* 4 t))
+                         (Math/sin (* 5 t))))}]
+    [mb/Line {:width 3 :color \"#a060ff\"}]]]
+
+
+;; ----- Lagrangian L(q, v) = ½v² − ½q² as a surface --------------------
+;; The harmonic-oscillator Lagrangian over its (q, v) phase space.
+;; Saddle-shaped: kinetic energy lifts in v, potential energy depresses
+;; in q.
+
+[mathbox/MathBox
+  {:container {:style {:height \"400px\" :width \"100%\"}}}
+  [mb/Cartesian
+    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    [mb/Area
+      {:rangeX   [-1.5 1.5]
+       :rangeY   [-1.5 1.5]
+       :width    32
+       :height   32
+       :channels 3
+       :expr     (fn [emit q v i j time]
+                   (emit q (- (* 0.5 v v) (* 0.5 q q)) v))}]
+    [mb/Surface {:shaded true :color \"#3090ff\"}]]]
+
+
+;; ----- Animated harmonic-oscillator orbit -----------------------------
+;; A particle's phase-space trajectory unwound along time. The (q, v)
+;; circle from Graphics is here a helix in (q, t, v) space, lifting
+;; with t as the particle oscillates.
+
+[mathbox/MathBox
+  {:container {:style {:height \"400px\" :width \"100%\"}}}
+  [mb/Cartesian
+    {:range [[-1.5 1.5] [0 (* 2 Math/PI)] [-1.5 1.5]] :scale [1 1.5 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    [mb/Interval
+      {:range    [0 (* 2 Math/PI)]
+       :width    256
+       :channels 3
+       :expr     (fn [emit t i time]
+                   (emit (Math/cos t) t (- (Math/sin t))))}]
+    [mb/Line {:width 4 :color \"#1f883d\"}]]]
 ")
 
 (def graphics-page
@@ -304,6 +393,60 @@ gfx-win   ; auto-shows the accumulated curves
   (emmy.mafs/parametric
     {:t [0 6.28]
      :xy (fn [t] (up (cos t) (sin t)))}))
+
+
+;; ====================================================================
+;; SICM exercises
+;; ====================================================================
+
+
+;; ----- Optimized harmonic-oscillator path -----------------------------
+;; The numerically-optimized path for L = ½v² − ½q² between (0, 1) and
+;; (π/2, 0) should track cos(t) closely.
+
+(plot
+  (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
+  [0 (/ Math/PI 2)] [0 1.2])
+
+
+;; ----- Phase portrait of the harmonic oscillator ----------------------
+;; In phase space (q, v), motion under L = ½v² − ½q² traces a circle.
+;; Mafs's Parametric draws (x(t), y(t)) over a t-range.
+
+[mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
+ [mafs.coordinates/Cartesian]
+ [mafs.plot/Parametric
+   {:t  [0 (* 2 Math/PI)]
+    :xy (fn [t] [(Math/cos t) (- (Math/sin t))])}]]
+
+
+;; ----- Travelling wave ψ(x, t) = sin(x − ct) --------------------------
+;; animate ticks t for you; Cmd-Enter and watch.
+
+(animate (fn [t x] (Math/sin (- x t)))
+         [(- (* 2 Math/PI)) (* 2 Math/PI)]
+         [-1.5 1.5])
+
+
+;; ----- Standing wave ψ = sin(x) · cos(t) ------------------------------
+;; The classic 'string fixed at both ends' visualization.
+
+(animate (fn [t x] (* (Math/sin x) (Math/cos t)))
+         [(- (* 2 Math/PI)) (* 2 Math/PI)]
+         [-1.5 1.5])
+
+
+;; ----- Damped oscillator with sliders ---------------------------------
+;; Drag γ to see the envelope tighten; drag ω to see the frequency
+;; shift. plot-with-params reactively re-evaluates on each tick.
+
+(plot-with-params
+  (fn [{:keys [omega gamma]} t]
+    (* (Math/exp (- (* gamma t)))
+       (Math/cos (* omega t))))
+  {:omega {:value 2 :min 0.5 :max 6   :step 0.05}
+   :gamma {:value 0.3 :min 0   :max 1.5 :step 0.01}}
+  [0 (* 4 Math/PI)] [-1.2 1.2])
 ")
 
 ;; --- System pages: read-only templates baked into the build. Editing
