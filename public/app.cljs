@@ -35,7 +35,7 @@
 
 ((D (fn [x] (square x))) 3)             ; numeric  — returns 6
 
-(((D (D (fn [x] (cube x)))) 'x))        ; second derivative of x³
+((D (D (fn [x] (cube x)))) 'x)          ; second derivative of x³ → (* 6 x)
 
 ((D sin) 'x)                            ; (cos x)
 
@@ -220,44 +220,16 @@ gfx-win   ; auto-shows the accumulated curves
         (recur (inc n))
         candidate))))
 
-(defn- migrate-state
-  "Bring older state shapes forward.
-   - :current as a string (old shape) becomes [:user name].
-   - User pages whose name matches a system page get either dropped
-     (content matches exactly) or renamed to 'name 1' (user has edits)."
-  [{:keys [pages current] :as state}]
-  (let [pages (or pages {})
-        current* (cond
-                   (and (vector? current) (= 2 (count current)))
-                     [(keyword (first current)) (second current)]
-                   (string? current) [:user current]
-                   :else [:system "Default"])
-        [pages* current**]
-        (reduce
-         (fn [[ps cur] [sname scontent]]
-           (cond
-             (not (contains? ps sname)) [ps cur]
-             (= scontent (get ps sname))
-             [(dissoc ps sname)
-              (if (= cur [:user sname]) [:system sname] cur)]
-             :else
-             (let [nn (next-fork-name sname (dissoc ps sname))]
-               [(-> ps (dissoc sname) (assoc nn (get ps sname)))
-                (if (= cur [:user sname]) [:user nn] cur)])))
-         [pages current*]
-         system-pages)]
-    {:pages pages* :current current**}))
-
 (defn- load-state []
-  (-> (or (try (when-let [s (.getItem js/localStorage storage-key)]
-                 (let [obj (js/JSON.parse s)]
-                   {:pages   (js->clj (.-pages obj))
-                    :current (js->clj (.-current obj))}))
-               (catch :default _ nil))
-          ;; First-time visitor: no user pages yet, viewing the system
-          ;; Default. They can fork it by typing.
-          {:pages {} :current [:system "Default"]})
-      migrate-state))
+  (or (try (when-let [s (.getItem js/localStorage storage-key)]
+             (let [obj (js/JSON.parse s)
+                   c   (js->clj (.-current obj))]
+               {:pages   (js->clj (.-pages obj))
+                :current [(keyword (first c)) (second c)]}))
+           (catch :default _ nil))
+      ;; First-time visitor: no user pages yet, viewing the system
+      ;; Default. They can fork it by typing.
+      {:pages {} :current [:system "Default"]}))
 
 (defn- save-state! [{:keys [pages current]}]
   (.setItem js/localStorage storage-key
