@@ -161,18 +161,4 @@
                  (map? m)
                  (vector? (:drawables m)))
           (show v)
-          v)))
-
-    ;; SICM-book Lagrangians defined globally so book examples translate
-    ;; without manual setup. Single-particle, 1D forms — extend as needed.
-    (defn L-free-particle [mass]
-      (fn [local]
-        (let [v (velocity local)]
-          (* 1/2 mass (square v)))))
-
-    (defn L-harmonic [m k]
-      (fn [local]
-        (let [q (coordinate local)
-              v (velocity local)]
-          (- (* 1/2 m (square v))
-             (* 1/2 k (square q))))))"))
+          v)))"))

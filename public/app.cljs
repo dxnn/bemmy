@@ -67,8 +67,19 @@
 
 
 ;; ----- Lagrangian mechanics, symbolically -----------------------------
-;; L-harmonic and L-free-particle are pre-defined. Lagrange-equations
-;; turns a Lagrangian into the equations of motion as functions of t.
+;; A Lagrangian L(t, q, v) for the harmonic oscillator is m·v²/2 −
+;; k·q²/2. Define it the SICM-book way: a curried function that takes
+;; the parameters first and returns a function of the local tuple.
+
+(defn L-harmonic [m k]
+  (fn [local]
+    (let [q (coordinate local)
+          v (velocity local)]
+      (- (* 1/2 m (square v))
+         (* 1/2 k (square q))))))
+
+;; Lagrange-equations turns a Lagrangian into the equations of motion
+;; as functions of t.
 
 (((Lagrange-equations (L-harmonic 'm 'k))
   (literal-function 'q))
@@ -119,6 +130,17 @@
 ;; Plus the underlying Mafs hiccup for finer control.
 ;; Evaluate sections individually with Cmd-Enter on a single form.
 ;; ====================================================================
+
+
+;; A few examples below use the harmonic-oscillator Lagrangian. Define
+;; it once here; it'll stay in scope for every form on this page.
+
+(defn L-harmonic [m k]
+  (fn [local]
+    (let [q (coordinate local)
+          v (velocity local)]
+      (- (* 1/2 m (square v))
+         (* 1/2 k (square q))))))
 
 
 ;; ----- Layer 1: plot ----------------------------------------------------
