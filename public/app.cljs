@@ -248,18 +248,30 @@ gfx-win   ; auto-shows the accumulated curves
 ;; page named "Shared" (or "Shared N") and clear the hash so refreshes
 ;; don't keep re-importing.
 
-(defn- encode-share [s]
-  (.btoa js/window (js/unescape (js/encodeURIComponent s))))
+(defn- encode-share [m]
+  (.btoa js/window
+         (js/unescape (js/encodeURIComponent
+                       (js/JSON.stringify (clj->js m))))))
 
 (defn- decode-share [b64]
-  (try (js/decodeURIComponent (js/escape (.atob js/window b64)))
-       (catch :default _ nil)))
+  (try
+    (js->clj (js/JSON.parse (js/decodeURIComponent
+                             (js/escape (.atob js/window b64))))
+             :keywordize-keys true)
+    (catch :default _ nil)))
 
 (defn- share-payload-from-url []
   (let [h (.. js/window -location -hash)]
-    (when (and (string? h)
-               (.startsWith h "#s="))
+    (when (and (string? h) (.startsWith h "#s="))
       (decode-share (subs h 3)))))
+
+(defn- next-free-name
+  "Like next-fork-name, but checks an arbitrary set of taken names."
+  [base taken]
+  (if-not (contains? taken base) base
+    (loop [n 1]
+      (let [c (str base " " n)]
+        (if (contains? taken c) (recur (inc n)) c)))))
 
 (defn- clear-url-hash! []
   (try
@@ -277,12 +289,15 @@ gfx-win   ; auto-shows the accumulated curves
                         (catch :default _ nil))
                    {:pages {} :current [:system "Default"]})
         shared (share-payload-from-url)]
-    (if shared
-      (let [n (next-fork-name "Shared" (:pages stored))]
+    (if (and shared (string? (:src shared)))
+      (let [taken  (into (set (keys (:pages stored)))
+                         (keys system-pages))
+            target (next-free-name (or (not-empty (:name shared)) "Shared")
+                                   taken)]
         (clear-url-hash!)
         (-> stored
-            (assoc-in [:pages n] shared)
-            (assoc :current [:user n])))
+            (assoc-in [:pages target] (:src shared))
+            (assoc :current [:user target])))
       stored)))
 
 (defn- save-state! [{:keys [pages current]}]
@@ -357,9 +372,11 @@ gfx-win   ; auto-shows the accumulated curves
 
 (defn- share-current! []
   (when-let [src (current-source)]
-    (let [url (str (.. js/window -location -origin)
+    (let [[_ cur-name] (:current @!pages)
+          payload      {:name cur-name :src src}
+          url (str (.. js/window -location -origin)
                    (.. js/window -location -pathname)
-                   "#s=" (encode-share src))]
+                   "#s=" (encode-share payload))]
       (-> (.. js/navigator -clipboard (writeText url))
           (.then  (fn [_] (toast! "Share URL copied to clipboard")))
           (.catch (fn [_]
