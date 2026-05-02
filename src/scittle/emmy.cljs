@@ -112,6 +112,54 @@
         [mafs.plot/OfX {:y      (fn [x] (double (f x)))
                         :domain [(double x-min) (double x-max)]}]]))
 
+    (defn ^:private animate-impl [f [x-min x-max] [y-min y-max] speed]
+      ;; Form-2 component: outer mounts a 60Hz timer that advances a
+      ;; reagent atom; inner derefs it and rebuilds the OfX y-fn so the
+      ;; curve morphs over time. Cleans up the timer on unmount.
+      (let [!t    (reagent.core/atom 0)
+            !last (atom (.now js/Date))
+            timer (atom nil)]
+        (reagent.core/create-class
+          {:component-did-mount
+           (fn [_]
+             (reset! timer
+               (js/setInterval
+                 (fn []
+                   (let [now (.now js/Date)
+                         dt  (/ (- now (deref !last)) 1000)]
+                     (reset! !last now)
+                     (swap! !t + (* speed dt))))
+                 16)))
+           :component-will-unmount
+           (fn [_] (when (deref timer) (js/clearInterval (deref timer))))
+           :reagent-render
+           (fn [_]
+             (let [t (deref !t)]
+               [mafs.core/Mafs
+                {:viewBox {:x [(double x-min) (double x-max)]
+                           :y [(double y-min) (double y-max)]}}
+                [mafs.coordinates/Cartesian]
+                [mafs.plot/OfX
+                 {:y      (fn [x] (double (f t x)))
+                  :domain [(double x-min) (double x-max)]}]]))})))
+
+    (defn animate
+      \"Plot y = f(t, x) where t auto-advances. Returns hiccup.
+
+         (animate (fn [t x] (Math/sin (- x t))))
+         (animate (fn [t x] (Math/sin (- x t))) [(- Math/PI) Math/PI])
+         (animate (fn [t x] (Math/sin (- x t))) [(- Math/PI) Math/PI] [-1 1])
+         (animate (fn [t x] (Math/sin (- x t))) [-3 3] [-1 1] 2.0)  ; 2x speed
+
+       The default speed is 1 (real-time seconds). The timer cleans
+       up automatically when the result row remounts (e.g. on the
+       next evaluation).\"
+      ([f]                         (animate f [-5 5] [-5 5] 1.0))
+      ([f x-range]                 (animate f x-range [-5 5] 1.0))
+      ([f x-range y-range]         (animate f x-range y-range 1.0))
+      ([f x-range y-range speed]
+       [animate-impl f x-range y-range speed]))
+
     (defn ^:private plot-with-params-impl
       [f params-spec [x-min x-max] [y-min y-max]]
       ;; Form-2 component: outer fn runs once on mount and creates the
