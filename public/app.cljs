@@ -280,6 +280,8 @@ gfx-win   ; auto-shows the accumulated curves
                         (.. js/window -location -search)))
     (catch :default _ nil)))
 
+(declare save-state!)
+
 (defn- load-state []
   (let [stored (or (try (when-let [s (.getItem js/localStorage storage-key)]
                           (let [obj (js/JSON.parse s)
