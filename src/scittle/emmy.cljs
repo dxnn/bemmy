@@ -2,12 +2,15 @@
   {:no-doc true}
   (:require [emmy.leva]
             [emmy.mafs]
+            [emmy.mathbox]
+            [emmy.mathbox.plot]
             [emmy.sci]
             [emmy.viewer]
             [emmy.viewer.compile]
             [emmy.viewer.physics]
             [leva.sci]
             [mafs.sci]
+            [mathbox.sci]
             [sci.core :as sci]
             [sci.ctx-store]
             [scittle.core :as scittle]))
@@ -17,12 +20,14 @@
 ;; only an aggregate install! that drags in mathbox/jsxgraph/leva/mathlive.
 ;; We re-implement the 2D subset by hand, mirroring the (sci/copy-ns ...)
 ;; pattern from emmy.viewer.sci.
-(defn- install-emmy-viewers-2d! []
+(defn- install-emmy-viewers! []
   (sci.ctx-store/swap-ctx!
    sci/merge-opts
    {:namespaces
     {'emmy.leva            (sci/copy-ns emmy.leva            (sci/create-ns 'emmy.leva))
      'emmy.mafs            (sci/copy-ns emmy.mafs            (sci/create-ns 'emmy.mafs))
+     'emmy.mathbox         (sci/copy-ns emmy.mathbox         (sci/create-ns 'emmy.mathbox))
+     'emmy.mathbox.plot    (sci/copy-ns emmy.mathbox.plot    (sci/create-ns 'emmy.mathbox.plot))
      'emmy.viewer          (sci/copy-ns emmy.viewer          (sci/create-ns 'emmy.viewer))
      'emmy.viewer.compile  (sci/copy-ns emmy.viewer.compile  (sci/create-ns 'emmy.viewer.compile))
      'emmy.viewer.physics  (sci/copy-ns emmy.viewer.physics  (sci/create-ns 'emmy.viewer.physics))}}))
@@ -34,8 +39,11 @@
   (mafs.sci/install!)
   ;; Leva — slider/input panel UI.
   (leva.sci/install!)
-  ;; emmy-viewers 2D high-level helpers (skips the 3D/interactive/UI/Clerk bits).
-  (install-emmy-viewers-2d!)
+  ;; MathBox — 3D math viz (Three.js underneath).
+  (mathbox.sci/install!)
+  ;; emmy-viewers high-level helpers (mafs + mathbox + viewer; we still
+  ;; skip jsxgraph / mathlive / Clerk-specific bits).
+  (install-emmy-viewers!)
   ;; Pre-refer / pre-alias common namespaces so user snippets are short.
   ;; `mafs` aliases mafs.core (the low-level Reagent components) per the
   ;; Mentat Collective convention. emmy-viewers' high-level helpers stay
@@ -45,7 +53,8 @@
              '[mafs.core :as mafs]
              '[mafs.coordinates]
              '[mafs.plot]
-             '[mafs.line])")
+             '[mafs.line]
+             '[mathbox.core :as mathbox])")
   ;; SICM-book imperative graphics shim. The book's `frame`,
   ;; `graphics-clear`, `plot-function` etc. mutate a window object; we
   ;; back that with a Reagent-friendly atom and add a `show` that turns

@@ -12,6 +12,5 @@
   {:mvn/version "0.3.2"
    :exclusions  [org.mentat/emmy
                  org.babashka/sci
-                 org.mentat/mathbox.cljs
                  org.mentat/jsxgraph.cljs
                  org.mentat/mathlive.cljs]}}}
