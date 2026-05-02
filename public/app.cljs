@@ -351,6 +351,10 @@ gfx-win   ; auto-shows the accumulated curves
                               (reset! !toast-timer nil))
                          2200)))
 
+;; current-source is defined below; declared here so share-current!
+;; analyses cleanly under SCI's eager symbol resolution.
+(declare current-source)
+
 (defn- share-current! []
   (when-let [src (current-source)]
     (let [url (str (.. js/window -location -origin)
