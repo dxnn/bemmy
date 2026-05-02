@@ -5,12 +5,105 @@
          '[emmy.env :refer :all])
 
 (def default-page
-  ";; BEmmy — Emmy in the browser. Cmd-Enter (or Ctrl-Enter) to evaluate.
-;; emmy.env is pre-referred, so D, square, ->TeX, cos, sin, up, etc. are
-;; all in scope. The Graphics page (left) has the visualization tour.
+  ";; ====================================================================
+;; BEmmy — Emmy in the Browser
+;; ====================================================================
+;; Welcome. This is your scratch page; edits persist in localStorage.
+;; Cmd-Enter (or Ctrl-Enter) evaluates the top-level form your cursor
+;; is on (or all forms in your selection). Pick 'Default ▾' at top-left
+;; for the Graphics tour and any other system pages.
+;;
+;; emmy.env is pre-referred, so D, square, simplify, cos, sin, up, down,
+;; literal-function, definite-integral, find-path, etc. are all in scope.
+;; ====================================================================
 
-;; symbolic derivative of x²
-((D (fn [x] (square x))) 'x)
+
+;; ----- Basic Clojure ---------------------------------------------------
+(+ 1 2 3)
+
+(* 2 3 4)
+
+(let [m 2 k 1]
+  (Math/sqrt (/ k m)))           ; angular frequency of a harmonic osc.
+
+
+;; ----- Symbolic differentiation ---------------------------------------
+;; D is the derivative operator. Apply it to any function — Clojure or
+;; Emmy — and you get back a new function.
+
+((D (fn [x] (square x))) 'x)            ; symbolic — returns (* 2 x)
+
+((D (fn [x] (square x))) 3)             ; numeric  — returns 6
+
+(((D (D (fn [x] (cube x)))) 'x))        ; second derivative of x³
+
+((D sin) 'x)                            ; (cos x)
+
+;; Composing operators: D applied to a Clojure-only fn that uses
+;; emmy.env's generic +/-/*/sin/cos works seamlessly.
+
+((D (fn [x] (+ (sin x) (* x x)))) 'x)
+
+
+;; ----- Simplification + TeX rendering ---------------------------------
+;; The result pane auto-renders Emmy expressions to TeX. simplify
+;; reduces redundant structure first.
+
+(simplify
+  (+ (square (sin 'x))
+     (square (cos 'x))))                ; → 1
+
+(simplify
+  ((D (fn [x] (* x x x))) 'x))
+
+
+;; ----- Vectors, tuples, structures -----------------------------------
+;; Emmy uses 'up' (column / position) and 'down' (row / momentum)
+;; tuples to mirror the geometric distinction.
+
+(up 1 2 3)
+(down 1 2 3)
+(* (down 1 2 3) (up 4 5 6))             ; inner product → 32
+
+
+;; ----- Lagrangian mechanics, symbolically -----------------------------
+;; L-harmonic and L-free-particle are pre-defined. Lagrange-equations
+;; turns a Lagrangian into the equations of motion as functions of t.
+
+(((Lagrange-equations (L-harmonic 'm 'k))
+  (literal-function 'q))
+ 't)
+
+;; The output is the EoM expression: m·q''(t) + k·q(t) = 0.
+
+
+;; ----- Path-finding numerically ---------------------------------------
+;; find-path minimizes the action functional over an n-coefficient
+;; polynomial path between (t0, q0) and (t1, q1).
+
+(find-path (L-harmonic 1.0 1.0)
+           0.0 1.0
+           (/ Math/PI 2) 0.0
+           2)
+
+;; The result is a polynomial path you can call as a function:
+(let [path (find-path (L-harmonic 1.0 1.0)
+                      0.0 1.0 (/ Math/PI 2) 0.0 2)]
+  (path 0.5))                          ; numeric value of q at t=0.5
+
+
+;; ----- Quick visualization --------------------------------------------
+;; (plot f) draws y = f(x). Defaults to [-5,5] × [-5,5].
+;; See the Graphics system page for the full tour.
+
+(plot Math/sin)
+
+(plot (fn [t] (Math/cos (* 2 t))) [(- Math/PI) Math/PI])
+
+;; The same find-path output, rendered:
+(let [path (find-path (L-harmonic 1.0 1.0)
+                      0.0 1.0 (/ Math/PI 2) 0.0 2)]
+  (plot path [0 (/ Math/PI 2)] [0 1.2]))
 ")
 
 (def graphics-page
@@ -456,24 +549,29 @@ gfx-win   ; auto-shows the accumulated curves
                                   (.. update -state -doc toString)))))
           ;; Compose extensions ourselves; skip anything the ESM didn't deliver.
           ;; Vim is conditionally prepended below so its keymap goes first.
+          dark? @!dark?
           exts (cond-> [user-keymap save-listener]
                  js/CM.lineNumbers         (conj (js/CM.lineNumbers))
                  js/CM.history             (conj (js/CM.history))
                  js/CM.drawSelection       (conj (js/CM.drawSelection))
                  js/CM.highlightActiveLine (conj (js/CM.highlightActiveLine))
                  js/CM.bracketMatching     (conj (js/CM.bracketMatching))
-                 (and js/CM.syntaxHighlighting js/CM.defaultHighlightStyle)
-                 (conj (js/CM.syntaxHighlighting
-                        js/CM.defaultHighlightStyle))
+                 ;; Light mode: bind defaultHighlightStyle. Dark mode:
+                 ;; oneDark brings its own theme + HighlightStyle. Don't
+                 ;; layer them — last-write-wins resolution leaves
+                 ;; clojure-mode tags partially light-themed and unreadable.
+                 (and (not dark?)
+                      js/CM.syntaxHighlighting
+                      js/CM.defaultHighlightStyle)
+                 (conj (js/CM.syntaxHighlighting js/CM.defaultHighlightStyle))
                  js/CM.defaultExtensions   (conj js/CM.defaultExtensions)
                  js/CM.defaultKeymap       (conj (.of js/CM.keymap
                                                       js/CM.defaultKeymap))
                  js/CM.historyKeymap       (conj (.of js/CM.keymap
                                                       js/CM.historyKeymap))
                  js/CM.completeKeymap      (conj (.of js/CM.keymap
-                                                      js/CM.completeKeymap)))
-          exts (cond-> exts
-                 (and js/CM.oneDark @!dark?) (conj js/CM.oneDark))
+                                                      js/CM.completeKeymap))
+                 (and dark? js/CM.oneDark) (conj js/CM.oneDark))
           exts (cond->> exts
                  (and js/CM.vim (:vim-on @!ui)) (into [(js/CM.vim)]))
           state (.create js/CM.EditorState
