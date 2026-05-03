@@ -7,9 +7,10 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 
-    <!-- Mafs's plot styling. Without these, Mafs renders unstyled. -->
+    <!-- Mafs's plot styling. font.css imports a cmu-serif CSS that
+         404s on jsdelivr for 0.21.0, so we skip it; system serif is
+         used instead. -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mafs@0.21.0/core.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mafs@0.21.0/font.css">
 
     <!-- highlight.js for syntax highlighting in the result pane.
          Two stylesheets, swapped via prefers-color-scheme. -->
@@ -187,7 +188,7 @@
 
       .toolbar {
         padding: 0.5rem 0.75rem; border-top: 1px solid var(--border);
-        display: flex; gap: 0.5rem; align-items: center;
+        display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
         background: var(--surface-2);
       }
 
