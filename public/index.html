@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>BEmmy — Emmy in the Browser</title>
+    <title>BEmmy :: Emmy in the Browser</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -23,6 +23,13 @@
 
     <!-- SICM (Scheme) → Emmy (Clojure) translator, exposes window.SicmToEmmy -->
     <script src="sicm2emmy.js"></script>
+
+    <!-- pshift animated logo (canvas-based). Scripts must load before
+         the Reagent app mounts so PshiftLoader is available when the
+         logo component's component-did-mount fires. -->
+    <script src="logo-engine-standalone.js"></script>
+    <script src="pshift-png.js"></script>
+    <script src="pshift-loader.js"></script>
 
     <!-- CodeMirror 6 + nextjournal/clojure-mode loaded via esm.sh.
          The "codemirror" meta-package's basicSetup didn't survive esm.sh's
@@ -130,6 +137,7 @@
         display: flex; justify-content: space-between; align-items: baseline;
       }
       header h1 { font-size: 1rem; font-weight: 600; margin: 0; }
+      header h1 canvas.logo-cycle { display: block; height: 28px; width: auto; }
       header .tagline { font-size: 0.75rem; opacity: 0.7; }
       .panes { flex: 1; display: flex; min-height: 0; }
       .pane { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }

@@ -6,16 +6,17 @@
 
 (def basics-page
   ";; ====================================================================
-;; BEmmy — Basics
+;; BEmmy — Welcome!
 ;; ====================================================================
-;; Basic Clojure + Emmy. See SICM for mechanics, Graphics for 2D
-;; visualization, and 3D for WebGL / MathBox examples.
+;; Emmy is a computer algebra system written in Clojure(Script). 
+;; It's based on SICMUtils, which is based on scmutils, from SICM.
+;; 
+;; This is that, but in the browser.
 ;;
+;; It's pretty experimental, so let me know if things get weird.
+;; 
 ;; emmy.env is pre-referred, so D, square, simplify, cos, sin, up, down,
 ;; literal-function, definite-integral, etc. are all in scope.
-;;
-;; Cmd-Enter (or Ctrl-Enter) evaluates the top-level form your cursor
-;; is on (or all forms in your selection).
 ;; ====================================================================
 
 
@@ -453,7 +454,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; one transparently forks it into a fresh user page so the template
 ;; itself stays canonical and updates whenever we ship new content.
 (def system-pages
-  {"Basics"   basics-page
+  {"Welcome"  basics-page
    "SICM"     sicm-page
    "Graphics" graphics-page
    "3D"       graphics-3d-page})
@@ -1050,11 +1051,22 @@ gfx-win   ; auto-shows the accumulated curves
                 (for [[i r] (map-indexed vector results)]
                   ^{:key (str eval-id "-" i)} [result-row r])]))]))
 
+(defn- logo []
+  (r/create-class
+   {:display-name "Logo"
+    :component-did-mount
+    (fn [_]
+      (when (exists? js/PshiftLoader)
+        (.mountAll js/PshiftLoader ".logo-cycle")))
+    :reagent-render
+    (fn [_]
+      [:canvas.logo-cycle {:data-src "logo.pshift.png"}])}))
+
 (defn- app []
   [:<>
    [:header
-    [:h1 "BEmmy"]
-    [:span.tagline "Emmy in the Browser"]]
+    [:h1 [logo]]
+    [:span.tagline "BEmmy :: Emmy in the Browser"]]
    [:div.panes
     [:div.pane
      [:div.label "Code"]
