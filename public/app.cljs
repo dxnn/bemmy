@@ -453,11 +453,14 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- System pages: read-only templates baked into the build. Editing
 ;; one transparently forks it into a fresh user page so the template
 ;; itself stays canonical and updates whenever we ship new content.
+;; array-map preserves insertion order so the dropdown renders these in
+;; the order written here rather than alphabetically.
 (def system-pages
-  {"Welcome"  basics-page
-   "SICM"     sicm-page
-   "Graphics" graphics-page
-   "3D"       graphics-3d-page})
+  (array-map
+    "Welcome"  basics-page
+    "SICM"     sicm-page
+    "Graphics" graphics-page
+    "3D"       graphics-3d-page))
 
 ;; --- Pages: named source buffers persisted in localStorage. ----------------
 
@@ -519,16 +522,16 @@ gfx-win   ; auto-shows the accumulated curves
                             {:pages   (js->clj (.-pages obj))
                              :current [(keyword (first c)) (second c)]}))
                         (catch :default _ nil))
-                   {:pages {} :current [:system "Basics"]})
+                   {:pages {} :current [:system "Welcome"]})
         ;; Validate :current — the page might point to a system page we
-        ;; renamed/removed. Fall back to Basics so the editor mounts.
+        ;; renamed/removed. Fall back to Welcome so the editor mounts.
         [t cur-name] (:current stored)
         valid?  (case t
                   :user   (contains? (:pages stored) cur-name)
                   :system (contains? system-pages cur-name)
                   false)
         stored  (cond-> stored
-                  (not valid?) (assoc :current [:system "Basics"]))
+                  (not valid?) (assoc :current [:system "Welcome"]))
         shared (share-payload-from-url)]
     (if (and shared (string? (:src shared)))
       (let [taken  (into (set (keys (:pages stored)))
@@ -676,7 +679,7 @@ gfx-win   ; auto-shows the accumulated curves
           new-current (cond
                         (not deleting?)  current
                         (seq new-pages)  [:user (first (sort (keys new-pages)))]
-                        :else            [:system "Default"])]
+                        :else            [:system "Welcome"])]
       (reset! !pages {:pages new-pages :current new-current})
       (when deleting?
         (let [[t nn] new-current]
@@ -983,7 +986,8 @@ gfx-win   ; auto-shows the accumulated curves
       [:span.page-name (str (if on-system? cur-name "System") " ▾")]]
      (when open?
        [:div.system-menu
-        (for [n (sort (keys system-pages))]
+        ;; Render in insertion order (system-pages is an array-map).
+        (for [n (keys system-pages)]
           ^{:key n}
           [:div.system-menu-item
            {:on-click (fn []
