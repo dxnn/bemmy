@@ -4,23 +4,26 @@
     <meta charset="utf-8">
     <title>BEmmy :: Emmy in the Browser</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <!-- All static deps are vendored into public/vendor/ via bin/vendor.sh
+         so the page is self-hostable with no third-party CDN at
+         runtime. CodeMirror is the one exception (still ESM-imported
+         from esm.sh) — bundling those will be a separate refactor. -->
 
-    <!-- Mafs's plot styling. font.css imports a cmu-serif CSS that
-         404s on jsdelivr for 0.21.0, so we skip it; system serif is
-         used instead. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mafs@0.21.0/core.css">
+    <link rel="stylesheet" href="vendor/katex/katex.min.css">
+
+    <!-- Mafs's plot styling. font.css imports a cmu-serif CSS we don't
+         vendor; Mafs falls back to system serif which is fine. -->
+    <link rel="stylesheet" href="vendor/mafs/core.css">
 
     <!-- highlight.js for syntax highlighting in the result pane.
          Two stylesheets, swapped via prefers-color-scheme. -->
     <link rel="stylesheet" media="(prefers-color-scheme: light)"
-          href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+          href="vendor/hljs/github.min.css">
     <link rel="stylesheet" media="(prefers-color-scheme: dark)"
-          href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+          href="vendor/hljs/github-dark.min.css">
+    <script src="vendor/hljs/highlight.min.js"></script>
     <!-- Clojure isn't in hljs's "common" bundle; load it explicitly. -->
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/languages/clojure.min.js"></script>
+    <script src="vendor/hljs/clojure.min.js"></script>
 
     <!-- SICM (Scheme) → Emmy (Clojure) translator, exposes window.SicmToEmmy -->
     <script src="sicm2emmy.js"></script>
@@ -343,10 +346,8 @@
     <div id="app"></div>
 
     <!-- React must load before scittle.reagent (shadow externalizes it as a global) -->
-    <script crossorigin
-            src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin
-            src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="vendor/react/react.production.min.js"></script>
+    <script src="vendor/react/react-dom.production.min.js"></script>
     <!-- Stock scittle + reagent + pprint built locally by `bb release` -->
     <script src="js/scittle.js"></script>
     <script src="js/scittle.pprint.js"></script>
@@ -354,8 +355,7 @@
     <!-- Our custom plugin: Emmy in SCI -->
     <script src="js/scittle.emmy.js"></script>
     <!-- KaTeX for rendering Emmy's TeX output -->
-    <script defer
-            src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="vendor/katex/katex.min.js"></script>
 
     <!-- Application code: the playground UI itself, evaluated by Scittle -->
     <script type="application/x-scittle" src="app.cljs"></script>
