@@ -11,6 +11,9 @@
  :tasks
  {:requires ([scittle.build :as build])
 
+  test    {:doc  "Run unit tests (sicm2emmy translator)"
+           :task (shell "node --test test/sicm2emmy.test.js")}
+
   watch   {:doc  "Watch build (recompile on save)"
            :task (build/build {:action "watch"})}
 
