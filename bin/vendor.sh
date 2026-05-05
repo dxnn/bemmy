@@ -1,9 +1,10 @@
 #!/bin/sh
 # Download the static CDN deps into public/vendor/ so the page is
-# self-hostable with no third-party CDN at runtime (CodeMirror is
-# still ESM-imported from esm.sh; that's a separate refactor).
+# self-hostable with no third-party CDN at runtime.
 #
 # Idempotent — re-run after bumping any version below.
+# CodeMirror is vendored separately by the Node dep-graph walker at
+# the bottom of this script (requires network access to esm.sh).
 set -e
 
 KATEX_VER="0.16.9"
@@ -54,5 +55,11 @@ curl -sSL "${HLJS_CDN}/languages/clojure.min.js"     -o public/vendor/hljs/cloju
 echo "==> React UMD"
 curl -sSL "${REACT_CDN}/react.production.min.js"           -o public/vendor/react/react.production.min.js
 curl -sSL "${REACT_DOM_CDN}/react-dom.production.min.js"   -o public/vendor/react/react-dom.production.min.js
+
+echo "==> CodeMirror (dep-graph walk from esm.sh)"
+# Walks the esm.sh module graph for CM6 + clojure-mode + vim + one-dark,
+# downloads all transitive deps, and rewrites imports to relative local paths.
+# Requires Node 18+ for built-in fetch.
+node bin/vendor-cm.mjs
 
 echo "==> Done. Vendored into public/vendor/."
