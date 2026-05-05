@@ -32,7 +32,11 @@ pinned to 0.139.2), share-by-URL.
 
 ## Test/verify loop
 
-No automated tests. Cycle is:
+Automated: `bb test` runs 55 unit tests for `public/sicm2emmy.js` (the
+Scheme→Emmy translator) via `node --test`. Always run before committing
+translator changes.
+
+Browser cycle (everything else):
 
 1. Edit src/ or public/app.cljs.
 2. `bb release` if src/ changed (plugin rebuild). Plain text changes to
