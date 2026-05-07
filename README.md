@@ -3,23 +3,19 @@
 A static-page Clojure(Script) playground for Sussman & Wisdom's
 *Structure and Interpretation of Classical Mechanics*. Emmy
 (computer algebra), Mafs (2D plots), MathBox (3D plots) and
-emmy-viewers all in the browser via [Scittle][scittle] — no install
+emmy-viewers all in the browser via Scittle — no install
 required.
 
-**Live:** <https://bathro.be/bemmy/>
+**Live:** <https://bathro.be/bemmy/>  
 **Writeup:** <https://inwordsandpictures.com/bemmy/>
-
-[scittle]: https://github.com/babashka/scittle
 
 ## Development
 
 Prerequisites:
 
-- [Babashka][bb] (`bb`) — runs the build/serve tasks
+- Babashka (`bb`) — runs the build/serve tasks
 - Node.js 18+ — the translator tests and the CodeMirror dep-graph
   vendor walker
-
-[bb]: https://github.com/babashka/babashka
 
 Clone and run:
 
@@ -68,3 +64,41 @@ bin/vendor.sh   # refresh public/vendor/ from CDNs
 
 `public/` is the entire deploy target. After `bb release`, copy or
 sync `public/` to any static host.
+
+## Built on
+
+- [SICM][sicm] — Sussman & Wisdom's *Structure and Interpretation of
+  Classical Mechanics*
+- [Emmy][emmy] — Clojure(Script) computer algebra
+- [emmy-viewers][emmy-viewers] — visualization helpers for Emmy
+- [mafs.cljs][mafs-cljs] / [mathbox.cljs][mathbox-cljs] /
+  [leva.cljs][leva-cljs] — Clojure(Script) wrappers around
+  [Mafs][mafs] (2D), [MathBox][mathbox] (3D) and [Leva][leva]
+  (control panels)
+- [Scittle][scittle] — runs the page, built on [SCI][sci]
+- [Babashka][bb] — drives the build/serve tasks
+- [Reagent][reagent] on [React][react]
+- [CodeMirror 6][cm] with [@nextjournal/clojure-mode][nj-cljs-mode]
+- [KaTeX][katex] — TeX math rendering
+- [highlight.js][hljs] — code highlighting
+- [Three.js][three] — used by MathBox
+
+[sicm]: https://mitpress.mit.edu/9780262028967/structure-and-interpretation-of-classical-mechanics/
+[emmy]: https://github.com/mentat-collective/emmy
+[emmy-viewers]: https://github.com/mentat-collective/emmy-viewers
+[mafs-cljs]: https://github.com/mentat-collective/mafs.cljs
+[mathbox-cljs]: https://github.com/mentat-collective/mathbox.cljs
+[leva-cljs]: https://github.com/mentat-collective/leva.cljs
+[mafs]: https://mafs.dev
+[mathbox]: https://github.com/unconed/mathbox
+[leva]: https://github.com/pmndrs/leva
+[scittle]: https://github.com/babashka/scittle
+[sci]: https://github.com/babashka/sci
+[bb]: https://github.com/babashka/babashka
+[reagent]: https://github.com/reagent-project/reagent
+[react]: https://react.dev
+[cm]: https://codemirror.net
+[nj-cljs-mode]: https://github.com/nextjournal/clojure-mode
+[katex]: https://katex.org
+[hljs]: https://highlightjs.org
+[three]: https://threejs.org
