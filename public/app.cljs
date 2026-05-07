@@ -1070,7 +1070,17 @@ gfx-win   ; auto-shows the accumulated curves
   [:<>
    [:header
     [:h1 [logo]]
-    [:span.tagline "BEmmy :: Emmy in the Browser"]]
+    [:div.header-right
+     [:span.tagline "Bemmy :: Emmy in the Browser"]
+     [:nav.header-links
+      [:a {:href   "https://inwordsandpictures.com/bemmy/"
+           :target "_blank" :rel "noopener noreferrer"
+           :title  "Article: Bemmy in In Words and Pictures"}
+       "Article"]
+      [:a {:href   "https://github.com/dxnn/bemmy"
+           :target "_blank" :rel "noopener noreferrer"
+           :title  "GitHub repository"}
+       "GitHub"]]]]
    [:div.panes
     [:div.pane
      [:div.label "Code"]
