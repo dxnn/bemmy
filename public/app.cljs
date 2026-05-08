@@ -668,7 +668,7 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- new-page! []
   (when-let [n (some-> (js/prompt "Page name:") .trim not-empty)]
     (when-not (contains? (:pages @!pages) n)
-      (swap! !pages assoc-in [:pages n] ";; New page\n"))
+      (swap! !pages assoc-in [:pages n] ""))
     (switch-to-user! n)))
 
 (defn- delete-page! [n]
