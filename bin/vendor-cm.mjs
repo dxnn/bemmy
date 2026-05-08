@@ -16,6 +16,7 @@ const ENTRIES = [
   '@codemirror/state@6',
   '@codemirror/commands@6',
   '@codemirror/language@6',
+  '@codemirror/autocomplete@6',
   '@nextjournal/clojure-mode',
   '@replit/codemirror-vim',
   '@codemirror/theme-one-dark',

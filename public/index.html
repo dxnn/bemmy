@@ -65,6 +65,14 @@
           import("./vendor/codemirror/@replit/codemirror-vim.js"),
           import("./vendor/codemirror/@codemirror/theme-one-dark.js")
         ]);
+        // Optional: @codemirror/autocomplete. Not vendored by default —
+        // run bin/vendor.sh after adding it to bin/vendor-cm.mjs's ENTRIES
+        // to enable. The editor still works without it; autocompletion is
+        // just turned off.
+        let autocomplete = null;
+        try {
+          autocomplete = await import("./vendor/codemirror/@codemirror/autocomplete@6.js");
+        } catch (e) {}
         window.CM = {
           EditorView:          view.EditorView,
           EditorState:         state.EditorState,
@@ -88,7 +96,9 @@
           cljSyntax:           cljs.syntax,
           completeKeymap:      cljs.complete_keymap,
           vim:                 vim.vim,
-          oneDark:             oneDark.oneDark
+          oneDark:             oneDark.oneDark,
+          autocompletion:      autocomplete?.autocompletion,
+          completionKeymap:    autocomplete?.completionKeymap
         };
       })();
     </script>

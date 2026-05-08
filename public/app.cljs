@@ -1116,6 +1116,42 @@ gfx-win   ; auto-shows the accumulated curves
       (fn [_]
         [:div.tex {:ref #(reset! !node %)}])})))
 
+;; --- Autocompletion -------------------------------------------------------
+;; CodeMirror's @codemirror/autocomplete extension is wired in optionally
+;; — index.html tries to import it and gracefully degrades if it isn't
+;; vendored. To enable, run bin/vendor.sh after confirming
+;; @codemirror/autocomplete@6 is in bin/vendor-cm.mjs's ENTRIES.
+;;
+;; The symbol list below is curated rather than scraped from emmy.env to
+;; keep the suggestion menu short and useful. Add names you reach for
+;; often; Emmy's full surface is huge, and dumping all of it would drown
+;; the actual high-value matches.
+
+(def ^:private completion-symbols
+  ["plot" "animate" "plot-with-params" "plot-path" "plot-function"
+   "plot-point" "frame" "graphics-clear" "show"
+   "find-path"
+   "Lagrange-equations" "Hamilton-equations" "literal-function"
+   "state-advancer" "evolve"
+   "L-harmonic" "L-free-particle" "H-harmonic"
+   "coordinate" "velocity" "momentum" "up" "down"
+   "D" "square" "cube" "simplify"
+   "cos" "sin" "tan" "exp" "log" "sqrt"
+   "Math/sin" "Math/cos" "Math/tan" "Math/sqrt"
+   "Math/exp" "Math/log" "Math/PI" "Math/E"
+   "mafs/Mafs" "mafs.coordinates/Cartesian" "mafs.plot/Parametric"
+   "mathbox/MathBox" "mb/Cartesian" "mb/Axis" "mb/Interval"
+   "mb/Area" "mb/Surface" "mb/Line"
+   "reagent.core/atom" "reagent.core/create-class"])
+
+(defn- completion-source [ctx]
+  (let [word (.matchBefore ctx (js/RegExp. "[\\w./-]+"))]
+    (when (and word
+               (or (not= (.-from word) (.-to word))
+                   (.-explicit ctx)))
+      #js {:from    (.-from word)
+           :options (clj->js (mapv (fn [n] {:label n}) completion-symbols))})))
+
 (defn- mount-cm! [el]
   (when (and el (nil? @!view) (exists? js/CM))
     (let [eval-cmd #js {:key "Mod-Enter" :run (fn [_] (eval!) true)}
@@ -1171,6 +1207,14 @@ gfx-win   ; auto-shows the accumulated curves
                                                       js/CM.historyKeymap))
                  js/CM.completeKeymap      (conj (.of js/CM.keymap
                                                       js/CM.completeKeymap))
+                 ;; Optional: @codemirror/autocomplete. Both fields are
+                 ;; nil when autocomplete isn't vendored — the editor
+                 ;; just runs without suggestions in that case.
+                 js/CM.autocompletion
+                 (conj (js/CM.autocompletion
+                        #js {:override #js [completion-source]}))
+                 js/CM.completionKeymap
+                 (conj (.of js/CM.keymap js/CM.completionKeymap))
                  (and dark? js/CM.oneDark) (conj js/CM.oneDark))
           exts (cond->> exts
                  (and js/CM.vim (:vim-on @!ui)) (into [(js/CM.vim)]))
