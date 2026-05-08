@@ -856,9 +856,18 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- mount-cm! [el]
   (when (and el (nil? @!view) (exists? js/CM))
     (let [eval-cmd #js {:key "Mod-Enter" :run (fn [_] (eval!) true)}
-          ;; Wrap our Cmd-Enter binding in Prec.highest so vim mode (or any
-          ;; other keymap) can't shadow it.
-          user-keymap (cond->> (.of js/CM.keymap #js [eval-cmd])
+          ;; Firefox-only: pressing Escape on a contenteditable can blur
+          ;; the editor before vim's keymap sees the key, leaving vim
+          ;; stuck in insert mode. A no-op binding with :preventDefault
+          ;; stops the browser default (the blur) without claiming the
+          ;; key, so vim's lower-precedence Escape still runs and exits
+          ;; insert mode as expected.
+          escape-cmd #js {:key            "Escape"
+                          :preventDefault true
+                          :run            (fn [_] false)}
+          ;; Wrap our high-priority bindings in Prec.highest so vim mode
+          ;; (or any other keymap) can't shadow them.
+          user-keymap (cond->> (.of js/CM.keymap #js [eval-cmd escape-cmd])
                         js/CM.Prec (.highest js/CM.Prec))
           ;; Persist edits to the current page on every doc change.
           save-listener (.of (.. js/CM -EditorView -updateListener)
@@ -1103,7 +1112,7 @@ gfx-win   ; auto-shows the accumulated curves
                 :checked   (boolean (:vim-on @!ui))
                 :on-change #(swap! !ui update :vim-on not)}]
        "vim"]
-      [:button.btn.share-btn
+      [:button.btn.permalink-btn
        {:on-click share-current!
         :title    "Copy a URL that loads this page's source for someone else"}
        "Share"]]]
