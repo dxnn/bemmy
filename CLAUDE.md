@@ -66,6 +66,29 @@ Browser cycle (everything else):
   fragment data doesn't false-trigger a render.
 - System pages are an `array-map` (insertion-ordered) keyed by name;
   copy-on-edit forks via content-identity check in the CM update listener.
+- Permalink button class is `.permalink-btn`, NOT `.share-btn` —
+  content blockers (Safari's, uBlock cosmetic filters) hide elements
+  with class `share-btn` assuming it's a social-share widget. The
+  button rendered fine in Chrome but disappeared silently in Safari.
+- The Auto-graph shelf inserts code with `userEvent: "noformat"` to
+  bypass clojure-mode's `transactionFilter` (in `default_extensions`),
+  which otherwise reformats every change and was eating closing
+  parens on inserted multi-line forms.
+- Paredit can be toggled off via the `paredit` checkbox; persisted in
+  localStorage alongside `vim-on`. When off, the editor swaps the full
+  `cljs.default_extensions` for just `cljs.syntax()` (exported as
+  `js/CM.cljSyntax`) — keeps Clojure highlighting/indent rules but
+  drops close-bracket keymap and format-on-change filter.
+- Auto-graph shelf has a manual kind dropdown (Plot / Parametric 2D /
+  Parametric 3D / Surface / Animate); wrapping is purely textual,
+  never evaluates user code. It detects three shapes: a `(L-<name>
+  args)` Lagrangian sub-form anywhere in the source (emits a
+  `find-path`-based per-kind template, discarding any outer
+  Lagrange-equations / literal-function wrapping), a leading
+  `(defn name …)` (emits two top-level forms — the defn + a wrap
+  using its name), or quoted Emmy vars `'x`/`'y`/`'t` matching the
+  kind's expected names (strips the quotes and wraps in
+  `(fn [vars…] body)`).
 
 ## Git policy (overrides global)
 You manage git directly in this project. The global "manual git" rule does
@@ -85,3 +108,16 @@ Workflow:
 - Never commit on red. If a test was passing and now isn't, fix the test or
   the code before committing — do not commit broken state.
 - Do not include AI attribution in commit messages.
+
+## Recent
+
+- 2026-05-07/08 — Auto-graph shelf built out: manual kind dropdown,
+  `defn`/Lagrangian detection, find-path-based per-kind templates
+  (3D space curve, surface sweep, plot-with-params sliders for
+  animate). Paredit toggle added. Inserts now use `userEvent:
+  "noformat"` and column-shift instead of `indentSelection`. Safari
+  Permalink-button fix (renamed from `.share-btn`) plus Firefox
+  Escape-blur in vim and bottom-of-pane truncation. CSS in
+  `index.html` reorganized into sectioned, one-decl-per-line form
+  with `--font-mono` / `--font-sans` tokens.
+- See commits `3139317` … `5d317de` (six commits, all on `main`).
