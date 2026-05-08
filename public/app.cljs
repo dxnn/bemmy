@@ -1430,10 +1430,16 @@ gfx-win   ; auto-shows the accumulated curves
     (cond
       (= kind :plot)
       (str (lagr-let-prelude name bindings call)
+           "\n  ;; For a 2D Lagrangian (q is an up-tuple), set q0/q1 to (up x0 y0)/"
+           "\n  ;; (up x1 y1) above, then plot one component: (fn [t] ((path t) 0))."
            "\n  (plot path [t0 t1] [-1.5 1.5]))")
 
       (= kind :parametric-2d)
       (str (lagr-let-prelude name bindings call)
+           "\n  ;; 1D Lagrangian: phase plane (q(t), q'(t)). For a 2D"
+           "\n  ;; Lagrangian (q is an up-tuple), set q0/q1 to (up x0 y0)/"
+           "\n  ;; (up x1 y1) above, and swap :xy for the trajectory body:"
+           "\n  ;;   :xy (fn [t] [((path t) 0) ((path t) 1)])"
            "\n  [mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}"
            "\n   [mafs.coordinates/Cartesian]"
            "\n   [mafs.plot/Parametric"
