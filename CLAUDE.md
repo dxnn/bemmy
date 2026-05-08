@@ -115,25 +115,42 @@ Workflow:
 
 ## Recent
 
-- 2026-05-07/08 — Auto-graph shelf built out: manual kind dropdown,
-  `defn`/Lagrangian detection, find-path-based per-kind templates
-  (3D space curve, surface sweep, plot-with-params sliders for
-  animate). Paredit toggle added. Inserts now use `userEvent:
-  "noformat"` and column-shift instead of `indentSelection`. Safari
-  Permalink-button fix (renamed from `.share-btn`) plus Firefox
-  Escape-blur in vim and bottom-of-pane truncation. CSS in
-  `index.html` reorganized into sectioned, one-decl-per-line form
-  with `--font-mono` / `--font-sans` tokens.
-- New "Auto-graph" system page documenting the shelf with worked
-  examples (function, symbolic body, Lagrangian → plot/parametric/
-  animate, defn'd Lagrangian) plus SICM Ex. 1.33 (Falling off a log)
-  as the "beyond auto-graph" example.
-- See commits `3139317` … `main` (~10 commits since the start of the
-  Auto-graph work).
+- 2026-05-07/08 — Auto-graph shelf built out across many rounds:
+  manual kind dropdown; defn/Lagrangian/Hamiltonian detection;
+  find-path-based per-kind templates (1D plot, parametric 2D phase
+  plane, parametric 3D space curve, surface sweep with picker for
+  the swept arg, plot-with-params sliders for animate);
+  parametric-2D routes through `emmy.mafs/parametric` when the body
+  uses up/down. defn'd `L-…` and `H-…` route through their
+  respective templates with synthesized free-arg calls. Paredit
+  toggle added. Inserts use `userEvent: "noformat"` then
+  `indentSelection` for language-aware reindent. Safari Permalink
+  fix, Firefox vim-Escape and pane-truncation fixes. CSS sectioned
+  with `--font-mono`/`--font-sans` tokens.
+- New "Auto-graph" system page documents the shelf with worked
+  examples for each kind plus SICM Ex. 1.33 as the "beyond
+  auto-graph" finale.
+- Optional `@codemirror/autocomplete` wired in, gated on vendor
+  presence — `bin/vendor.sh` will fetch it; `index.html` imports
+  gracefully and `mount-cm!` registers a curated symbol list.
+- Babashka test suite for wrap-code (`test/auto_graph_test.clj`,
+  10 deftests / 39 assertions). `bb test` now runs both translator
+  (55 node tests) and auto-graph suites.
+- See commits `3139317` … `main` (~17 commits across two sessions).
 
 ## Todo
 
-(none currently — language-aware reindent on insert was added in
-`856b6a8`'s follow-up; `insert-and-format!` now dispatches the raw
-insert with `userEvent: "noformat"` and then calls CodeMirror's
-`indentSelection` on the new range.)
+- **Vendor regen for autocomplete.** The wiring is in place but
+  `@codemirror/autocomplete` isn't on disk. Run `bin/vendor.sh` to
+  fetch (it's already in `bin/vendor-cm.mjs`'s ENTRIES). Reload,
+  and typing in the editor should bring up suggestions.
+- **Hamiltonian template performance.** Each plot/parametric sample
+  re-integrates the ODE from t0; for many samples that's slow.
+  Pre-computing an interpolation table inside the let would fix it
+  — comment in the template flags the spot.
+- **2D Lagrangian auto-detection.** Currently the `:plot` /
+  `:parametric-2d` Lagrangian templates carry comments showing the
+  2D alternative (swap q0/q1 to ups, switch the `:xy` body), but
+  there's no automatic switch. A "Trajectory 2D" kind in the
+  dropdown would be the cleanest add if the comment-swap proves
+  awkward in practice.
