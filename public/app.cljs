@@ -596,10 +596,13 @@ gfx-win   ; auto-shows the accumulated curves
 (def ui-storage-key "emmy-playground/ui")
 
 (defn- load-ui []
-  (or (try (when-let [s (.getItem js/localStorage ui-storage-key)]
-             (js->clj (js/JSON.parse s) :keywordize-keys true))
-           (catch :default _ nil))
-      {:vim-on false}))
+  ;; Merge over defaults so old localStorage payloads (without :paredit-on?)
+  ;; still come back with the field set, and new defaults can be added later.
+  (merge {:vim-on false :paredit-on? true}
+         (or (try (when-let [s (.getItem js/localStorage ui-storage-key)]
+                    (js->clj (js/JSON.parse s) :keywordize-keys true))
+                  (catch :default _ nil))
+             {})))
 
 (defonce !ui (r/atom (load-ui)))
 
@@ -892,7 +895,16 @@ gfx-win   ; auto-shows the accumulated curves
                       js/CM.syntaxHighlighting
                       js/CM.defaultHighlightStyle)
                  (conj (js/CM.syntaxHighlighting js/CM.defaultHighlightStyle))
-                 js/CM.defaultExtensions   (conj js/CM.defaultExtensions)
+                 ;; Paredit on: full clojure-mode bundle (syntax + close-
+                 ;; brackets keymap + format-on-change filter + …).
+                 ;; Paredit off: just the Clojure language definition so we
+                 ;; keep syntax highlighting and indent rules without the
+                 ;; auto-pair / skip-over / re-format behaviour the user
+                 ;; can't disable any other way.
+                 (and js/CM.defaultExtensions (:paredit-on? @!ui))
+                 (conj js/CM.defaultExtensions)
+                 (and js/CM.cljSyntax (not (:paredit-on? @!ui)))
+                 (conj (js/CM.cljSyntax))
                  js/CM.defaultKeymap       (conj (.of js/CM.keymap
                                                       js/CM.defaultKeymap))
                  js/CM.historyKeymap       (conj (.of js/CM.keymap
@@ -931,22 +943,38 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- on-shelf-input [src]
   (swap! !shelf assoc :input src :output (translate-scheme src)))
 
+(defn- column-of [view pos]
+  (let [doc  (.. view -state -doc)
+        line (.lineAt doc pos)]
+    (- pos (.-from line))))
+
+(defn- shift-following-lines
+  "Pad each line after the first by `col` spaces so a multi-line block
+   inserted at column `col` keeps its internal indent relative to the
+   cursor's position rather than starting at column 0."
+  [code col]
+  (if (or (zero? col) (not (clojure.string/includes? code "\n")))
+    code
+    (clojure.string/replace code "\n"
+                            (str "\n" (apply str (repeat col " "))))))
+
 (defn- insert-and-format!
-  "Drop `code` at the editor's current cursor / selection, then run the
-   language-aware reindent on the inserted range so multi-line forms align
-   with their surroundings. Returns true when an insert actually happened."
+  "Drop `code` at the editor's cursor / selection, shifted so multi-line
+   forms align with the surrounding indentation. Marks the change with
+   userEvent 'noformat' so clojure-mode's transaction filter (which is on
+   when paredit is on) doesn't re-flow the wrapped output and lose parens.
+   Returns true when an insert actually happened."
   [code]
   (when-let [view @!view]
     (when-not (clojure.string/blank? code)
-      (let [sel  (.. view -state -selection -main)
-            from (.-from sel)
-            to   (.-to sel)
-            end  (+ from (count code))]
+      (let [sel     (.. view -state -selection -main)
+            from    (.-from sel)
+            to      (.-to sel)
+            col     (column-of view from)
+            shifted (shift-following-lines code col)]
         (.dispatch view
-                   #js {:changes   #js {:from from :to to :insert code}
-                        :selection #js {:anchor from :head end}})
-        (when js/CM.indentSelection
-          (js/CM.indentSelection view))
+                   #js {:changes   #js {:from from :to to :insert shifted}
+                        :userEvent "noformat"})
         (.focus view)
         true))))
 
@@ -1039,48 +1067,76 @@ gfx-win   ; auto-shows the accumulated curves
            ")")
       src)))
 
+(defn- defn-form?
+  "Does the source begin with a top-level (defn …) or (defn- …) form?"
+  [src]
+  (boolean (re-find #"^\s*\(defn-?\s+" src)))
+
+(defn- defn-name
+  "Extract the name from a leading (defn name …) form, or nil."
+  [src]
+  (when-let [m (re-find #"^\s*\(defn-?\s+(\S+)" src)]
+    (second m)))
+
+(defn- plot-template          [body] (str "(plot " body ")"))
+(defn- animate-template       [body] (str "(animate " body ")"))
+(defn- parametric-2d-template [body]
+  (str "[mafs/Mafs {:viewBox {:x [-2 2] :y [-2 2]}}\n"
+       " [mafs.coordinates/Cartesian]\n"
+       " [mafs.plot/Parametric\n"
+       "  {:t  [0 (* 2 Math/PI)]\n"
+       "   :xy " body "}]]"))
+(defn- parametric-3d-template [body]
+  (str "[mathbox/MathBox\n"
+       " {:container {:style {:height \"400px\" :width \"100%\"}}}\n"
+       " [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}\n"
+       "  [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]\n"
+       "  [mb/Interval\n"
+       "   {:range [0 (* 2 Math/PI)] :width 256 :channels 3\n"
+       "    :expr (fn [emit t i time]\n"
+       "            (let [v (" body " t)]\n"
+       "              (emit (nth v 0) (nth v 1) (nth v 2))))}]\n"
+       "  [mb/Line {:width 4 :color \"#3090ff\"}]]]"))
+(defn- surface-template [body]
+  (str "[mathbox/MathBox\n"
+       " {:container {:style {:height \"400px\" :width \"100%\"}}}\n"
+       " [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}\n"
+       "  [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]\n"
+       "  [mb/Area\n"
+       "   {:rangeX [-2 2] :rangeY [-2 2]\n"
+       "    :width 32 :height 32 :channels 3\n"
+       "    :expr (fn [emit x y i j time]\n"
+       "            (emit x (" body " x y) y))}]\n"
+       "  [mb/Surface {:shaded true :color \"#3090ff\"}]]]"))
+
+(def ^:private kind->template
+  {:plot          plot-template
+   :animate       animate-template
+   :parametric-2d parametric-2d-template
+   :parametric-3d parametric-3d-template
+   :surface       surface-template})
+
 (defn- wrap-code
-  "Build the wrapped graphics form for the given kind. Pure textual."
+  "Build the wrapped graphics form for the given kind. Pure textual.
+
+   Three shapes:
+   * (defn name [args] body) → keep the defn as a top-level form and
+     append a separate (template name) form, so the defn evaluates and
+     its name is what the second form graphs.
+   * src has quoted Emmy vars matching the kind's expected names (e.g.
+     'x for :plot, 't for :parametric, 'x/'y for :surface) → strip the
+     quotes and wrap as (fn [vars…] body) before applying the template.
+   * Otherwise → assume src is already a function, apply the template
+     directly: (plot Math/sin), (plot (find-path …))."
   [kind src]
-  (let [src  (clojure.string/trim src)
-        body (wrap-as-fn-of src (expected-vars-for kind))]
-    (case kind
-      :plot
-      (str "(plot " body ")")
+  (let [src      (clojure.string/trim src)
+        template (kind->template kind)]
+    (cond
+      (defn-form? src)
+      (str src "\n\n" (template (defn-name src)))
 
-      :animate
-      (str "(animate " body ")")
-
-      :parametric-2d
-      (str "[mafs/Mafs {:viewBox {:x [-2 2] :y [-2 2]}}\n"
-           " [mafs.coordinates/Cartesian]\n"
-           " [mafs.plot/Parametric\n"
-           "  {:t  [0 (* 2 Math/PI)]\n"
-           "   :xy " body "}]]")
-
-      :parametric-3d
-      (str "[mathbox/MathBox\n"
-           " {:container {:style {:height \"400px\" :width \"100%\"}}}\n"
-           " [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}\n"
-           "  [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]\n"
-           "  [mb/Interval\n"
-           "   {:range [0 (* 2 Math/PI)] :width 256 :channels 3\n"
-           "    :expr (fn [emit t i time]\n"
-           "            (let [v (" body " t)]\n"
-           "              (emit (nth v 0) (nth v 1) (nth v 2))))}]\n"
-           "  [mb/Line {:width 4 :color \"#3090ff\"}]]]")
-
-      :surface
-      (str "[mathbox/MathBox\n"
-           " {:container {:style {:height \"400px\" :width \"100%\"}}}\n"
-           " [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}\n"
-           "  [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]\n"
-           "  [mb/Area\n"
-           "   {:rangeX [-2 2] :rangeY [-2 2]\n"
-           "    :width 32 :height 32 :channels 3\n"
-           "    :expr (fn [emit x y i j time]\n"
-           "            (emit x (" body " x y) y))}]\n"
-           "  [mb/Surface {:shaded true :color \"#3090ff\"}]]]"))))
+      :else
+      (template (wrap-as-fn-of src (expected-vars-for kind))))))
 
 (defn- recompute-output [{:keys [kind input] :as state}]
   (assoc state
@@ -1261,10 +1317,13 @@ gfx-win   ; auto-shows the accumulated curves
     [:div.pane
      [:div.label "Code"]
      [pages-bar]
-     ;; Key on vim-on AND OS theme so toggling either forces CM to
-     ;; remount; CM6's vim extension and theme are baked in at editor
-     ;; construction time.
-     ^{:key (str "cm-" (:vim-on @!ui) "-" @!dark?)} [cm-editor]
+     ;; Key on vim-on, paredit-on?, AND OS theme so toggling any forces CM
+     ;; to remount; CM6's vim extension, paredit bundle, and theme are all
+     ;; baked in at editor construction time.
+     ^{:key (str "cm-" (:vim-on @!ui)
+                 "-" (:paredit-on? @!ui)
+                 "-" @!dark?)}
+     [cm-editor]
      [shelf]
      [auto-graph-shelf]
      [:div.toolbar
@@ -1285,6 +1344,12 @@ gfx-win   ; auto-shows the accumulated curves
                 :checked   (boolean (:vim-on @!ui))
                 :on-change #(swap! !ui update :vim-on not)}]
        "vim"]
+      [:label.check
+       {:title "Paredit-style structural editing — auto-pair brackets, skip-over closing parens, format on every change. Off if you want predictable typing."}
+       [:input {:type      "checkbox"
+                :checked   (boolean (:paredit-on? @!ui))
+                :on-change #(swap! !ui update :paredit-on? not)}]
+       "paredit"]
       [:button.btn.permalink-btn
        {:on-click share-current!
         :title    "Copy a URL that loads this page's source for someone else"}

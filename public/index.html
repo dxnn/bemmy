@@ -81,6 +81,11 @@
           syntaxHighlighting:  language.syntaxHighlighting,
           defaultHighlightStyle: language.defaultHighlightStyle,
           defaultExtensions:   cljs.default_extensions,
+          // cljs.syntax() — Clojure language definition only, no paredit
+          // close-bracket keymap or format-on-change transaction filter.
+          // Used when paredit is toggled off in the UI; we still want
+          // syntax highlighting and indent rules.
+          cljSyntax:           cljs.syntax,
           completeKeymap:      cljs.complete_keymap,
           vim:                 vim.vim,
           oneDark:             oneDark.oneDark
