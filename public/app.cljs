@@ -972,6 +972,204 @@ gfx-win   ; auto-shows the accumulated curves
         [:span.hint
          "Drops the translated text where the editor caret is."]]])))
 
+;; --- Auto-graph shelf ------------------------------------------------------
+;; Wraps an arbitrary Emmy expression (a fn, a path, Math/sin, ...) in the
+;; right graphics form: plot, parametric 2D / 3D, surface, or animate.
+;; Mirrors the SICM → Emmy translator UX (paste left, wrapped form right,
+;; Insert at cursor) — no live preview, since rendering an expensive expr
+;; like (find-path ...) on every keystroke is exactly what froze the page
+;; in the first place. We do eval to classify, but on a debounce, and only
+;; once per stable input.
+
+(defonce !auto-graph
+  (r/atom {:open? false :input "" :output "" :kind nil :err nil}))
+
+(defonce ^:private !auto-graph-debounce (atom nil))
+
+(defn- looks-time-arg?
+  "Heuristic: does the source open with (fn [t …] or (defn name [t …]?
+   Used to disambiguate a 2-arg numeric → number fn between :animate and
+   :surface — the user can override by renaming or wrapping manually."
+  [src]
+  (boolean
+    (or (re-find #"\(fn\s*\[\s*t[\s\]]"           src)
+        (re-find #"\(fn\s*\[\s*time[\s\]]"        src)
+        (re-find #"\(defn[-\s]+\S+\s*\[\s*t[\s\]]"    src)
+        (re-find #"\(defn[-\s]+\S+\s*\[\s*time[\s\]]" src))))
+
+(defn- classify-graph
+  "Probe an evaluated value v (and its source) and return one of
+     :plot :parametric-2d :parametric-3d :surface :animate
+   or [:unknown reason]. Probing calls v with one numeric arg, then two —
+   the side effect is one or two cheap calls per debounced eval."
+  [v src]
+  (cond
+    (not (fn? v))
+    [:unknown "Value isn't callable — need a function or polynomial path."]
+
+    :else
+    (let [r1 (try (v 0.5) (catch :default _ ::probe-failed))]
+      (cond
+        (number? r1)
+        :plot
+
+        (= r1 ::probe-failed)
+        (let [r2 (try (v 0.5 0.5) (catch :default _ ::probe-failed))]
+          (cond
+            (= r2 ::probe-failed)
+            [:unknown "Function didn't accept one or two numeric args."]
+            (number? r2)
+            (if (looks-time-arg? src) :animate :surface)
+            :else
+            [:unknown "2-arg call returned a non-numeric value."]))
+
+        :else
+        (let [n (try (count r1) (catch :default _ nil))]
+          (case n
+            2   :parametric-2d
+            3   :parametric-3d
+            nil [:unknown "1-arg call returned a non-numeric, non-tuple value."]
+            [:unknown (str "1-arg call returned a " n
+                           "-tuple; only 2D and 3D supported.")]))))))
+
+(defn- wrap-code [kind src]
+  (let [src (clojure.string/trim src)]
+    (case kind
+      :plot
+      (str "(plot " src ")")
+
+      :animate
+      (str "(animate " src ")")
+
+      :parametric-2d
+      (str "[mafs/Mafs {:viewBox {:x [-2 2] :y [-2 2]}}\n"
+           " [mafs.coordinates/Cartesian]\n"
+           " [mafs.plot/Parametric\n"
+           "  {:t  [0 (* 2 Math/PI)]\n"
+           "   :xy " src "}]]")
+
+      :parametric-3d
+      (str "[mathbox/MathBox\n"
+           " {:container {:style {:height \"400px\" :width \"100%\"}}}\n"
+           " [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}\n"
+           "  [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]\n"
+           "  [mb/Interval\n"
+           "   {:range [0 (* 2 Math/PI)] :width 256 :channels 3\n"
+           "    :expr (fn [emit t i time]\n"
+           "            (let [v (" src " t)]\n"
+           "              (emit (nth v 0) (nth v 1) (nth v 2))))}]\n"
+           "  [mb/Line {:width 4 :color \"#3090ff\"}]]]")
+
+      :surface
+      (str "[mathbox/MathBox\n"
+           " {:container {:style {:height \"400px\" :width \"100%\"}}}\n"
+           " [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}\n"
+           "  [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]\n"
+           "  [mb/Area\n"
+           "   {:rangeX [-2 2] :rangeY [-2 2]\n"
+           "    :width 32 :height 32 :channels 3\n"
+           "    :expr (fn [emit x y i j time]\n"
+           "            (emit x (" src " x y) y))}]\n"
+           "  [mb/Surface {:shaded true :color \"#3090ff\"}]]]"))))
+
+(defn- kind-label [kind]
+  (case kind
+    :plot          "plot — y = f(x)"
+    :animate       "animate — y = f(t, x)"
+    :parametric-2d "parametric 2D — (x, y) = f(t)"
+    :parametric-3d "parametric 3D — (x, y, z) = f(t)"
+    :surface       "surface — z = f(x, y)"
+    nil))
+
+(defn- auto-graph-classify!
+  "Eval src and update the auto-graph atom. Guarded to only act if src is
+   still the current input — debounced calls might otherwise overwrite a
+   newer eval result with a stale one."
+  [src]
+  (when (= src (:input @!auto-graph))
+    (cond
+      (clojure.string/blank? src)
+      (swap! !auto-graph assoc :kind nil :output "" :err nil)
+
+      :else
+      (try
+        (let [v (js/scittle.core.eval_string src)
+              k (classify-graph v src)]
+          (if (and (vector? k) (= :unknown (first k)))
+            (swap! !auto-graph assoc :kind nil :output "" :err (second k))
+            (swap! !auto-graph assoc
+                   :kind   k
+                   :output (wrap-code k src)
+                   :err    nil)))
+        (catch :default e
+          (swap! !auto-graph assoc :kind nil :output ""
+                 :err (str "Eval failed: " (or (.-message e) (str e)))))))))
+
+(defn- on-auto-graph-input [src]
+  ;; Reflect the typed text immediately; debounce the (potentially expensive)
+  ;; eval+classify so a paste of (find-path …) doesn't run every keystroke.
+  (swap! !auto-graph assoc :input src)
+  (when-let [t @!auto-graph-debounce] (js/clearTimeout t))
+  (reset! !auto-graph-debounce
+          (js/setTimeout
+           (fn []
+             (reset! !auto-graph-debounce nil)
+             (auto-graph-classify! src))
+           400)))
+
+(defn- insert-auto-graph! []
+  (when-let [view @!view]
+    (let [output (:output @!auto-graph)]
+      (when-not (clojure.string/blank? output)
+        (let [sel  (.. view -state -selection -main)
+              from (.-from sel)
+              to   (.-to sel)]
+          (.dispatch view #js {:changes #js {:from from :to to :insert output}})
+          (.focus view)
+          (swap! !auto-graph assoc :open? false))))))
+
+(defn- toggle-translator! []
+  (swap! !auto-graph assoc :open? false)
+  (swap! !shelf       update :open? not))
+
+(defn- toggle-auto-graph! []
+  (swap! !shelf       assoc :open? false)
+  (swap! !auto-graph  update :open? not))
+
+(defn- auto-graph-shelf []
+  (let [{:keys [open? input output kind err]} @!auto-graph]
+    (when open?
+      [:div.shelf
+       [:div.shelf-header
+        [:span.shelf-title "Auto-graph: Emmy expression → graphics form"]
+        [:button.shelf-close
+         {:on-click #(swap! !auto-graph assoc :open? false)
+          :title    "Close"} "×"]]
+       [:div.shelf-body
+        [:div.shelf-pane
+         [:div.shelf-sublabel "Emmy expression"]
+         [:textarea.shelf-textarea
+          {:value       input
+           :spell-check false
+           :placeholder ";; A function or path: Math/sin, (fn [x] …),\n;; (find-path …), (fn [t x] …) for animation, …"
+           :on-change   #(on-auto-graph-input (.. % -target -value))}]]
+        [:div.shelf-pane
+         [:div.shelf-sublabel
+          (cond
+            err  "Couldn't classify"
+            kind (str "Detected: " (kind-label kind))
+            :else "Wrapped form")]
+         [:textarea.shelf-textarea
+          {:value       (or err output)
+           :read-only   true
+           :spell-check false}]]]
+       [:div.shelf-toolbar
+        [:button {:on-click insert-auto-graph!
+                  :disabled (clojure.string/blank? output)}
+         "Insert at cursor"]
+        [:span.hint
+         "Drops the wrapped form where the editor caret is. Insert and evaluate to see it render."]]])))
+
 (defonce !system-menu-open? (r/atom false))
 
 (defonce _close-system-menu-on-outside
@@ -1099,13 +1297,19 @@ gfx-win   ; auto-shows the accumulated curves
      ;; construction time.
      ^{:key (str "cm-" (:vim-on @!ui) "-" @!dark?)} [cm-editor]
      [shelf]
+     [auto-graph-shelf]
      [:div.toolbar
       [:button.action {:on-click eval!} "Evaluate"]
       [:button.btn
        {:class    (when (:open? @!shelf) "is-on")
-        :on-click #(swap! !shelf update :open? not)
+        :on-click toggle-translator!
         :title    "Toggle SICM → Emmy translator"}
        "SICM → Emmy"]
+      [:button.btn
+       {:class    (when (:open? @!auto-graph) "is-on")
+        :on-click toggle-auto-graph!
+        :title    "Wrap an Emmy expression in the right graphics form"}
+       "Auto-graph"]
       [:label.check
        {:title "Vim keybindings (persisted across reloads)"}
        [:input {:type      "checkbox"
