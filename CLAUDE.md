@@ -120,4 +120,23 @@ Workflow:
   Escape-blur in vim and bottom-of-pane truncation. CSS in
   `index.html` reorganized into sectioned, one-decl-per-line form
   with `--font-mono` / `--font-sans` tokens.
-- See commits `3139317` … `5d317de` (six commits, all on `main`).
+- New "Auto-graph" system page documenting the shelf with worked
+  examples (function, symbolic body, Lagrangian → plot/parametric/
+  animate, defn'd Lagrangian) plus SICM Ex. 1.33 (Falling off a log)
+  as the "beyond auto-graph" example.
+- See commits `3139317` … `main` (~10 commits since the start of the
+  Auto-graph work).
+
+## Todo
+
+- Language-aware reindent on insert. Currently `insert-and-format!`
+  uses a column-shift (pad each non-first line by the cursor column),
+  which keeps multi-line templates aligned but doesn't do real
+  Clojure indentation. CodeMirror's `indentSelection` from
+  `@codemirror/commands` is exported as `js/CM.indentSelection` and
+  clojure-mode does register an `indentNodeProp` indent service, so
+  the wiring is in place — but earlier attempts to use it interacted
+  badly with clojure-mode's auto-format `transactionFilter` and ate
+  closing parens. Worth revisiting now that inserts mark
+  `userEvent: "noformat"`, which would let `indentSelection` run
+  without the filter clobbering the result.

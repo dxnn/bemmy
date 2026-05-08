@@ -450,6 +450,254 @@ gfx-win   ; auto-shows the accumulated curves
   [0 (* 4 Math/PI)] [-1.2 1.2])
 ")
 
+(def auto-graph-page
+  ";; ====================================================================
+;; BEmmy — Auto-graph
+;; ====================================================================
+;; The 'Auto-graph' button in the toolbar opens a shelf that wraps an
+;; Emmy expression in the appropriate graphics form. Pick a kind from
+;; the dropdown (Plot / Parametric 2D / Parametric 3D / Surface /
+;; Animate), paste your expression on the left, see the wrapped form
+;; on the right. 'Insert at cursor' drops it into the editor.
+;;
+;; The shelf does NOT evaluate your code. It's purely textual, so it
+;; can never freeze the page on something expensive like (find-path …).
+;;
+;; It handles three shapes:
+;;
+;;   1. A function       — wrapped directly:
+;;        Math/sin              → (plot Math/sin)
+;;
+;;   2. A symbolic body  — quotes stripped:
+;;        (sin 'x)              → (plot (fn [x] (sin x)))
+;;
+;;   3. A Lagrangian     — find-path-based template per kind:
+;;        (L-harmonic 'm 'k)    → (let [m 1.0 k 1.0 …
+;;                                       L (L-harmonic m k)
+;;                                       path (find-path L …)]
+;;                                  (plot path …))
+;;
+;; The examples below show each shape — try copying any input into the
+;; shelf with the suggested kind, or just evaluate the wrapped form
+;; that follows.
+
+
+;; ----- Function → Plot -----------------------------------------------
+;; Source: Math/sin
+
+(plot Math/sin)
+
+
+;; ----- Symbolic body in 'x → Plot ------------------------------------
+;; Source: (sin 'x)
+;; The shelf strips 'x and wraps the body in (fn [x] …).
+
+(plot (fn [x] (sin x)))
+
+
+;; ----- Vector-returning fn → Parametric 2D ---------------------------
+;; Source: (fn [t] [(Math/cos t) (Math/sin t)])
+
+[mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
+ [mafs.coordinates/Cartesian]
+ [mafs.plot/Parametric
+  {:t  [0 (* 2 Math/PI)]
+   :xy (fn [t] [(Math/cos t) (Math/sin t)])}]]
+
+
+;; ====================================================================
+;; Lagrangian magic
+;; ====================================================================
+;; Paste any expression containing a SICM-style (L-name args) sub-form —
+;; even the full Euler-Lagrange wrapping — and the shelf builds a
+;; find-path-based plot. The outer (Lagrange-equations …) wrapping is
+;; intentionally discarded; what you actually want to see is q(t),
+;; not the EL residual.
+
+
+;; ----- Lagrangian → Plot (q(t)) --------------------------------------
+;; Source: (((Lagrange-equations (L-harmonic 'm 'k))
+;;           (literal-function 'q))
+;;          't)
+
+(let [m 1.0       ; 'm
+      k 1.0       ; 'k
+      t0 0.0
+      t1 (/ Math/PI 2)
+      q0 1.0
+      q1 0.0
+      L    (L-harmonic m k)
+      path (find-path L t0 q0 t1 q1 4)]
+  (plot path [t0 t1] [-1.5 1.5]))
+
+
+;; ----- Lagrangian → Parametric 2D (phase plane) ----------------------
+;; Same source, pick Parametric 2D. Plots (q(t), q'(t)) — the canonical
+;; SICM phase-plane visualization for a 1-DOF system.
+
+(let [m 1.0       ; 'm
+      k 1.0       ; 'k
+      t0 0.0
+      t1 (/ Math/PI 2)
+      q0 1.0
+      q1 0.0
+      L    (L-harmonic m k)
+      path (find-path L t0 q0 t1 q1 4)]
+  [mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
+   [mafs.coordinates/Cartesian]
+   [mafs.plot/Parametric
+    {:t  [t0 t1]
+     :xy (fn [t] [(path t) ((D path) t)])}]])
+
+
+;; ----- Lagrangian → Animate (sliders) --------------------------------
+;; Pick Animate. find-path is memoized so dragging a slider re-solves
+;; the variational problem only on slider changes, not on every x
+;; sample within a frame.
+
+(let [t0 0.0
+      t1 (/ Math/PI 2)
+      q0 1.0
+      q1 0.0
+      memo-path (memoize
+                  (fn [m k]
+                    (find-path (L-harmonic m k) t0 q0 t1 q1 4)))]
+  (plot-with-params
+    (fn [{:keys [m k]} t]
+      ((memo-path m k) t))
+    {:m {:value 1.0 :min 0.1 :max 5.0 :step 0.1}
+     :k {:value 1.0 :min 0.1 :max 5.0 :step 0.1}}
+    [t0 t1] [-1.5 1.5]))
+
+
+;; ----- defn'd Lagrangian ---------------------------------------------
+;; Paste a (defn L-… …) form. The L- prefix tells the shelf to route
+;; through the Lagrangian template, treating the defn's args as
+;; quoted free symbols. Output: the defn itself, then a let-prelude
+;; using the new name.
+
+(defn L-harmonic [m k]
+  (fn [local]
+    (let [q (coordinate local)
+          v (velocity local)]
+      (- (* 1/2 m (square v))
+         (* 1/2 k (square q))))))
+
+(let [m 1.0       ; 'm
+      k 1.0       ; 'k
+      t0 0.0
+      t1 (/ Math/PI 2)
+      q0 1.0
+      q1 0.0
+      L    (L-harmonic m k)
+      path (find-path L t0 q0 t1 q1 4)]
+  (plot path [t0 t1] [-1.5 1.5]))
+
+
+;; ====================================================================
+;; Beyond auto-graph
+;; ====================================================================
+;; Auto-graph handles 1D Lagrangians and simple symbolic / functional
+;; expressions. For problems with constraint forces, piecewise dynamics,
+;; or hand-rolled visualizations, you write the form yourself. Here's
+;; SICM Exercise 1.33 — a particle sliding off a horizontal cylinder —
+;; with the constraint method (SICM §1.6.2) and a closed-form animation.
+
+
+;; ----- Departure conditions ------------------------------------------
+;; Energy conservation + (normal force = 0) at the moment of release
+;; gives cos θ* = 2/3 and θ̇* = √(2g/(3R)).
+
+(defn departure-angle
+  \"Angle (rad) from the upward vertical at which the particle leaves.\"
+  [_g _R]
+  (Math/acos (cljs.core// 2 3)))
+
+(defn departure-omega
+  \"Angular speed |θ̇| at the moment the particle leaves the cylinder.\"
+  [g R]
+  (Math/sqrt (cljs.core// (* 2 g) (* 3 R))))
+
+(let [g 9.81 R 1.0]
+  {:theta-rad (departure-angle g R)
+   :theta-deg (* (departure-angle g R) (cljs.core// 180 Math/PI))
+   :omega     (departure-omega g R)
+   :v-tangent (* R (departure-omega g R))})
+
+
+;; ----- Animated trajectory --------------------------------------------
+;; On the cylinder, θ̈ = (g/R) sin θ has a clean closed form (small θ₀):
+;;   θ(t) = 4 atan(tan(θ₀/4) · exp(√(g/R) · t))
+;; After λ → 0 the particle is in free fall with the inherited
+;; tangential velocity. We splice the two phases and animate a moving
+;; red marker along the resulting blue trajectory.
+
+(defn falling-log-anim []
+  (let [R       1.0
+        g       9.81
+        th0     0.05
+        omega0  (Math/sqrt (cljs.core// g R))
+        thS     (Math/acos (cljs.core// 2 3))
+        thdotS  (Math/sqrt (cljs.core// (* 2 g) (* 3 R)))
+        t-leave (cljs.core// (Math/log
+                              (cljs.core// (Math/tan (cljs.core// thS 4))
+                                           (Math/tan (cljs.core// th0 4))))
+                             omega0)
+        t-total (+ t-leave 0.4)
+        pos     (fn [t]
+                  (if (< t t-leave)
+                    (let [th (* 4 (Math/atan
+                                   (* (Math/tan (cljs.core// th0 4))
+                                      (Math/exp (* omega0 t)))))]
+                      [(* R (Math/sin th)) (* R (Math/cos th))])
+                    (let [dt (- t t-leave)
+                          vx (* R thdotS (Math/cos thS))
+                          vy (- (* R thdotS (Math/sin thS)))
+                          x0 (* R (Math/sin thS))
+                          y0 (* R (Math/cos thS))]
+                      [(+ x0 (* vx dt))
+                       (- (+ y0 (* vy dt)) (* 0.5 g dt dt))])))
+        !t      (reagent.core/atom 0)
+        !start  (atom nil)
+        timer   (atom nil)]
+    (reagent.core/create-class
+     {:component-did-mount
+      (fn [_]
+        (reset! !start (.now js/Date))
+        (reset! timer
+                (js/setInterval
+                 (fn []
+                   (let [elapsed (cljs.core// (cljs.core/- (.now js/Date)
+                                                           (deref !start))
+                                              1000.0)]
+                     (reset! !t (cljs.core/mod elapsed t-total))))
+                 16)))
+      :component-will-unmount
+      (fn [_] (when (deref timer) (js/clearInterval (deref timer))))
+      :reagent-render
+      (fn [_]
+        (let [t     @!t
+              [x y] (pos t)]
+          [mafs/Mafs {:viewBox {:x [-1.5 2.5] :y [-1.5 1.5]}}
+           [mafs.coordinates/Cartesian]
+           [mafs.plot/Parametric
+            {:t  [0 (* 2 Math/PI)]
+             :xy (fn [s] [(* R (Math/cos s)) (* R (Math/sin s))])}]
+           [mafs.plot/Parametric
+            {:t  [0 t-total]
+             :xy pos
+             :color \"rgb(120,160,255)\"}]
+           [mafs.core/Point
+            {:x (double (* R (Math/sin thS)))
+             :y (double (* R (Math/cos thS)))
+             :color \"#888\"}]
+           [mafs.core/Point
+            {:x (double x) :y (double y)
+             :color \"#d33\"}]]))})))
+
+[falling-log-anim]
+")
+
 ;; --- System pages: read-only templates baked into the build. Editing
 ;; one transparently forks it into a fresh user page so the template
 ;; itself stays canonical and updates whenever we ship new content.
@@ -457,10 +705,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; the order written here rather than alphabetically.
 (def system-pages
   (array-map
-    "Welcome"  basics-page
-    "SICM"     sicm-page
-    "Graphics" graphics-page
-    "3D"       graphics-3d-page))
+    "Welcome"    basics-page
+    "SICM"       sicm-page
+    "Graphics"   graphics-page
+    "Auto-graph" auto-graph-page
+    "3D"         graphics-3d-page))
 
 ;; --- Pages: named source buffers persisted in localStorage. ----------------
 
@@ -1202,12 +1451,13 @@ gfx-win   ; auto-shows the accumulated curves
                    "t1 (/ Math/PI 2)"
                    "q0 1.0"
                    "q1 0.0"
-                   (str ";; Sweep '" swept " over its rangeY")
+                   (str ";; Sweep '" swept " over its rangeY (8 paths × basis-3 keeps the")
+                   (str ";; on-mount find-path freeze around 1s; bump them up for accuracy.)")
                    (str swept "-min 0.5")
                    (str swept "-max 5.0")
-                   (str swept "-n   16")
+                   (str swept "-n   8")
                    (str swept "s    (mapv #(+ " swept "-min (* (/ (- " swept "-max " swept "-min) (dec " swept "-n)) %)) (range " swept "-n))")
-                   (str "paths (mapv (fn [" swept "] (find-path " L-call " t0 q0 t1 q1 4)) " swept "s)")])]
+                   (str "paths (mapv (fn [" swept "] (find-path " L-call " t0 q0 t1 q1 3)) " swept "s)")])]
         (str "(let [" (clojure.string/join "\n      " rows) "]"
              "\n  [mathbox/MathBox"
              "\n   {:container {:style {:height \"400px\" :width \"100%\"}}}"
@@ -1260,6 +1510,24 @@ gfx-win   ; auto-shows the accumulated curves
   (when-let [m (re-find #"^\s*\(defn-?\s+(\S+)" src)]
     (second m)))
 
+(defn- defn-args
+  "Extract arg names from a leading (defn name [args] …) form. Naive —
+   the [..] capture loses nested brackets, so destructured arg lists
+   come back garbled. Acceptable for the SICM-style Lagrangians we
+   special-case below, which always use plain symbol args."
+  [src]
+  (when-let [m (re-find #"^\s*\(defn-?\s+\S+\s+\[([^\]]*)\]" src)]
+    (let [s (clojure.string/trim (second m))]
+      (if (clojure.string/blank? s) [] (clojure.string/split s #"\s+")))))
+
+(defn- lagrangian-defn?
+  "Is this a (defn L-… …) form? L- prefix is the SICM-book convention
+   for Lagrangians; we treat it as a hint to route through the
+   Lagrangian template instead of the generic defn wrap."
+  [src]
+  (and (defn-form? src)
+       (some-> (defn-name src) (clojure.string/starts-with? "L-"))))
+
 (defn- plot-template          [body] (str "(plot " body ")"))
 (defn- animate-template       [body] (str "(animate " body ")"))
 (defn- parametric-2d-template [body]
@@ -1301,15 +1569,18 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- wrap-code
   "Build the wrapped graphics form for the given kind. Pure textual.
 
-   Four shapes, tried in order:
+   Five shapes, tried in order:
    * src contains a (L-<name> …) sub-form → emit a find-path-based
      template suited to the chosen kind. The user's outer wrapping
      (Lagrange-equations, literal-function, …) is intentionally
      discarded; we assume they want a trajectory plot, not the EL
      residual itself.
-   * (defn name [args] body) → keep the defn as a top-level form and
-     append a separate (template name) form, so the defn evaluates and
-     its name is what the second form graphs.
+   * (defn L-<name> [args] body) → keep the defn as-is and append a
+     synthesized (L-name 'arg …) call routed through the Lagrangian
+     template, so a Lagrangian definition lands ready-to-plot.
+   * Other (defn name [args] body) → keep the defn as a top-level form
+     and append a separate (template name) form, so the defn evaluates
+     and its name is what the second form graphs.
    * src has quoted Emmy vars matching the kind's expected names (e.g.
      'x for :plot, 't for :parametric, 'x/'y for :surface) → strip the
      quotes and wrap as (fn [vars…] body) before applying the template.
@@ -1321,6 +1592,16 @@ gfx-win   ; auto-shows the accumulated curves
     (cond
       (lagrangian-pattern? src)
       (lagrangian-template kind src)
+
+      (lagrangian-defn? src)
+      (let [name  (defn-name src)
+            args  (defn-args src)
+            synth (str "(" name
+                       (when (seq args)
+                         (str " " (clojure.string/join " "
+                                                       (map #(str "'" %) args))))
+                       ")")]
+        (str src "\n\n" (lagrangian-template kind synth)))
 
       (defn-form? src)
       (str src "\n\n" (template (defn-name src)))
