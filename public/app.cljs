@@ -513,6 +513,18 @@ gfx-win   ; auto-shows the accumulated curves
 ;; find-path-based plot. The outer (Lagrange-equations …) wrapping is
 ;; intentionally discarded; what you actually want to see is q(t),
 ;; not the EL residual.
+;;
+;; Evaluate this defn before running the examples below — they all
+;; reference L-harmonic. (Pasting (defn L-harmonic …) into the shelf
+;; would also produce this defn alongside its plot, see the 'defn'd
+;; Lagrangian' example further down.)
+
+(defn L-harmonic [m k]
+  (fn [local]
+    (let [q (coordinate local)
+          v (velocity local)]
+      (- (* 1/2 m (square v))
+         (* 1/2 k (square q))))))
 
 
 ;; ----- Lagrangian → Plot (q(t)) --------------------------------------
@@ -575,21 +587,20 @@ gfx-win   ; auto-shows the accumulated curves
 ;; through the Lagrangian template, treating the defn's args as
 ;; quoted free symbols. Output: the defn itself, then a let-prelude
 ;; using the new name.
+;;
+;; Try pasting this free-particle Lagrangian into the shelf:
 
-(defn L-harmonic [m k]
+(defn L-free-particle [mass]
   (fn [local]
-    (let [q (coordinate local)
-          v (velocity local)]
-      (- (* 1/2 m (square v))
-         (* 1/2 k (square q))))))
+    (let [v (velocity local)]
+      (* 1/2 mass (square v)))))
 
-(let [m 1.0       ; 'm
-      k 1.0       ; 'k
+(let [mass 1.0       ; 'mass
       t0 0.0
       t1 (/ Math/PI 2)
       q0 1.0
       q1 0.0
-      L    (L-harmonic m k)
+      L    (L-free-particle mass)
       path (find-path L t0 q0 t1 q1 4)]
   (plot path [t0 t1] [-1.5 1.5]))
 
@@ -1192,38 +1203,32 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- on-shelf-input [src]
   (swap! !shelf assoc :input src :output (translate-scheme src)))
 
-(defn- column-of [view pos]
-  (let [doc  (.. view -state -doc)
-        line (.lineAt doc pos)]
-    (- pos (.-from line))))
-
-(defn- shift-following-lines
-  "Pad each line after the first by `col` spaces so a multi-line block
-   inserted at column `col` keeps its internal indent relative to the
-   cursor's position rather than starting at column 0."
-  [code col]
-  (if (or (zero? col) (not (clojure.string/includes? code "\n")))
-    code
-    (clojure.string/replace code "\n"
-                            (str "\n" (apply str (repeat col " "))))))
-
 (defn- insert-and-format!
-  "Drop `code` at the editor's cursor / selection, shifted so multi-line
-   forms align with the surrounding indentation. Marks the change with
-   userEvent 'noformat' so clojure-mode's transaction filter (which is on
-   when paredit is on) doesn't re-flow the wrapped output and lose parens.
+  "Drop `code` at the editor's cursor / selection, then ask the language's
+   indent service to re-flow the inserted lines so multi-line templates
+   align with the surrounding bracket structure.
+
+   The insert dispatch is marked userEvent 'noformat' so clojure-mode's
+   transactionFilter doesn't reflow the whole wrapped output (which was
+   previously eating closing parens). The followup indentSelection runs
+   line-by-line and is idempotent enough to ride the filter — it just
+   updates leading whitespace, so the filter's per-line re-format pass
+   on those changes is a no-op.
+
    Returns true when an insert actually happened."
   [code]
   (when-let [view @!view]
     (when-not (clojure.string/blank? code)
-      (let [sel     (.. view -state -selection -main)
-            from    (.-from sel)
-            to      (.-to sel)
-            col     (column-of view from)
-            shifted (shift-following-lines code col)]
+      (let [sel  (.. view -state -selection -main)
+            from (.-from sel)
+            to   (.-to sel)
+            end  (+ from (count code))]
         (.dispatch view
-                   #js {:changes   #js {:from from :to to :insert shifted}
+                   #js {:changes   #js {:from from :to to :insert code}
+                        :selection #js {:anchor from :head end}
                         :userEvent "noformat"})
+        (when js/CM.indentSelection
+          (js/CM.indentSelection view))
         (.focus view)
         true))))
 

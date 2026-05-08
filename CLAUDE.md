@@ -129,14 +129,7 @@ Workflow:
 
 ## Todo
 
-- Language-aware reindent on insert. Currently `insert-and-format!`
-  uses a column-shift (pad each non-first line by the cursor column),
-  which keeps multi-line templates aligned but doesn't do real
-  Clojure indentation. CodeMirror's `indentSelection` from
-  `@codemirror/commands` is exported as `js/CM.indentSelection` and
-  clojure-mode does register an `indentNodeProp` indent service, so
-  the wiring is in place — but earlier attempts to use it interacted
-  badly with clojure-mode's auto-format `transactionFilter` and ate
-  closing parens. Worth revisiting now that inserts mark
-  `userEvent: "noformat"`, which would let `indentSelection` run
-  without the filter clobbering the result.
+(none currently — language-aware reindent on insert was added in
+`856b6a8`'s follow-up; `insert-and-format!` now dispatches the raw
+insert with `userEvent: "noformat"` and then calls CodeMirror's
+`indentSelection` on the new range.)
