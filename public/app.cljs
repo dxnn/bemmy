@@ -1518,6 +1518,146 @@ gfx-win   ; auto-shows the accumulated curves
   (boolean (re-find #"\(L-[\w-]+" src)))
 
 
+;; --- Hamiltonian detection ------------------------------------------------
+;; Counterpart to the Lagrangian path. Where (L-name) Lagrangians get a
+;; find-path variational solve, (H-name) Hamiltonians get a numerical ODE
+;; integration via Emmy's state-advancer + Hamilton-equations. Same arg
+;; conventions: 'm, 'k, … become let-bindings with default 1.0; concrete
+;; args pass through verbatim.
+
+(defn- hamiltonian-form [src]
+  (when-let [m (re-find #"\(H-[\w-]+" src)]
+    (let [start (.indexOf src m)]
+      (when-let [end (find-balanced-paren-end src start)]
+        (subs src start end)))))
+
+(defn- hamiltonian-pattern? [src]
+  (boolean (re-find #"\(H-[\w-]+" src)))
+
+(defn- ham-let-prelude
+  "(let […] for the Hamiltonian 1D-trajectory kinds. Defines an advancer
+   that integrates Hamilton's equations from (t0 q0 p0) to a given t."
+  [name bindings call]
+  (let [H-call    (str "(" name
+                       (when (seq call) (str " " (clojure.string/join " " call)))
+                       ")")
+        bind-rows (concat
+                   (map (fn [[n d]] (str n " " d "       ; '" n)) bindings)
+                   ["t0 0.0"
+                    "t1 (/ Math/PI 2)"
+                    "q0 1.0"
+                    "p0 0.0"
+                    (str "H        " H-call)
+                    ";; state-advancer + Hamilton-equations gives a stepper:"
+                    ";;   (advancer initial-state t-final) → final state."
+                    ";; Verify your Emmy build exposes both at user-namespace level."
+                    "advancer ((state-advancer Hamilton-equations) H)"])]
+    (str "(let [" (clojure.string/join "\n      " bind-rows) "]")))
+
+(defn- hamiltonian-template
+  "Build the kind-specific Hamilton-equations template for an (H-…) source.
+   Mirrors lagrangian-template; inner sample fns re-integrate from t0 each
+   call (simple and slow — pre-computing an interpolation table in the let
+   would be faster for many-sample plots)."
+  ([kind src] (hamiltonian-template kind src nil))
+  ([kind src opts]
+   (let [{:keys [name args]}     (parse-lagrangian (hamiltonian-form src))
+         {:keys [bindings call]} (arg-bindings args)
+         sweep-name              (:sweep opts)
+         H-call    (str "(" name
+                        (when (seq call) (str " " (clojure.string/join " " call)))
+                        ")")]
+     (cond
+       (= kind :plot)
+       (str (ham-let-prelude name bindings call)
+            "\n  (plot (fn [t] (nth (advancer (up t0 q0 p0) t) 1))"
+            "\n        [t0 t1] [-1.5 1.5]))")
+
+       (= kind :parametric-2d)
+       (str (ham-let-prelude name bindings call)
+            "\n  [mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}"
+            "\n   [mafs.coordinates/Cartesian]"
+            "\n   [mafs.plot/Parametric"
+            "\n    {:t  [t0 t1]"
+            "\n     :xy (fn [t] (let [s (advancer (up t0 q0 p0) t)]"
+            "\n                   [(nth s 1) (nth s 2)]))}]])")
+
+       (= kind :parametric-3d)
+       (str (ham-let-prelude name bindings call)
+            "\n  [mathbox/MathBox"
+            "\n   {:container {:style {:height \"400px\" :width \"100%\"}}}"
+            "\n   [mb/Cartesian {:range [[t0 t1] [-1.5 1.5] [-1.5 1.5]] :scale [1 1 1]}"
+            "\n    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]"
+            "\n    [mb/Interval"
+            "\n     {:range [t0 t1] :width 256 :channels 3"
+            "\n      :expr (fn [emit t i time]"
+            "\n              (let [s (advancer (up t0 q0 p0) t)]"
+            "\n                (emit t (nth s 1) (nth s 2))))}]"
+            "\n    [mb/Line {:width 4 :color \"#3090ff\"}]]])")
+
+       (and (= kind :surface) (empty? bindings))
+       (hamiltonian-template :plot src)
+
+       (= kind :surface)
+       (let [swept-binding (or (some (fn [[n :as b]] (when (= n sweep-name) b))
+                                     bindings)
+                               (first bindings))
+             [swept _]     swept-binding
+             fixed         (remove #(= % swept-binding) bindings)
+             fixed-row     (map (fn [[n d]] (str n " " d
+                                                 "       ; '" n " — fixed; sweeping '" swept))
+                                fixed)
+             rows (concat
+                   fixed-row
+                   ["t0 0.0"
+                    "t1 (/ Math/PI 2)"
+                    "q0 1.0"
+                    "p0 0.0"
+                    (str ";; Sweep '" swept " over the surface's y axis. Each row pre-computes")
+                    (str ";; a stepper for one " swept " value; re-integrating per surface sample.")
+                    (str swept "-min 0.5")
+                    (str swept "-max 5.0")
+                    (str swept "-n   8")
+                    (str swept "s    (mapv #(+ " swept "-min (* (/ (- " swept "-max " swept "-min) (dec " swept "-n)) %)) (range " swept "-n))")
+                    (str "advs  (mapv (fn [" swept "] ((state-advancer Hamilton-equations) " H-call ")) " swept "s)")])]
+         (str "(let [" (clojure.string/join "\n      " rows) "]"
+              "\n  [mathbox/MathBox"
+              "\n   {:container {:style {:height \"400px\" :width \"100%\"}}}"
+              "\n   [mb/Cartesian {:range [[t0 t1] [" swept "-min " swept "-max] [-1.5 1.5]] :scale [1 1 1]}"
+              "\n    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]"
+              "\n    [mb/Area"
+              "\n     {:rangeX [t0 t1] :rangeY [" swept "-min " swept "-max]"
+              "\n      :width 64 :height " swept "-n :channels 3"
+              "\n      :expr (fn [emit t " swept " i j time]"
+              "\n              (emit t " swept " (nth ((nth advs j) (up t0 q0 p0) t) 1)))}]"
+              "\n    [mb/Surface {:shaded true :color \"#3090ff\"}]]])"))
+
+       (and (= kind :animate) (empty? bindings))
+       (hamiltonian-template :plot src)
+
+       (= kind :animate)
+       (let [names     (mapv first bindings)
+             names-str (clojure.string/join " " names)
+             schema    (clojure.string/join "\n     "
+                         (map (fn [[n d]]
+                                (str ":" n " {:value " d " :min 0.1 :max 5.0 :step 0.1}"))
+                              bindings))]
+         (str "(let [t0 0.0"
+              "\n      t1 (/ Math/PI 2)"
+              "\n      q0 1.0"
+              "\n      p0 0.0"
+              "\n      ;; memoize the stepper on the slider tuple so the ODE setup"
+              "\n      ;; happens once per (m k …) combination."
+              "\n      memo-adv (memoize"
+              "\n                  (fn [" names-str "]"
+              "\n                    ((state-advancer Hamilton-equations) " H-call ")))]"
+              "\n  (plot-with-params"
+              "\n    (fn [{:keys [" names-str "]} t]"
+              "\n      (nth ((memo-adv " names-str ") (up t0 q0 p0) t) 1))"
+              "\n    {" schema "}"
+              "\n    [t0 t1] [-1.5 1.5]))"))))))
+
+
 (defn- defn-form?
   "Does the source begin with a top-level (defn …) or (defn- …) form?"
   [src]
@@ -1546,6 +1686,14 @@ gfx-win   ; auto-shows the accumulated curves
   [src]
   (and (defn-form? src)
        (some-> (defn-name src) (clojure.string/starts-with? "L-"))))
+
+(defn- hamiltonian-defn?
+  "Same idea as lagrangian-defn?, for the H- prefix. Routes through the
+   Hamiltonian template (state-advancer + Hamilton-equations) instead of
+   the generic defn wrap."
+  [src]
+  (and (defn-form? src)
+       (some-> (defn-name src) (clojure.string/starts-with? "H-"))))
 
 (defn- plot-template          [body] (str "(plot " body ")"))
 (defn- animate-template       [body] (str "(animate " body ")"))
@@ -1618,20 +1766,28 @@ gfx-win   ; auto-shows the accumulated curves
   ([kind src] (wrap-code kind src nil))
   ([kind src opts]
    (let [src      (clojure.string/trim src)
-         template (kind->template kind)]
+         template (kind->template kind)
+         synth-call-from-defn
+         (fn []
+           (let [name (defn-name src)
+                 args (defn-args src)]
+             (str "(" name
+                  (when (seq args)
+                    (str " " (clojure.string/join " "
+                                                  (map #(str "'" %) args))))
+                  ")")))]
      (cond
        (lagrangian-pattern? src)
        (lagrangian-template kind src opts)
 
+       (hamiltonian-pattern? src)
+       (hamiltonian-template kind src opts)
+
        (lagrangian-defn? src)
-       (let [name  (defn-name src)
-             args  (defn-args src)
-             synth (str "(" name
-                        (when (seq args)
-                          (str " " (clojure.string/join " "
-                                                        (map #(str "'" %) args))))
-                        ")")]
-         (str src "\n\n" (lagrangian-template kind synth opts)))
+       (str src "\n\n" (lagrangian-template kind (synth-call-from-defn) opts))
+
+       (hamiltonian-defn? src)
+       (str src "\n\n" (hamiltonian-template kind (synth-call-from-defn) opts))
 
        (defn-form? src)
        (str src "\n\n" (template (defn-name src)))
@@ -1640,11 +1796,11 @@ gfx-win   ; auto-shows the accumulated curves
        (template (wrap-as-fn-of src (expected-vars-for kind)))))))
 
 (defn- available-quoted-args
-  "Names of the free symbols ('m, 'k, …) inside the first (L-…) sub-form
-   in src, or nil if none. Used by the shelf to populate the Surface
-   sweep-target picker."
+  "Names of the free symbols ('m, 'k, …) inside the first (L-…) or (H-…)
+   sub-form in src, or nil if none. Used by the shelf to populate the
+   Surface sweep-target picker."
   [src]
-  (when-let [form (lagrangian-form src)]
+  (when-let [form (or (lagrangian-form src) (hamiltonian-form src))]
     (let [{:keys [args]}     (parse-lagrangian form)
           {:keys [bindings]} (arg-bindings args)]
       (mapv first bindings))))
