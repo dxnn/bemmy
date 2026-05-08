@@ -1283,7 +1283,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; into the editor and evaluates manually when ready.
 
 (defonce !auto-graph
-  (r/atom {:open? false :kind :plot :input "" :output ""}))
+  (r/atom {:open? false :kind :plot :input "" :output "" :sweep nil}))
 
 (def ^:private kind-options
   ;; In dropdown order. Each entry is [keyword human-label expected-vars].
@@ -1412,15 +1412,18 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- lagrangian-template
   "Build the kind-specific find-path template for a Lagrangian source.
    :plot/:parametric-2d/:parametric-3d share a single-path prelude; :surface
-   pre-computes a stack of paths over a sweep of the first quoted arg;
-   :animate uses plot-with-params with a memoized find-path so dragging a
-   slider doesn't re-solve the variational problem at every x sample.
+   pre-computes a stack of paths over a sweep of one quoted arg (the one
+   named in opts :sweep, defaulting to the first); :animate uses
+   plot-with-params with a memoized find-path so dragging a slider doesn't
+   re-solve the variational problem at every x sample.
 
    :surface and :animate fall back to :plot when there are no quoted args
    to sweep / slide over."
-  [kind src]
+  ([kind src] (lagrangian-template kind src nil))
+  ([kind src opts]
   (let [{:keys [name args]}     (parse-lagrangian (lagrangian-form src))
         {:keys [bindings call]} (arg-bindings args)
+        sweep-name              (:sweep opts)
         L-call    (str "(" name
                        (when (seq call) (str " " (clojure.string/join " " call)))
                        ")")]
@@ -1453,11 +1456,14 @@ gfx-win   ; auto-shows the accumulated curves
       (lagrangian-template :plot src)
 
       (= kind :surface)
-      (let [[swept _] (first bindings)
-            fixed     (rest bindings)
-            fixed-row (map (fn [[n d]] (str n " " d
-                                            "       ; '" n " — fixed; sweeping '" swept))
-                           fixed)
+      (let [swept-binding (or (some (fn [[n :as b]] (when (= n sweep-name) b))
+                                    bindings)
+                              (first bindings))
+            [swept _]     swept-binding
+            fixed         (remove #(= % swept-binding) bindings)
+            fixed-row     (map (fn [[n d]] (str n " " d
+                                                "       ; '" n " — fixed; sweeping '" swept))
+                               fixed)
             rows (concat
                   fixed-row
                   ["t0 0.0"
@@ -1506,7 +1512,7 @@ gfx-win   ; auto-shows the accumulated curves
              "\n    (fn [{:keys [" names-str "]} t]"
              "\n      ((memo-path " names-str ") t))"
              "\n    {" schema "}"
-             "\n    [t0 t1] [-1.5 1.5]))")))))
+             "\n    [t0 t1] [-1.5 1.5]))"))))))
 
 (defn- lagrangian-pattern? [src]
   (boolean (re-find #"\(L-[\w-]+" src)))
@@ -1604,39 +1610,67 @@ gfx-win   ; auto-shows the accumulated curves
      'x for :plot, 't for :parametric, 'x/'y for :surface) → strip the
      quotes and wrap as (fn [vars…] body) before applying the template.
    * Otherwise → assume src is already a function, apply the template
-     directly: (plot Math/sin), (plot (find-path …))."
-  [kind src]
-  (let [src      (clojure.string/trim src)
-        template (kind->template kind)]
-    (cond
-      (lagrangian-pattern? src)
-      (lagrangian-template kind src)
+     directly: (plot Math/sin), (plot (find-path …)).
 
-      (lagrangian-defn? src)
-      (let [name  (defn-name src)
-            args  (defn-args src)
-            synth (str "(" name
-                       (when (seq args)
-                         (str " " (clojure.string/join " "
-                                                       (map #(str "'" %) args))))
-                       ")")]
-        (str src "\n\n" (lagrangian-template kind synth)))
+   opts is forwarded to lagrangian-template; currently it carries
+   :sweep — the name of the quoted arg the :surface kind should
+   sweep instead of the default first."
+  ([kind src] (wrap-code kind src nil))
+  ([kind src opts]
+   (let [src      (clojure.string/trim src)
+         template (kind->template kind)]
+     (cond
+       (lagrangian-pattern? src)
+       (lagrangian-template kind src opts)
 
-      (defn-form? src)
-      (str src "\n\n" (template (defn-name src)))
+       (lagrangian-defn? src)
+       (let [name  (defn-name src)
+             args  (defn-args src)
+             synth (str "(" name
+                        (when (seq args)
+                          (str " " (clojure.string/join " "
+                                                        (map #(str "'" %) args))))
+                        ")")]
+         (str src "\n\n" (lagrangian-template kind synth opts)))
 
-      :else
-      (template (wrap-as-fn-of src (expected-vars-for kind))))))
+       (defn-form? src)
+       (str src "\n\n" (template (defn-name src)))
 
-(defn- recompute-output [{:keys [kind input] :as state}]
+       :else
+       (template (wrap-as-fn-of src (expected-vars-for kind)))))))
+
+(defn- available-quoted-args
+  "Names of the free symbols ('m, 'k, …) inside the first (L-…) sub-form
+   in src, or nil if none. Used by the shelf to populate the Surface
+   sweep-target picker."
+  [src]
+  (when-let [form (lagrangian-form src)]
+    (let [{:keys [args]}     (parse-lagrangian form)
+          {:keys [bindings]} (arg-bindings args)]
+      (mapv first bindings))))
+
+(defn- recompute-output [{:keys [kind input sweep] :as state}]
   (assoc state
-         :output (if (clojure.string/blank? input) "" (wrap-code kind input))))
+         :output (if (clojure.string/blank? input)
+                   ""
+                   (wrap-code kind input {:sweep sweep}))))
 
 (defn- on-auto-graph-input [src]
-  (swap! !auto-graph #(recompute-output (assoc % :input src))))
+  ;; If the available quoted-arg names changed (or the previously-chosen
+  ;; sweep target is gone), reset :sweep to the new first arg.
+  (swap! !auto-graph
+         (fn [s]
+           (let [args (available-quoted-args src)]
+             (recompute-output
+              (cond-> (assoc s :input src)
+                (not (some #{(:sweep s)} args))
+                (assoc :sweep (first args))))))))
 
 (defn- on-auto-graph-kind [k]
   (swap! !auto-graph #(recompute-output (assoc % :kind k))))
+
+(defn- on-auto-graph-sweep [v]
+  (swap! !auto-graph #(recompute-output (assoc % :sweep v))))
 
 (defn- insert-auto-graph! []
   (when (insert-and-format! (:output @!auto-graph))
@@ -1651,7 +1685,8 @@ gfx-win   ; auto-shows the accumulated curves
   (swap! !auto-graph  update :open? not))
 
 (defn- auto-graph-shelf []
-  (let [{:keys [open? kind input output]} @!auto-graph]
+  (let [{:keys [open? kind input output sweep]} @!auto-graph
+        quoted-args                              (available-quoted-args input)]
     (when open?
       [:div.shelf
        [:div.shelf-header
@@ -1661,6 +1696,15 @@ gfx-win   ; auto-shows the accumulated curves
           :on-change #(on-auto-graph-kind (keyword (.. % -target -value)))}
          (for [[k label _] kind-options]
            ^{:key k} [:option {:value (name k)} label])]
+        ;; Sweep-target picker — only meaningful when Surface is the kind
+        ;; AND there's a choice (2+ free symbols in the Lagrangian).
+        (when (and (= kind :surface) (>= (count quoted-args) 2))
+          [:select.shelf-kind
+           {:value     (or sweep "")
+            :on-change #(on-auto-graph-sweep (.. % -target -value))
+            :title     "Which Lagrangian param to sweep along the surface's y axis"}
+           (for [a quoted-args]
+             ^{:key a} [:option {:value a} (str "Sweep '" a)])])
         [:button.shelf-close
          {:on-click #(swap! !auto-graph assoc :open? false)
           :title    "Close"} "×"]]
