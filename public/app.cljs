@@ -931,16 +931,28 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- on-shelf-input [src]
   (swap! !shelf assoc :input src :output (translate-scheme src)))
 
-(defn- insert-at-cursor! []
+(defn- insert-and-format!
+  "Drop `code` at the editor's current cursor / selection, then run the
+   language-aware reindent on the inserted range so multi-line forms align
+   with their surroundings. Returns true when an insert actually happened."
+  [code]
   (when-let [view @!view]
-    (let [output (:output @!shelf)]
-      (when-not (clojure.string/blank? output)
-        (let [sel  (.. view -state -selection -main)
-              from (.-from sel)
-              to   (.-to sel)]
-          (.dispatch view #js {:changes #js {:from from :to to :insert output}})
-          (.focus view)
-          (swap! !shelf assoc :open? false))))))
+    (when-not (clojure.string/blank? code)
+      (let [sel  (.. view -state -selection -main)
+            from (.-from sel)
+            to   (.-to sel)
+            end  (+ from (count code))]
+        (.dispatch view
+                   #js {:changes   #js {:from from :to to :insert code}
+                        :selection #js {:anchor from :head end}})
+        (when js/CM.indentSelection
+          (js/CM.indentSelection view))
+        (.focus view)
+        true))))
+
+(defn- insert-at-cursor! []
+  (when (insert-and-format! (:output @!shelf))
+    (swap! !shelf assoc :open? false)))
 
 (defn- shelf []
   (let [{:keys [open? input output]} @!shelf]
@@ -973,80 +985,78 @@ gfx-win   ; auto-shows the accumulated curves
          "Drops the translated text where the editor caret is."]]])))
 
 ;; --- Auto-graph shelf ------------------------------------------------------
-;; Wraps an arbitrary Emmy expression (a fn, a path, Math/sin, ...) in the
-;; right graphics form: plot, parametric 2D / 3D, surface, or animate.
-;; Mirrors the SICM → Emmy translator UX (paste left, wrapped form right,
-;; Insert at cursor) — no live preview, since rendering an expensive expr
-;; like (find-path ...) on every keystroke is exactly what froze the page
-;; in the first place. We do eval to classify, but on a debounce, and only
-;; once per stable input.
+;; Wraps an arbitrary Emmy expression in the graphics form the user picks
+;; from a small dropdown — plot, parametric 2D / 3D, surface, or animate.
+;; No live evaluation, no auto-detection: the user knows what they want, we
+;; just do the textual transformation. Two common shapes are handled:
+;;
+;;   * value is already a function (Math/sin, (fn [x] …), find-path's path)
+;;     → wrapped directly: (plot Math/sin), (plot (find-path …)), …
+;;   * value is a symbolic Emmy expression in 'x / 'y / 't (e.g. (sin 'x))
+;;     → quotes are stripped on the matching vars and the body becomes
+;;       (fn [vars…] body), then wrapped: (plot (fn [x] (sin x))).
+;;
+;; Because we don't run user code at all, the shelf can never freeze the
+;; page on an expensive expression like (find-path …) — the user inserts
+;; into the editor and evaluates manually when ready.
 
 (defonce !auto-graph
-  (r/atom {:open? false :input "" :output "" :kind nil :err nil}))
+  (r/atom {:open? false :kind :plot :input "" :output ""}))
 
-(defonce ^:private !auto-graph-debounce (atom nil))
+(def ^:private kind-options
+  ;; In dropdown order. Each entry is [keyword human-label expected-vars].
+  ;; expected-vars are the symbols the wrapper looks for as quoted Emmy
+  ;; symbols in the source (e.g. 'x for plot, 't for parametric).
+  [[:plot          "Plot — y = f(x)"               ["x" "t"]]
+   [:parametric-2d "Parametric 2D — (x,y) = f(t)"   ["t"]]
+   [:parametric-3d "Parametric 3D — (x,y,z) = f(t)" ["t"]]
+   [:surface       "Surface — z = f(x,y)"           ["x" "y"]]
+   [:animate       "Animate — y = f(t,x)"           ["t" "x"]]])
 
-(defn- looks-time-arg?
-  "Heuristic: does the source open with (fn [t …] or (defn name [t …]?
-   Used to disambiguate a 2-arg numeric → number fn between :animate and
-   :surface — the user can override by renaming or wrapping manually."
-  [src]
-  (boolean
-    (or (re-find #"\(fn\s*\[\s*t[\s\]]"           src)
-        (re-find #"\(fn\s*\[\s*time[\s\]]"        src)
-        (re-find #"\(defn[-\s]+\S+\s*\[\s*t[\s\]]"    src)
-        (re-find #"\(defn[-\s]+\S+\s*\[\s*time[\s\]]" src))))
+(defn- expected-vars-for [kind]
+  (some (fn [[k _ vs]] (when (= k kind) vs)) kind-options))
 
-(defn- classify-graph
-  "Probe an evaluated value v (and its source) and return one of
-     :plot :parametric-2d :parametric-3d :surface :animate
-   or [:unknown reason]. Probing calls v with one numeric arg, then two —
-   the side effect is one or two cheap calls per debounced eval."
-  [v src]
-  (cond
-    (not (fn? v))
-    [:unknown "Value isn't callable — need a function or polynomial path."]
+(defn- has-quoted-var?
+  "Does src contain a quoted Emmy symbol like 'x or 't, with no trailing
+   word char or hyphen so 'xy / 't-now don't false-match?"
+  [src v]
+  (boolean (re-find (re-pattern (str "'" v "(?![\\w-])")) src)))
 
-    :else
-    (let [r1 (try (v 0.5) (catch :default _ ::probe-failed))]
-      (cond
-        (number? r1)
-        :plot
+(defn- strip-quoted-var [src v]
+  (clojure.string/replace src
+                          (re-pattern (str "'" v "(?![\\w-])"))
+                          v))
 
-        (= r1 ::probe-failed)
-        (let [r2 (try (v 0.5 0.5) (catch :default _ ::probe-failed))]
-          (cond
-            (= r2 ::probe-failed)
-            [:unknown "Function didn't accept one or two numeric args."]
-            (number? r2)
-            (if (looks-time-arg? src) :animate :surface)
-            :else
-            [:unknown "2-arg call returned a non-numeric value."]))
+(defn- wrap-as-fn-of
+  "If src has any of the expected quoted vars, build (fn [vars] body) over
+   the ones that appear, stripping their quotes from the body. Otherwise
+   return src unchanged — it's assumed to already be a function."
+  [src expected-vars]
+  (let [used (filter #(has-quoted-var? src %) expected-vars)]
+    (if (seq used)
+      (str "(fn [" (clojure.string/join " " used) "] "
+           (reduce strip-quoted-var src used)
+           ")")
+      src)))
 
-        :else
-        (let [n (try (count r1) (catch :default _ nil))]
-          (case n
-            2   :parametric-2d
-            3   :parametric-3d
-            nil [:unknown "1-arg call returned a non-numeric, non-tuple value."]
-            [:unknown (str "1-arg call returned a " n
-                           "-tuple; only 2D and 3D supported.")]))))))
-
-(defn- wrap-code [kind src]
-  (let [src (clojure.string/trim src)]
+(defn- wrap-code
+  "Build the wrapped graphics form for the given kind. Pure textual."
+  [kind src]
+  (let [src  (clojure.string/trim src)
+        body (wrap-as-fn-of src (expected-vars-for kind))]
     (case kind
       :plot
-      (str "(plot " src ")")
+      (str "(plot " body ")")
 
       :animate
-      (str "(animate " src ")")
+      (str "(animate " body ")")
 
       :parametric-2d
       (str "[mafs/Mafs {:viewBox {:x [-2 2] :y [-2 2]}}\n"
            " [mafs.coordinates/Cartesian]\n"
            " [mafs.plot/Parametric\n"
            "  {:t  [0 (* 2 Math/PI)]\n"
-           "   :xy " src "}]]")
+           "   :xy " body "}]]")
 
       :parametric-3d
       (str "[mathbox/MathBox\n"
@@ -1056,7 +1066,7 @@ gfx-win   ; auto-shows the accumulated curves
            "  [mb/Interval\n"
            "   {:range [0 (* 2 Math/PI)] :width 256 :channels 3\n"
            "    :expr (fn [emit t i time]\n"
-           "            (let [v (" src " t)]\n"
+           "            (let [v (" body " t)]\n"
            "              (emit (nth v 0) (nth v 1) (nth v 2))))}]\n"
            "  [mb/Line {:width 4 :color \"#3090ff\"}]]]")
 
@@ -1069,64 +1079,22 @@ gfx-win   ; auto-shows the accumulated curves
            "   {:rangeX [-2 2] :rangeY [-2 2]\n"
            "    :width 32 :height 32 :channels 3\n"
            "    :expr (fn [emit x y i j time]\n"
-           "            (emit x (" src " x y) y))}]\n"
+           "            (emit x (" body " x y) y))}]\n"
            "  [mb/Surface {:shaded true :color \"#3090ff\"}]]]"))))
 
-(defn- kind-label [kind]
-  (case kind
-    :plot          "plot — y = f(x)"
-    :animate       "animate — y = f(t, x)"
-    :parametric-2d "parametric 2D — (x, y) = f(t)"
-    :parametric-3d "parametric 3D — (x, y, z) = f(t)"
-    :surface       "surface — z = f(x, y)"
-    nil))
-
-(defn- auto-graph-classify!
-  "Eval src and update the auto-graph atom. Guarded to only act if src is
-   still the current input — debounced calls might otherwise overwrite a
-   newer eval result with a stale one."
-  [src]
-  (when (= src (:input @!auto-graph))
-    (cond
-      (clojure.string/blank? src)
-      (swap! !auto-graph assoc :kind nil :output "" :err nil)
-
-      :else
-      (try
-        (let [v (js/scittle.core.eval_string src)
-              k (classify-graph v src)]
-          (if (and (vector? k) (= :unknown (first k)))
-            (swap! !auto-graph assoc :kind nil :output "" :err (second k))
-            (swap! !auto-graph assoc
-                   :kind   k
-                   :output (wrap-code k src)
-                   :err    nil)))
-        (catch :default e
-          (swap! !auto-graph assoc :kind nil :output ""
-                 :err (str "Eval failed: " (or (.-message e) (str e)))))))))
+(defn- recompute-output [{:keys [kind input] :as state}]
+  (assoc state
+         :output (if (clojure.string/blank? input) "" (wrap-code kind input))))
 
 (defn- on-auto-graph-input [src]
-  ;; Reflect the typed text immediately; debounce the (potentially expensive)
-  ;; eval+classify so a paste of (find-path …) doesn't run every keystroke.
-  (swap! !auto-graph assoc :input src)
-  (when-let [t @!auto-graph-debounce] (js/clearTimeout t))
-  (reset! !auto-graph-debounce
-          (js/setTimeout
-           (fn []
-             (reset! !auto-graph-debounce nil)
-             (auto-graph-classify! src))
-           400)))
+  (swap! !auto-graph #(recompute-output (assoc % :input src))))
+
+(defn- on-auto-graph-kind [k]
+  (swap! !auto-graph #(recompute-output (assoc % :kind k))))
 
 (defn- insert-auto-graph! []
-  (when-let [view @!view]
-    (let [output (:output @!auto-graph)]
-      (when-not (clojure.string/blank? output)
-        (let [sel  (.. view -state -selection -main)
-              from (.-from sel)
-              to   (.-to sel)]
-          (.dispatch view #js {:changes #js {:from from :to to :insert output}})
-          (.focus view)
-          (swap! !auto-graph assoc :open? false))))))
+  (when (insert-and-format! (:output @!auto-graph))
+    (swap! !auto-graph assoc :open? false)))
 
 (defn- toggle-translator! []
   (swap! !auto-graph assoc :open? false)
@@ -1137,11 +1105,16 @@ gfx-win   ; auto-shows the accumulated curves
   (swap! !auto-graph  update :open? not))
 
 (defn- auto-graph-shelf []
-  (let [{:keys [open? input output kind err]} @!auto-graph]
+  (let [{:keys [open? kind input output]} @!auto-graph]
     (when open?
       [:div.shelf
        [:div.shelf-header
         [:span.shelf-title "Auto-graph: Emmy expression → graphics form"]
+        [:select.shelf-kind
+         {:value     (name kind)
+          :on-change #(on-auto-graph-kind (keyword (.. % -target -value)))}
+         (for [[k label _] kind-options]
+           ^{:key k} [:option {:value (name k)} label])]
         [:button.shelf-close
          {:on-click #(swap! !auto-graph assoc :open? false)
           :title    "Close"} "×"]]
@@ -1151,16 +1124,12 @@ gfx-win   ; auto-shows the accumulated curves
          [:textarea.shelf-textarea
           {:value       input
            :spell-check false
-           :placeholder ";; A function or path: Math/sin, (fn [x] …),\n;; (find-path …), (fn [t x] …) for animation, …"
+           :placeholder ";; A fn, a path, or a symbolic body in 'x / 't.\n;; e.g. Math/sin, (fn [x] (square x)), (sin 'x),\n;;      (find-path (L-harmonic 1.0 1.0) …)"
            :on-change   #(on-auto-graph-input (.. % -target -value))}]]
         [:div.shelf-pane
-         [:div.shelf-sublabel
-          (cond
-            err  "Couldn't classify"
-            kind (str "Detected: " (kind-label kind))
-            :else "Wrapped form")]
+         [:div.shelf-sublabel "Wrapped form"]
          [:textarea.shelf-textarea
-          {:value       (or err output)
+          {:value       output
            :read-only   true
            :spell-check false}]]]
        [:div.shelf-toolbar

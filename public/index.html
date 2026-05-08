@@ -76,6 +76,7 @@
           history:             commands.history,
           defaultKeymap:       commands.defaultKeymap,
           historyKeymap:       commands.historyKeymap,
+          indentSelection:     commands.indentSelection,
           bracketMatching:     language.bracketMatching,
           syntaxHighlighting:  language.syntaxHighlighting,
           defaultHighlightStyle: language.defaultHighlightStyle,
@@ -517,6 +518,16 @@
         color: var(--text-muted);
         background: none;
         border: 0;
+        cursor: pointer;
+      }
+      .shelf-kind {
+        font: inherit;
+        font-size: 0.75rem;
+        padding: 0.1rem 0.3rem;
+        background: var(--tab-bg);
+        color: var(--text);
+        border: 1px solid var(--tab-active-bd);
+        border-radius: 4px;
         cursor: pointer;
       }
       .shelf-body {
