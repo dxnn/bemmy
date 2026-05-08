@@ -1067,6 +1067,188 @@ gfx-win   ; auto-shows the accumulated curves
            ")")
       src)))
 
+;; --- Lagrangian detection -------------------------------------------------
+;; Special-case: a SICM-style Lagrangian expression like (L-harmonic 'm 'k)
+;; or the full Euler–Lagrange wrapping ((Lagrange-equations (L-harmonic …)) …)
+;; isn't a function of one variable, but the user almost certainly wants to
+;; plot the trajectory it describes. We detect the (L-<name> args) sub-form,
+;; treat its quoted args as free parameters with default 1.0, and emit a
+;; find-path-based template — adapted to the chosen graph kind.
+
+(defn- find-balanced-paren-end
+  "Given src and a position where '(' lives, return the index just past the
+   matching ')'. Naive — doesn't track strings/escapes — but adequate for
+   the syntactic shapes we expect a user to paste."
+  [src start]
+  (when (and (< start (count src))
+             (= (.charAt src start) "("))
+    (loop [i start depth 0]
+      (cond
+        (>= i (count src)) nil
+        (= (.charAt src i) "(") (recur (inc i) (inc depth))
+        (= (.charAt src i) ")") (if (= 1 depth)
+                                  (inc i)
+                                  (recur (inc i) (dec depth)))
+        :else                   (recur (inc i) depth)))))
+
+(defn- lagrangian-form
+  "Find the first (L-<name> …) sub-form in src and return it as a substring,
+   or nil if none. Matches naked `L-` names like L-harmonic, L-free-particle."
+  [src]
+  (when-let [m (re-find #"\(L-[\w-]+" src)]
+    (let [start (.indexOf src m)]
+      (when-let [end (find-balanced-paren-end src start)]
+        (subs src start end)))))
+
+(defn- parse-lagrangian
+  "Parse '(L-name arg1 arg2 …)' → {:name 'L-name' :args ['arg1' 'arg2' …]}.
+   Args are split on whitespace, so atomic args (numbers, symbols, quoted
+   symbols) round-trip cleanly. Nested args like (L-foo (* 2 m) k) won't
+   parse — acceptable for typical SICM-style direct calls."
+  [form]
+  (when form
+    (let [inner  (subs form 1 (dec (count form)))
+          tokens (-> inner
+                     clojure.string/trim
+                     (clojure.string/split #"\s+"))]
+      {:name (first tokens) :args (vec (rest tokens))})))
+
+(defn- arg-bindings
+  "Split args into {:bindings [[name 1.0] …] :call [tok …]}. Quoted args
+   ('m, 'k) become let-bindings using their stripped name with default
+   1.0; concrete args (1.0, m, …) stay verbatim in :call."
+  [args]
+  (reduce
+    (fn [acc arg]
+      (if (clojure.string/starts-with? arg "'")
+        (let [n (subs arg 1)]
+          (-> acc
+              (update :bindings conj [n 1.0])
+              (update :call conj n)))
+        (update acc :call conj arg)))
+    {:bindings [] :call []}
+    args))
+
+(defn- lagr-let-prelude
+  "Build the (let [… find-path …] portion shared by the 1D-trajectory kinds
+   (:plot, :parametric-2d, :parametric-3d). Free symbols become labelled
+   bindings; concrete args pass through verbatim into the L-call."
+  [name bindings call]
+  (let [L-call    (str "(" name
+                       (when (seq call) (str " " (clojure.string/join " " call)))
+                       ")")
+        bind-rows (concat
+                   (map (fn [[n d]] (str n " " d "       ; '" n)) bindings)
+                   ["t0 0.0"
+                    "t1 (/ Math/PI 2)"
+                    "q0 1.0"
+                    "q1 0.0"
+                    (str "L    " L-call)
+                    "path (find-path L t0 q0 t1 q1 4)"])]
+    (str "(let [" (clojure.string/join "\n      " bind-rows) "]")))
+
+(defn- lagrangian-template
+  "Build the kind-specific find-path template for a Lagrangian source.
+   :plot/:parametric-2d/:parametric-3d share a single-path prelude; :surface
+   pre-computes a stack of paths over a sweep of the first quoted arg;
+   :animate uses plot-with-params with a memoized find-path so dragging a
+   slider doesn't re-solve the variational problem at every x sample.
+
+   :surface and :animate fall back to :plot when there are no quoted args
+   to sweep / slide over."
+  [kind src]
+  (let [{:keys [name args]}     (parse-lagrangian (lagrangian-form src))
+        {:keys [bindings call]} (arg-bindings args)
+        L-call    (str "(" name
+                       (when (seq call) (str " " (clojure.string/join " " call)))
+                       ")")]
+    (cond
+      (= kind :plot)
+      (str (lagr-let-prelude name bindings call)
+           "\n  (plot path [t0 t1] [-1.5 1.5]))")
+
+      (= kind :parametric-2d)
+      (str (lagr-let-prelude name bindings call)
+           "\n  [mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}"
+           "\n   [mafs.coordinates/Cartesian]"
+           "\n   [mafs.plot/Parametric"
+           "\n    {:t  [t0 t1]"
+           "\n     :xy (fn [t] [(path t) ((D path) t)])}]])")
+
+      (= kind :parametric-3d)
+      (str (lagr-let-prelude name bindings call)
+           "\n  [mathbox/MathBox"
+           "\n   {:container {:style {:height \"400px\" :width \"100%\"}}}"
+           "\n   [mb/Cartesian {:range [[t0 t1] [-1.5 1.5] [-1.5 1.5]] :scale [1 1 1]}"
+           "\n    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]"
+           "\n    [mb/Interval"
+           "\n     {:range [t0 t1] :width 256 :channels 3"
+           "\n      :expr (fn [emit t i time]"
+           "\n              (emit t (path t) ((D path) t)))}]"
+           "\n    [mb/Line {:width 4 :color \"#3090ff\"}]]])")
+
+      (and (= kind :surface) (empty? bindings))
+      (lagrangian-template :plot src)
+
+      (= kind :surface)
+      (let [[swept _] (first bindings)
+            fixed     (rest bindings)
+            fixed-row (map (fn [[n d]] (str n " " d
+                                            "       ; '" n " — fixed; sweeping '" swept))
+                           fixed)
+            rows (concat
+                  fixed-row
+                  ["t0 0.0"
+                   "t1 (/ Math/PI 2)"
+                   "q0 1.0"
+                   "q1 0.0"
+                   (str ";; Sweep '" swept " over its rangeY")
+                   (str swept "-min 0.5")
+                   (str swept "-max 5.0")
+                   (str swept "-n   16")
+                   (str swept "s    (mapv #(+ " swept "-min (* (/ (- " swept "-max " swept "-min) (dec " swept "-n)) %)) (range " swept "-n))")
+                   (str "paths (mapv (fn [" swept "] (find-path " L-call " t0 q0 t1 q1 4)) " swept "s)")])]
+        (str "(let [" (clojure.string/join "\n      " rows) "]"
+             "\n  [mathbox/MathBox"
+             "\n   {:container {:style {:height \"400px\" :width \"100%\"}}}"
+             "\n   [mb/Cartesian {:range [[t0 t1] [" swept "-min " swept "-max] [-1.5 1.5]] :scale [1 1 1]}"
+             "\n    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]"
+             "\n    [mb/Area"
+             "\n     {:rangeX [t0 t1] :rangeY [" swept "-min " swept "-max]"
+             "\n      :width 64 :height " swept "-n :channels 3"
+             "\n      :expr (fn [emit t " swept " i j time]"
+             "\n              (emit t " swept " ((nth paths j) t)))}]"
+             "\n    [mb/Surface {:shaded true :color \"#3090ff\"}]]])"))
+
+      (and (= kind :animate) (empty? bindings))
+      (lagrangian-template :plot src)
+
+      (= kind :animate)
+      (let [names     (mapv first bindings)
+            names-str (clojure.string/join " " names)
+            schema    (clojure.string/join "\n     "
+                        (map (fn [[n d]]
+                               (str ":" n " {:value " d " :min 0.1 :max 5.0 :step 0.1}"))
+                             bindings))]
+        (str "(let [t0 0.0"
+             "\n      t1 (/ Math/PI 2)"
+             "\n      q0 1.0"
+             "\n      q1 0.0"
+             "\n      ;; memoize so dragging a slider doesn't re-solve the"
+             "\n      ;; variational problem at every x sample within a frame."
+             "\n      memo-path (memoize"
+             "\n                  (fn [" names-str "]"
+             "\n                    (find-path " L-call " t0 q0 t1 q1 4)))]"
+             "\n  (plot-with-params"
+             "\n    (fn [{:keys [" names-str "]} t]"
+             "\n      ((memo-path " names-str ") t))"
+             "\n    {" schema "}"
+             "\n    [t0 t1] [-1.5 1.5]))")))))
+
+(defn- lagrangian-pattern? [src]
+  (boolean (re-find #"\(L-[\w-]+" src)))
+
+
 (defn- defn-form?
   "Does the source begin with a top-level (defn …) or (defn- …) form?"
   [src]
@@ -1119,7 +1301,12 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- wrap-code
   "Build the wrapped graphics form for the given kind. Pure textual.
 
-   Three shapes:
+   Four shapes, tried in order:
+   * src contains a (L-<name> …) sub-form → emit a find-path-based
+     template suited to the chosen kind. The user's outer wrapping
+     (Lagrange-equations, literal-function, …) is intentionally
+     discarded; we assume they want a trajectory plot, not the EL
+     residual itself.
    * (defn name [args] body) → keep the defn as a top-level form and
      append a separate (template name) form, so the defn evaluates and
      its name is what the second form graphs.
@@ -1132,6 +1319,9 @@ gfx-win   ; auto-shows the accumulated curves
   (let [src      (clojure.string/trim src)
         template (kind->template kind)]
     (cond
+      (lagrangian-pattern? src)
+      (lagrangian-template kind src)
+
       (defn-form? src)
       (str src "\n\n" (template (defn-name src)))
 
