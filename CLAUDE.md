@@ -35,9 +35,13 @@ pinned to 0.139.2), share-by-URL.
 
 ## Test/verify loop
 
-Automated: `bb test` runs 55 unit tests for `public/sicm2emmy.js` (the
-Scheme→Emmy translator) via `node --test`. Always run before committing
-translator changes.
+Automated: `bb test` runs two suites — 55 node tests for the
+Scheme→Emmy translator (`public/sicm2emmy.js`), and a babashka test
+suite for the Auto-graph shelf's wrap-code helpers
+(`test/auto_graph_test.clj`). The auto-graph file inlines copies of
+the helpers from `public/app.cljs`; if you change wrap-code or any of
+its helpers, copy the change into the test file too. Always run
+before committing.
 
 Browser cycle (everything else):
 
