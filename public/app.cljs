@@ -1321,6 +1321,14 @@ gfx-win   ; auto-shows the accumulated curves
            ")")
       src)))
 
+(defn- emmy-symbolic?
+  "If the source uses Emmy's up- or down-tuple constructors, the parametric
+   body should run through emmy.mafs/parametric so it gets Emmy's
+   expression-machinery compilation; raw mafs.plot/Parametric expects
+   JS-number components and doesn't unpack ups."
+  [src]
+  (boolean (re-find #"\((?:up|down)\b" src)))
+
 ;; --- Lagrangian detection -------------------------------------------------
 ;; Special-case: a SICM-style Lagrangian expression like (L-harmonic 'm 'k)
 ;; or the full Euler–Lagrange wrapping ((Lagrange-equations (L-harmonic …)) …)
@@ -1536,11 +1544,17 @@ gfx-win   ; auto-shows the accumulated curves
 (defn- plot-template          [body] (str "(plot " body ")"))
 (defn- animate-template       [body] (str "(animate " body ")"))
 (defn- parametric-2d-template [body]
-  (str "[mafs/Mafs {:viewBox {:x [-2 2] :y [-2 2]}}\n"
-       " [mafs.coordinates/Cartesian]\n"
-       " [mafs.plot/Parametric\n"
-       "  {:t  [0 (* 2 Math/PI)]\n"
-       "   :xy " body "}]]"))
+  (if (emmy-symbolic? body)
+    (str "(emmy.mafs/mafs\n"
+         " {:viewBox {:x [-2 2] :y [-2 2]}}\n"
+         " (emmy.mafs/parametric\n"
+         "  {:t  [0 (* 2 Math/PI)]\n"
+         "   :xy " body "}))")
+    (str "[mafs/Mafs {:viewBox {:x [-2 2] :y [-2 2]}}\n"
+         " [mafs.coordinates/Cartesian]\n"
+         " [mafs.plot/Parametric\n"
+         "  {:t  [0 (* 2 Math/PI)]\n"
+         "   :xy " body "}]]")))
 (defn- parametric-3d-template [body]
   (str "[mathbox/MathBox\n"
        " {:container {:style {:height \"400px\" :width \"100%\"}}}\n"
