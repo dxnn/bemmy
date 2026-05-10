@@ -135,6 +135,61 @@
   don't render; return ::graphics so subsequent forms don't error."
   [_window _the-map _n] ::graphics)
 
+;; ---------- SICM-compatible ODE integrator wrappers --------------------
+;; scmutils' integrator function accepts (state monitor dt t-final tol)
+;; — five args, monitor in slot 2, tol last. Emmy's integrator (built
+;; by emmy.numerical.ode/make-integrator) accepts (state dt t {:observe
+;; … :epsilon …}) — three or four args, observer & epsilon in an opts
+;; map. Wrap evolve and state-advancer so SICM page text calls run
+;; against either convention.
+
+(defn- sicm-observe
+  "Adapt a SICM monitor — called as `(monitor state)` with t living
+  inside the state — to Emmy's :observe shape `(observe t state)`."
+  [monitor]
+  (when monitor (fn [_t state] (monitor state))))
+
+(defn- adapt-emmy-integrator
+  "Wrap Emmy's integrator function so the SICM call shape works in
+  addition to Emmy's. Disambiguates by arg count — 5 args is SICM
+  (state, monitor, dt, t-final, tol), 3 or 4 args is Emmy."
+  [emmy-int]
+  (fn
+    ([initial-state dt t-final]
+     (emmy-int initial-state dt t-final))
+    ([initial-state dt t-final opts-or-monitor]
+     (if (map? opts-or-monitor)
+       (emmy-int initial-state dt t-final opts-or-monitor)
+       (emmy-int initial-state dt t-final
+                 {:observe (sicm-observe opts-or-monitor)})))
+    ([initial-state monitor dt t-final tol]
+     (emmy-int initial-state dt t-final
+               {:observe (sicm-observe monitor)
+                :epsilon tol}))))
+
+(defn evolve
+  "SICM-compatible wrapper around emmy.numerical.ode/evolve. Returns
+  an integrator that accepts the scmutils 5-arg call shape (state,
+  monitor, dt, t-final, tol) in addition to Emmy's 3- or 4-arg form."
+  [state-derivative & state-derivative-args]
+  (adapt-emmy-integrator
+    (apply emmy.numerical.ode/evolve state-derivative state-derivative-args)))
+
+(defn state-advancer
+  "SICM-compatible wrapper around emmy.numerical.ode/state-advancer.
+  scmutils' returned advancer accepts (state t-final tol); Emmy's takes
+  (state t {:epsilon …}). Adapt by arg count."
+  [state-derivative & state-derivative-args]
+  (let [emmy-adv (apply emmy.numerical.ode/state-advancer
+                        state-derivative state-derivative-args)]
+    (fn
+      ([initial-state t]
+       (emmy-adv initial-state t))
+      ([initial-state t opts-or-tol]
+       (if (map? opts-or-tol)
+         (emmy-adv initial-state t opts-or-tol)
+         (emmy-adv initial-state t {:epsilon opts-or-tol}))))))
+
 ;; SICM §1.7 → §3.5 cross-chapter helper. The book uses
 ;; `L-periodically-driven-pendulum` for chapter 3 examples; pages don't
 ;; carry chapter-1 prereqs into chapter 3, so define it here matching
@@ -173,6 +228,20 @@
   "Stub: emmy.matrix doesn't ship a submatrix accessor. Returns the
   whole matrix; SICM book uses are illustrative."
   [m & _] m)
+(def m:num-rows  emmy.matrix/num-rows)
+(def m:num-cols  emmy.matrix/num-cols)
+
+;; SICM canonical time-evolution operator. Used in §6.2-style
+;; constructions like (((C* alpha omega) dt) state0). Stub returns the
+;; identity flow so chained defns evaluate without crashing.
+(defn C* [& _] (fn [_dt] (fn [state] state)))
+
+;; scmutils single-arg predicate / expression generators. Stubs.
+(defn predicate-1 [pred] (fn [x] (pred x)))
+(defn expression-1 [expr] expr)
+
+;; Default collector for scmutils accumulator patterns. No-op stub.
+(defn default-collector [& _] nil)
 
 ;; ---------- JVM-side stubs for the browser graphics shim ------------------
 ;; The scittle plugin defines `frame`, `plot`, `animate`, etc. for the

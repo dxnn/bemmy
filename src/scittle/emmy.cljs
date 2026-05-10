@@ -307,4 +307,40 @@
              (* m g (- (* l (cos theta)) (ys t)))))))
     (defn L-periodically-driven-pendulum [m l g A omega]
       (let [ys (periodic-drive A omega 0)]
-        (L-pend m l g ys)))"))
+        (L-pend m l g ys)))
+
+    ;; SICM-compatible ODE integrator wrappers. scmutils' integrator
+    ;; takes (state monitor dt t-final tol); Emmy's takes (state dt t
+    ;; {:observe … :epsilon …}). Adapt by arg count + map shape, and
+    ;; call SICM-style monitors with just the state (t lives inside).
+    (require '[emmy.numerical.ode :as ode])
+
+    (defn- sicm-observe [monitor]
+      (when monitor (fn [_t state] (monitor state))))
+
+    (defn- adapt-emmy-integrator [emmy-int]
+      (fn ([initial-state dt t-final]
+           (emmy-int initial-state dt t-final))
+        ([initial-state dt t-final opts-or-monitor]
+           (if (map? opts-or-monitor)
+             (emmy-int initial-state dt t-final opts-or-monitor)
+             (emmy-int initial-state dt t-final
+                       {:observe (sicm-observe opts-or-monitor)})))
+        ([initial-state monitor dt t-final tol]
+           (emmy-int initial-state dt t-final
+                     {:observe (sicm-observe monitor)
+                      :epsilon tol}))))
+
+    (defn evolve [state-derivative & state-derivative-args]
+      (adapt-emmy-integrator
+        (apply ode/evolve state-derivative state-derivative-args)))
+
+    (defn state-advancer [state-derivative & state-derivative-args]
+      (let [emmy-adv (apply ode/state-advancer
+                            state-derivative state-derivative-args)]
+        (fn ([initial-state t]
+             (emmy-adv initial-state t))
+          ([initial-state t opts-or-tol]
+             (if (map? opts-or-tol)
+               (emmy-adv initial-state t opts-or-tol)
+               (emmy-adv initial-state t {:epsilon opts-or-tol}))))))"))
