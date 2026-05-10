@@ -15,6 +15,10 @@
            :task (do (shell "node --test test/sicm2emmy.test.js test/sicm2emmy.corpus.test.js")
                      (shell "bb test/auto_graph_test.clj"))}
 
+  test-eq {:doc  "Run SICM↔Emmy equivalence tests (Clojure + Emmy)."
+           :task (do (shell "node test/translate-corpus.js")
+                     (shell "clojure -M:test"))}
+
   watch   {:doc  "Watch build (recompile on save)"
            :task (build/build {:action "watch"})}
 

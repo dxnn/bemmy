@@ -13,4 +13,8 @@
    :exclusions  [org.mentat/emmy
                  org.babashka/sci
                  org.mentat/jsxgraph.cljs
-                 org.mentat/mathlive.cljs]}}}
+                 org.mentat/mathlive.cljs]}}
+
+ :aliases
+ {:test {:extra-paths ["test"]
+         :main-opts   ["-m" "sicm.equivalence-test"]}}}
