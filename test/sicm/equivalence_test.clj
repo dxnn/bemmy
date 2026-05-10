@@ -174,14 +174,17 @@
     :else
     (try (numeric-close? (double a) (double b)) (catch Throwable _ false))))
 
-(def ^:private known-syms
-  (delay
-    (into '#{& fn fn* let let* if do quote var . new throw try catch finally
-             loop recur set!}
-          (concat (keys (ns-map 'emmy.env))
-                  (keys (ns-map 'clojure.core))))))
+(def ^:private clj-special
+  '#{& fn fn* let let* if do quote var . new throw try catch finally
+     loop recur set!})
 
-(defn known? [s] (contains? @known-syms s))
+(defn known?
+  "Computed fresh each call so lazily-loaded Emmy sub-namespaces (e.g.
+  emmy.matrix) don't escape classification once they get pulled in."
+  [s]
+  (or (contains? clj-special s)
+      (contains? (ns-map 'emmy.env) s)
+      (contains? (ns-map 'clojure.core) s)))
 
 (defn- act->form [actual]
   (read-one (try (pr-str (emmy.env/simplify actual))
@@ -194,9 +197,10 @@
 
 (defn algebraic-equiv?
   "Build a let that binds each free symbol — `(literal-function 'f)` for
-  functions, `'sym` for scalars — eval the expected form in `eval-ns`,
-  subtract from `actual`, simplify, check zero. Best for forms that include
-  Emmy operators like `D` over literal functions."
+  functions, `'sym` for scalars — eval the expected form in `eval-ns`, then
+  compare to `actual` via Emmy value equality, falling back to subtract +
+  simplify + zero?. Handles forms with literal-function `D` and matrix /
+  structure values."
   [eval-ns actual expected-form classification]
   (let [{:keys [scalars funcs]} classification
         letform `(let [~@(mapcat (fn [s] [s `(quote ~s)]) scalars)
@@ -204,11 +208,14 @@
                                  (keys funcs))]
                    ~expected-form)]
     (try
-      (let [exp-val (binding [*ns* eval-ns] (eval letform))
-            diff   (emmy.env/- actual exp-val)
-            simp   (emmy.env/simplify diff)]
-        (or (emmy.env/zero? simp)
-            (and (number? simp) (numeric-close? (double simp) 0.0))))
+      (let [exp-val (binding [*ns* eval-ns] (eval letform))]
+        (or (= actual exp-val)
+            (try
+              (let [diff (emmy.env/- actual exp-val)
+                    simp (emmy.env/simplify diff)]
+                (or (emmy.env/zero? simp)
+                    (and (number? simp) (numeric-close? (double simp) 0.0))))
+              (catch Throwable _ false))))
       (catch Throwable _ false))))
 
 (defn numeric-probe-equiv?
@@ -234,16 +241,21 @@
   "Try both algebraic (literal-function bound) and numeric (random scalars)
   equivalence. Returns true if either succeeds."
   [eval-ns actual expected-str]
-  (let [act-form (act->form actual)
-        exp-form (read-one expected-str)]
-    (when (and act-form exp-form)
-      (let [act-cls (classify-symbols act-form known?)
-            exp-cls (classify-symbols exp-form known?)]
-        (when (compatible-classifications? act-cls exp-cls)
-          (let [combined {:scalars (into (:scalars act-cls) (:scalars exp-cls))
-                          :funcs   (merge (:funcs act-cls) (:funcs exp-cls))}]
-            (or (algebraic-equiv? eval-ns actual exp-form combined)
-                (numeric-probe-equiv? eval-ns act-form exp-form combined))))))))
+  (when-let [exp-form (read-one expected-str)]
+    (when-let [exp-cls (classify-symbols exp-form known?)]
+      (or
+        ;; Algebraic path needs only the expected: build the let, eval it,
+        ;; compare directly to `actual`. Works even when `actual` doesn't
+        ;; round-trip through pr-str (matrices, opaque records, ...).
+        (algebraic-equiv? eval-ns actual exp-form exp-cls)
+        ;; Numeric probe additionally requires `actual` to be re-readable so
+        ;; we can substitute symbols in both forms and eval them in lockstep.
+        (when-let [act-form (act->form actual)]
+          (when-let [act-cls (classify-symbols act-form known?)]
+            (when (compatible-classifications? act-cls exp-cls)
+              (let [combined {:scalars (into (:scalars act-cls) (:scalars exp-cls))
+                              :funcs   (merge (:funcs act-cls) (:funcs exp-cls))}]
+                (numeric-probe-equiv? eval-ns act-form exp-form combined)))))))))
 
 (defn equivalent? [ns actual expected]
   (let [simplified (try (emmy.env/simplify actual)
