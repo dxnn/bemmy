@@ -226,4 +226,26 @@
                  (map? m)
                  (vector? (:drawables m)))
           (show v)
-          v)))"))
+          v)))")
+  ;; --- SICM-compat shims ----------------------------------------------
+  ;; Mirrors test/sicm/compat.clj (the JVM-side equivalence-test shim).
+  ;; Surfaces SICM-book names that ship inside Emmy sub-namespaces but
+  ;; aren't pre-referred into emmy.env, plus a 2-arg transpose dispatch
+  ;; the canonical-transform machinery needs.
+  (scittle/eval-string
+   "(require '[emmy.generic :as g]
+             '[emmy.matrix :as matrix]
+             '[emmy.mechanics.hamilton :as ham])
+
+    ;; H-central-polar lives in emmy.mechanics.hamilton; expose it as a
+    ;; bare name in user so SICM ch-3 pages don't have to qualify.
+    (def H-central-polar ham/H-central-polar)
+
+    ;; SICM's qp-submatrix / symplectic-transform? reaches g/transpose
+    ;; with two structure args (the Jacobian-like matrix + the state
+    ;; tuple it was evaluated at), but Emmy only registers the 1-arg
+    ;; dispatch. Forward to emmy.matrix's structure-aware s:transpose.
+    (defmethod g/transpose [:emmy.structure/down :emmy.structure/up] [ms rs]
+      (matrix/s:transpose ms rs))
+    (defmethod g/transpose [:emmy.structure/up :emmy.structure/down] [ms rs]
+      (matrix/s:transpose ms rs))"))
