@@ -26,7 +26,7 @@
 
 (defn fresh-eval-ns! [sym]
   (when (find-ns sym) (remove-ns sym))
-  (require 'emmy.matrix)
+  (require 'emmy.matrix 'sicm.compat)
   (let [n (create-ns sym)
         emmy-syms (vec (keys (ns-publics 'emmy.env)))]
     (binding [*ns* n]
@@ -34,7 +34,9 @@
       (clojure.core/refer 'emmy.env)
       ;; emmy.env doesn't re-export the row/column accessors; pull them in
       ;; explicitly so translated `m:nth-row`/`m:nth-col` resolves.
-      (clojure.core/refer 'emmy.matrix :only '[row column]))
+      (clojure.core/refer 'emmy.matrix :only '[row column])
+      ;; SICM built-ins Emmy doesn't ship.
+      (clojure.core/refer 'sicm.compat))
     n))
 
 (defn eval-forms-in-ns [ns forms]
