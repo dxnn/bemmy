@@ -724,6 +724,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[L-free-particle L-harmonic Lagrangian-action find-path make-eta parametric-path-action q test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
+
 ;; (book p. 14)
 (defn L-free-particle [mass]
   (fn [local]
@@ -844,6 +849,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[L-free-particle L-harmonic Lagrangian-action delta f find-path make-eta parametric-path-action q test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
+
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
 (defn L-free-particle [mass]
@@ -946,6 +956,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[L-central-polar L-free-particle L-harmonic Lagrange-equations Lagrangian-action delta f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1097,6 +1112,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[L-central-polar L-central-rectangular L-free-particle L-harmonic L-uniform-acceleration Lagrange-equations Lagrangian-action delta f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1301,6 +1321,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action delta f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1586,6 +1611,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend delta f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1892,6 +1922,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend delta dp-coordinates f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -2231,6 +2266,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->state-derivative Lagrangian-action T-pend V-pend delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -2681,6 +2721,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend V-pend delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
+
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
 (defn L-free-particle [mass]
@@ -3120,6 +3165,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L3-central Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -3646,6 +3696,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -4247,6 +4302,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F F->C F-tilde L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -4868,6 +4928,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -5532,6 +5597,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action Rx T-pend T3-spherical V V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta make-path monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -6207,6 +6277,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t]]
+  (ns-unmap *ns* s))
+
 
 ;; --- Implementation of angular velocity functions ---
 
@@ -6244,6 +6319,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t T-body]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6290,6 +6370,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[L-body L-space M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t T-body]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6348,6 +6433,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[Euler->M Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6473,6 +6563,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6607,6 +6702,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler monitor-errors relative-error rigid-sysder win]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6768,6 +6868,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler monitor-errors relative-error rigid-sysder win]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6931,6 +7036,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis relative-error rigid-sysder win]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -7189,6 +7299,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis qw-state->L-space relative-error rigid-sysder win]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -7500,6 +7615,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[H-rectangular Hamilton-equations Hamiltonian->state-derivative qp->H-state-path]]
+  (ns-unmap *ns* s))
+
 
 ;; --- Computing Hamilton's equations ---
 
@@ -7543,6 +7663,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -7641,6 +7766,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F G H H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -7770,6 +7900,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F G H H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -7968,6 +8103,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F G H H-pend-sysder H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform monitor-p-theta qp->H-state-path window]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -8192,6 +8332,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F G H H-pend-sysder H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map monitor-p-theta qp->H-state-path win window]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -8432,6 +8577,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F G H H-pend-sysder H-rectangular HHHam HHmap HHpotential HHsysder Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map find-next-crossing monitor-p-theta qp->H-state-path refine-crossing section->state win window]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -8747,6 +8897,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F G H H-pend-sysder H-rectangular HHHam HHmap HHpotential HHsysder Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map find-next-crossing monitor-p-theta qp->H-state-path refine-crossing section->state standard-map win window]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -9068,6 +9223,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[cylinder-near? plot-parametric-fill unstable-manifold]]
+  (ns-unmap *ns* s))
+
 ;; (book p. 308)
 (defn unstable-manifold [T xe ye dx dy rho eps]
   (fn [param]
@@ -9114,6 +9274,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[cylinder-near? plot-parametric-fill radially-mapping-points unstable-manifold]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 4 ---
 
@@ -9178,6 +9343,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[cylinder-near? find-invariant-curve plot-parametric-fill radially-mapping-points unstable-manifold which-way?]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 4 ---
 
@@ -9288,6 +9458,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F->CH F->K H-central H-free translating]]
+  (ns-unmap *ns* s))
+
 
 ;; --- Implementing point transformations ---
 
@@ -9363,6 +9538,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[F->CH F->K H-central H-free H-harmonic canonical? polar-canonical translating]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9467,6 +9647,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[C-rotating D-phase-space F->CH F->K H-arbitrary H-central H-free H-harmonic K T-func canonical-H? canonical-K? canonical? polar-canonical rotating translating]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9647,6 +9832,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? polar-canonical rotating symplectic-matrix? symplectic-transform? translating]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9925,6 +10115,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical rotating symplectic-matrix? symplectic-transform? translating]]
+  (ns-unmap *ns* s))
+
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
 (defn F->CH [F]
@@ -10192,6 +10387,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[C-general C-rotating C-simple-time D-as-matrix D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical qp-submatrix rotating symplectic-matrix? symplectic-transform? translating]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -10464,6 +10664,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[C* C->Cp H->Hp shift-t solution]]
+  (ns-unmap *ns* s))
+
 
 ;; --- Another time-evolution transformation ---
 
@@ -10497,6 +10702,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[C* C->Cp H->Hp H-harmonic Lie-derivative Lie-transform shift-t solution]]
+  (ns-unmap *ns* s))
 
 ;; --- Prerequisites from earlier sections of Chapter 6 ---
 
@@ -10676,6 +10886,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[C* C->Cp H->Hp H-harmonic HH-collector Lie-derivative Lie-derivative-procedure Lie-transform shift-t solution]]
+  (ns-unmap *ns* s))
+
 ;; --- Prerequisites from earlier sections of Chapter 6 ---
 
 (defn C->Cp [C]
@@ -10820,6 +11035,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[C C-inv H-pendulum-series H0 H1 W solution solution0]]
+  (ns-unmap *ns* s))
+
 ;; (book p. 462)
 (defn H0 [alpha]
   (fn [state] (let [p (momentum state)] (/ (square p) (* 2 alpha)))))
@@ -10903,6 +11123,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[a-list a-vector abs another-list c1 c2 c3 c4 compose f factorial make-collector make-counter pi square sum?]]
+  (ns-unmap *ns* s))
 
 
 ;; --- Procedure calls ---
@@ -11181,6 +11406,11 @@ a-vector
 ;; ===========================================
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
+
+;; --- Free names this page (re)defines so re-evaluating doesn't warn about
+;;     shadowing emmy.env-exported symbols. Safe no-op for names not in scope. ---
+(doseq [s '[H d derivative-of-sine f g h helix p s]]
+  (ns-unmap *ns* s))
 
 
 ;; --- Functions ---

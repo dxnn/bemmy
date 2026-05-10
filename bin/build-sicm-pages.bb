@@ -106,15 +106,65 @@
   [entries]
   entries)
 
+(defn- read-entry-forms
+  "Read the entry's :translated text into a vector of top-level forms,
+  tolerating reader errors (some translated SICM text contains symbols
+  like 'v_r^x where ^ collides with Clojure's metadata reader)."
+  [translated]
+  (with-open [rdr (java.io.PushbackReader.
+                    (java.io.StringReader. translated))]
+    (loop [acc []]
+      (let [f (try (read {:eof ::eof :read-cond :allow} rdr)
+                   (catch Throwable _ ::eof))]
+        (if (= f ::eof) acc (recur (conj acc f)))))))
+
+(defn- def-names-in-form
+  "If `f` is a (def X …) / (defn X …) / (defn- X …) form, return X;
+  otherwise nil."
+  [f]
+  (when (and (seq? f)
+             (contains? '#{def defn defn-} (first f))
+             (symbol? (second f)))
+    (second f)))
+
+(defn page-def-names
+  "Set of symbols bound by top-level def/defn forms across all entries
+  on the page (prereqs + section). Used to ns-unmap them at the top of
+  the page so re-evaluating doesn't trigger 'X already refers to
+  #'emmy.env/X' warnings."
+  [entries]
+  (->> entries
+       (mapcat #(read-entry-forms (:translated %)))
+       (keep def-names-in-form)
+       (distinct)
+       (sort)
+       vec))
+
 (defn page-name [{:keys [section section-title]}]
   (str "SICM " section
        (when (and section-title (seq section-title))
          (str " " section-title))))
 
+(defn- ns-unmap-setup-form
+  "Render `(doseq [s '[…]] (ns-unmap *ns* s))` so re-evaluating this
+  page doesn't warn about redefining emmy.env-exported names. ns-unmap
+  is a no-op on names not present in the ns, so blanket-unmapping every
+  def in the page is safe."
+  [def-names]
+  (when (seq def-names)
+    (str ";; --- Free names this page (re)defines so re-evaluating "
+         "doesn't warn about\n"
+         ";;     shadowing emmy.env-exported symbols. Safe no-op for "
+         "names not in scope. ---\n"
+         "(doseq [s '" (pr-str def-names) "]\n"
+         "  (ns-unmap *ns* s))")))
+
 (defn render-page
   [section]
   (let [{:keys [chapter section-title chapter-title source entries]} section
         prereqs (dedupe-prereqs (chapter-prereq-entries section))
+        all-entries (concat prereqs entries)
+        def-names   (page-def-names all-entries)
         sb      (StringBuilder.)]
     (.append sb (comment-block
                   (str "===========================================\n"
@@ -129,6 +179,9 @@
                        "Self-contained: earlier-chapter prerequisites are\n"
                        "inlined below.")))
     (.append sb "\n\n")
+    (when-let [setup (ns-unmap-setup-form def-names)]
+      (.append sb setup)
+      (.append sb "\n\n"))
     (when (seq prereqs)
       (.append sb (str ";; --- Prerequisites from earlier sections of Chapter "
                        chapter " ---\n\n"))
