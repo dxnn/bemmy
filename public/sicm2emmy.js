@@ -123,7 +123,11 @@
     'car':'first',  'cdr':'rest',  'cadr':'second',
     'null?':'nil?', 'pair?':'seq?', 'list?':'seq?',
     'length':'count', 'append':'concat', 'last-pair':'last',
-    'list-ref':'nth',
+    'list-ref':'nth', 'vector-ref':'nth',
+    // scmutils matrix accessors → Emmy.
+    'm:nth-row':'nth-row', 'm:nth-col':'nth-col',
+    // scmutils plural; Emmy exposes the singular state-tuple selector.
+    'coordinates':'coordinate',
     'delete-duplicates':'distinct', 'remove-duplicates':'distinct',
     'every':'every?', 'any':'some',
     'fold-left':'reduce',
