@@ -16,5 +16,6 @@
                  org.mentat/mathlive.cljs]}}
 
  :aliases
- {:test {:extra-paths ["test"]
-         :main-opts   ["-m" "sicm.equivalence-test"]}}}
+ {:test  {:extra-paths ["test"]
+          :main-opts   ["-m" "sicm.equivalence-test"]}
+  :pages {:main-opts   ["-m" "sicm.page-eval-test"]}}}
