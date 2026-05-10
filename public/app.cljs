@@ -846,7 +846,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare L-free-particle L-harmonic Lagrangian-action delta f find-path make-eta parametric-path-action q test-path varied-free-particle-action win2)
+(declare L-free-particle L-harmonic Lagrangian-action f find-path make-eta parametric-path-action q test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -932,9 +932,6 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- The Variation Operator ---
 
 ;; (book p. 28)
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
-;; (book p. 28)
 (defn f [q]
   (compose
         (literal-function
@@ -951,7 +948,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare L-central-polar L-free-particle L-harmonic Lagrange-equations Lagrangian-action delta f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(declare L-central-polar L-free-particle L-harmonic Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1030,8 +1027,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
-
-(defn delta [eta] (fn [f] (fn [q] ...)))
 
 (defn f [q]
   (compose
@@ -1067,8 +1062,7 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
+;;=> (* (((expt D 2) x) t) m)
 
 
 ;; --- The harmonic oscillator ---
@@ -1104,7 +1098,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare L-central-polar L-central-rectangular L-free-particle L-harmonic L-uniform-acceleration Lagrange-equations Lagrangian-action delta f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(declare L-central-polar L-central-rectangular L-free-particle L-harmonic L-uniform-acceleration Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1184,8 +1178,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -1211,8 +1203,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -1310,7 +1300,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action delta f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1390,8 +1380,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -1417,8 +1405,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -1565,12 +1551,7 @@ gfx-win   ; auto-shows the accumulated curves
   (up
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
-
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
+;;=> (+ (* 1/2 (expt Omega 2) m (expt x_r 2)) (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r) (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2)) (* 1/2 m (expt ydot_r 2)))
 
 ;; (book p. 48)
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
@@ -1580,14 +1561,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))"
+;;=> (down (+ (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t)) (* m (((expt D 2) x_r) t))) (+ (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t)) (* m (((expt D 2) y_r) t))))"
     "SICM 1.6.2 Systems with Rigid Constraints"
     ";; ===========================================
 ;; SICM §1.6.2 — Systems with Rigid Constraints
@@ -1597,7 +1571,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend delta f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1677,8 +1651,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -1704,8 +1676,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -1839,12 +1809,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -1852,14 +1816,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 ;; --- §1.6.2 — Systems with Rigid Constraints ---
 
@@ -1905,7 +1861,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend delta dp-coordinates f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1985,8 +1941,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -2012,8 +1966,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -2147,12 +2099,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -2160,14 +2106,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 (defn T-pend [m l g ys]
   (fn [local]
@@ -2228,15 +2166,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; (book p. 63)
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
-
-(up
-  (+
-      (* x_0 (cos phi) (cos (* Omega t)))
-      (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t))))
-  (+
-      (* x_0 (cos phi) (sin (* Omega t)))
-      (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t))))
-  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))"
+;;=> (up (+ (* x_0 (cos phi) (cos (* Omega t))) (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t)))) (+ (* x_0 (cos phi) (sin (* Omega t))) (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t)))) (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))"
     "SICM 1.7 Evolution of Dynamical State"
     ";; ===========================================
 ;; SICM §1.7 — Evolution of Dynamical State
@@ -2246,7 +2176,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->state-derivative Lagrangian-action T-pend V-pend delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2)
+(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->state-derivative Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -2326,8 +2256,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -2353,8 +2281,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -2488,12 +2414,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -2501,14 +2421,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 (defn T-pend [m l g ys]
   (fn [local]
@@ -2563,15 +2475,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
 
-(up
-  (+
-      (* x_0 (cos phi) (cos (* Omega t)))
-      (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t))))
-  (+
-      (* x_0 (cos phi) (sin (* Omega t)))
-      (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t))))
-  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))
-
 ;; --- §1.7 — Evolution of Dynamical State ---
 
 ;; (book p. 71)
@@ -2596,8 +2499,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
-
-(up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))
+;;=> (up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))
 
 ;; (book p. 72)
 (defn Lagrange-equations-first-order [L]
@@ -2634,10 +2536,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                       1.0 (up 1.0 2.0)
                                                       (up 3.0 4.0))
   10.0 1.0e-12)
-
-(up
-  11.0 (up 3.7127916645844437 5.420620823651583)
-  (up 1.6148030925459782 1.8189103724750855))
+;;=> (up 11.0 (up 3.7127916645844437 5.420620823651583) (up 1.6148030925459782 1.8189103724750855))
 
 ;; (book p. 74)
 (defn periodic-drive [amplitude frequency phase]
@@ -2697,7 +2596,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend V-pend delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2)
+(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -2777,8 +2676,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -2804,8 +2701,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -2939,12 +2834,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -2952,14 +2841,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 (defn T-pend [m l g ys]
   (fn [local]
@@ -3014,15 +2895,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
 
-(up
-  (+
-      (* x_0 (cos phi) (cos (* Omega t)))
-      (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t))))
-  (+
-      (* x_0 (cos phi) (sin (* Omega t)))
-      (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t))))
-  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))
-
 (defn Lagrangian->acceleration [L]
   (let [P ((partial 2) L) F ((partial 1) L)]
         (solve-linear-left
@@ -3042,8 +2914,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
-
-(up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))
 
 (defn Lagrange-equations-first-order [L]
   (fn [q v]
@@ -3074,10 +2944,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                       1.0 (up 1.0 2.0)
                                                       (up 3.0 4.0))
   10.0 1.0e-12)
-
-(up
-  11.0 (up 3.7127916645844437 5.420620823651583)
-  (up 1.6148030925459782 1.8189103724750855))
 
 (defn periodic-drive [amplitude frequency phase]
   (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
@@ -3139,7 +3005,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L3-central Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2)
+(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L3-central Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -3219,8 +3085,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -3246,8 +3110,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -3381,12 +3243,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -3394,14 +3250,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 (defn T-pend [m l g ys]
   (fn [local]
@@ -3456,15 +3304,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
 
-(up
-  (+
-      (* x_0 (cos phi) (cos (* Omega t)))
-      (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t))))
-  (+
-      (* x_0 (cos phi) (sin (* Omega t)))
-      (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t))))
-  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))
-
 (defn Lagrangian->acceleration [L]
   (let [P ((partial 2) L) F ((partial 1) L)]
         (solve-linear-left
@@ -3484,8 +3323,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
-
-(up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))
 
 (defn Lagrange-equations-first-order [L]
   (fn [q v]
@@ -3516,10 +3353,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                       1.0 (up 1.0 2.0)
                                                       (up 3.0 4.0))
   10.0 1.0e-12)
-
-(up
-  11.0 (up 3.7127916645844437 5.420620823651583)
-  (up 1.6148030925459782 1.8189103724750855))
 
 (defn periodic-drive [amplitude frequency phase]
   (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
@@ -3667,7 +3500,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2)
+(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -3747,8 +3580,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -3774,8 +3605,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -3909,12 +3738,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -3922,14 +3745,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 (defn T-pend [m l g ys]
   (fn [local]
@@ -3984,15 +3799,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
 
-(up
-  (+
-      (* x_0 (cos phi) (cos (* Omega t)))
-      (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t))))
-  (+
-      (* x_0 (cos phi) (sin (* Omega t)))
-      (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t))))
-  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))
-
 (defn Lagrangian->acceleration [L]
   (let [P ((partial 2) L) F ((partial 1) L)]
         (solve-linear-left
@@ -4012,8 +3818,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
-
-(up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))
 
 (defn Lagrange-equations-first-order [L]
   (fn [q v]
@@ -4044,10 +3848,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                       1.0 (up 1.0 2.0)
                                                       (up 3.0 4.0))
   10.0 1.0e-12)
-
-(up
-  11.0 (up 3.7127916645844437 5.420620823651583)
-  (up 1.6148030925459782 1.8189103724750855))
 
 (defn periodic-drive [amplitude frequency phase]
   (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
@@ -4270,7 +4070,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C F-tilde L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
+(declare F F->C F-tilde L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -4350,8 +4150,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -4377,8 +4175,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -4512,12 +4308,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -4525,14 +4315,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 (defn T-pend [m l g ys]
   (fn [local]
@@ -4587,15 +4369,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
 
-(up
-  (+
-      (* x_0 (cos phi) (cos (* Omega t)))
-      (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t))))
-  (+
-      (* x_0 (cos phi) (sin (* Omega t)))
-      (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t))))
-  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))
-
 (defn Lagrangian->acceleration [L]
   (let [P ((partial 2) L) F ((partial 1) L)]
         (solve-linear-left
@@ -4615,8 +4388,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
-
-(up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))
 
 (defn Lagrange-equations-first-order [L]
   (fn [q v]
@@ -4647,10 +4418,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                       1.0 (up 1.0 2.0)
                                                       (up 3.0 4.0))
   10.0 1.0e-12)
-
-(up
-  11.0 (up 3.7127916645844437 5.420620823651583)
-  (up 1.6148030925459782 1.8189103724750855))
 
 (defn periodic-drive [amplitude frequency phase]
   (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
@@ -4880,10 +4647,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (the-Noether-integral (up 't (up 'x 'y 'z) (up 'vx 'vy 'vz)))
-
-(down
-  (+ (* m vy z) (* -1 m vz y)) (+ (* m vz x) (* -1 m vx z))
-  (+ (* m vx y) (* -1 m vy x)))"
+;;=> (down (+ (* m vy z) (* -1 m vz y)) (+ (* m vz x) (* -1 m vx z)) (+ (* m vx y) (* -1 m vy x)))"
     "SICM 1.9 Abstraction of Path Functions"
     ";; ===========================================
 ;; SICM §1.9 — Abstraction of Path Functions
@@ -4893,7 +4657,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
+(declare Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -4973,8 +4737,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -5000,8 +4762,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -5135,12 +4895,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -5148,14 +4902,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 (defn T-pend [m l g ys]
   (fn [local]
@@ -5210,15 +4956,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
 
-(up
-  (+
-      (* x_0 (cos phi) (cos (* Omega t)))
-      (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t))))
-  (+
-      (* x_0 (cos phi) (sin (* Omega t)))
-      (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t))))
-  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))
-
 (defn Lagrangian->acceleration [L]
   (let [P ((partial 2) L) F ((partial 1) L)]
         (solve-linear-left
@@ -5238,8 +4975,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
-
-(up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))
 
 (defn Lagrange-equations-first-order [L]
   (fn [q v]
@@ -5270,10 +5005,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                       1.0 (up 1.0 2.0)
                                                       (up 3.0 4.0))
   10.0 1.0e-12)
-
-(up
-  11.0 (up 3.7127916645844437 5.420620823651583)
-  (up 1.6148030925459782 1.8189103724750855))
 
 (defn periodic-drive [amplitude frequency phase]
   (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
@@ -5495,10 +5226,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (the-Noether-integral (up 't (up 'x 'y 'z) (up 'vx 'vy 'vz)))
-
-(down
-  (+ (* m vy z) (* -1 m vz y)) (+ (* m vz x) (* -1 m vx z))
-  (+ (* m vx y) (* -1 m vy x)))
 
 ;; --- §1.9 — Abstraction of Path Functions ---
 
@@ -5540,16 +5267,14 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; (book p. 98)
 ((Euler-Lagrange-operator (L-harmonic 'm 'k)) (up 't 'x 'v 'a))
-
-(+ (* a m) (* k x))
+;;=> (+ (* a m) (* k x))
 
 ;; (book p. 98)
 ((compose
    (Euler-Lagrange-operator (L-harmonic 'm 'k))
    (Gamma (literal-function 'x) 4))
   't)
-
-(+ (* k (x t)) (* m (((expt D 2) x) t)))"
+;;=> (+ (* k (x t)) (* m (((expt D 2) x) t)))"
     "SICM 1.12 Projects"
     ";; ===========================================
 ;; SICM §1.12 — Projects
@@ -5559,7 +5284,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action Rx T-pend T3-spherical V V-pend ang-mom-z delta dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta make-path monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
+(declare Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action Rx T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta make-path monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -5639,8 +5364,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
-(defn delta [eta] (fn [f] (fn [q] ...)))
-
 (defn f [q]
   (compose
         (literal-function
@@ -5666,8 +5389,6 @@ gfx-win   ; auto-shows the accumulated curves
              (literal-function
                                                         'x))
             't))
-
-(* (((expt D 2) x) t) m)
 
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
@@ -5801,12 +5522,6 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'x_r 'y_r)
                                       (up 'xdot_r 'ydot_r)))
 
-(+
-  (* 1/2 (expt Omega 2) m (expt x_r 2))
-  (* 1/2 (expt Omega 2) m (expt y_r 2)) (* -1 Omega m xdot_r y_r)
-  (* Omega m ydot_r x_r) (* 1/2 m (expt xdot_r 2))
-  (* 1/2 m (expt ydot_r 2)))
-
 (((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
    (up
                                                             (literal-function
@@ -5814,14 +5529,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                             (literal-function
                                                                 'y r)))
   't)
-
-(down
-  (+
-        (* -1 (expt Omega 2) m (x_r t)) (* -2 Omega m ((D y_r) t))
-        (* m (((expt D 2) x_r) t)))
-  (+
-        (* -1 (expt Omega 2) m (y_r t)) (* 2 Omega m ((D x_r) t))
-        (* m (((expt D 2) y_r) t))))
 
 (defn T-pend [m l g ys]
   (fn [local]
@@ -5876,15 +5583,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
 
-(up
-  (+
-      (* x_0 (cos phi) (cos (* Omega t)))
-      (* z_0 (sin phi) (cos (* Omega t))) (* -1 y_0 (sin (* Omega t))))
-  (+
-      (* x_0 (cos phi) (sin (* Omega t)))
-      (* z_0 (sin phi) (sin (* Omega t))) (* y_0 (cos (* Omega t))))
-  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))
-
 (defn Lagrangian->acceleration [L]
   (let [P ((partial 2) L) F ((partial 1) L)]
         (solve-linear-left
@@ -5904,8 +5602,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
-
-(up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))
 
 (defn Lagrange-equations-first-order [L]
   (fn [q v]
@@ -5936,10 +5632,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                       1.0 (up 1.0 2.0)
                                                       (up 3.0 4.0))
   10.0 1.0e-12)
-
-(up
-  11.0 (up 3.7127916645844437 5.420620823651583)
-  (up 1.6148030925459782 1.8189103724750855))
 
 (defn periodic-drive [amplitude frequency phase]
   (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
@@ -6162,10 +5854,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (the-Noether-integral (up 't (up 'x 'y 'z) (up 'vx 'vy 'vz)))
 
-(down
-  (+ (* m vy z) (* -1 m vz y)) (+ (* m vz x) (* -1 m vx z))
-  (+ (* m vx y) (* -1 m vy x)))
-
 (defn Gamma-bar [f-bar]
   (fn [local] ((f-bar (osculating-path local)) (state->t local))))
 
@@ -6197,14 +5885,10 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((Euler-Lagrange-operator (L-harmonic 'm 'k)) (up 't 'x 'v 'a))
 
-(+ (* a m) (* k x))
-
 ((compose
    (Euler-Lagrange-operator (L-harmonic 'm 'k))
    (Gamma (literal-function 'x) 4))
   't)
-
-(+ (* k (x t)) (* m (((expt D 2) x) t)))
 
 ;; --- §1.12 — Projects ---
 
@@ -9685,15 +9369,13 @@ gfx-win   ; auto-shows the accumulated curves
                                                   't (up 'xp 'yp 'zp)
                                                   (down
                                                       'pp_x 'pp_y 'pp_z)))
-
-(up 0 (up 0 0 0) (down 0 0 0))
+;;=> (up 0 (up 0 0 0) (down 0 0 0))
 
 ;; (book p. 348)
 ((F->K (rotating 'Omega))
   (up
                             't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))
-
-(+ (* Omega pp_x yp) (* -1 Omega pp_y xp))
+;;=> (+ (* Omega pp_x yp) (* -1 Omega pp_y xp))
 
 ;; (book p. 348)
 (defn K [Omega]
@@ -9711,8 +9393,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                  't (up 'xp 'yp 'zp)
                                                  (down
                                                      'pp_x 'pp_y 'pp_z)))
-
-(up 0 (up 0 0 0) (down 0 0 0))"
+;;=> (up 0 (up 0 0 0) (down 0 0 0))"
     "SICM 5.2.2 Abstracting the Canonical Condition"
     ";; ===========================================
 ;; SICM §5.2.2 — Abstracting the Canonical Condition
@@ -9858,13 +9539,9 @@ gfx-win   ; auto-shows the accumulated curves
                                                   (down
                                                       'pp_x 'pp_y 'pp_z)))
 
-(up 0 (up 0 0 0) (down 0 0 0))
-
 ((F->K (rotating 'Omega))
   (up
                             't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))
-
-(+ (* Omega pp_x yp) (* -1 Omega pp_y xp))
 
 (defn K [Omega]
   (fn [s]
@@ -9880,8 +9557,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                  't (up 'xp 'yp 'zp)
                                                  (down
                                                      'pp_x 'pp_y 'pp_z)))
-
-(up 0 (up 0 0 0) (down 0 0 0))
 
 ;; --- §5.2.2 — Abstracting the Canonical Condition ---
 
@@ -9899,8 +9574,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; (book p. 351)
 ((canonical-transform? (polar-canonical 'alpha)) (up 't 'theta 'I))
-
-(up (up 0 0 0) (up 0 0 0) (up 0 0 0))
+;;=> (up (up 0 0 0) (up 0 0 0) (up 0 0 0))
 
 ;; (book p. 352)
 (defn a-non-canonical-transform [state]
@@ -9912,8 +9586,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((canonical-transform? a-non-canonical-transform) (up 't 'theta 'p))
-
-(up (up 0 0 0) (up 0 0 (+ -1 p)) (up 0 (+ 1 (* -1 p)) 0))
+;;=> (up (up 0 0 0) (up 0 0 (+ -1 p)) (up 0 (+ 1 (* -1 p)) 0))
 
 
 ;; --- Symplectic matrices ---
@@ -10137,13 +9810,9 @@ gfx-win   ; auto-shows the accumulated curves
                                                   (down
                                                       'pp_x 'pp_y 'pp_z)))
 
-(up 0 (up 0 0 0) (down 0 0 0))
-
 ((F->K (rotating 'Omega))
   (up
                             't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))
-
-(+ (* Omega pp_x yp) (* -1 Omega pp_y xp))
 
 (defn K [Omega]
   (fn [s]
@@ -10160,8 +9829,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                  (down
                                                      'pp_x 'pp_y 'pp_z)))
 
-(up 0 (up 0 0 0) (down 0 0 0))
-
 (defn J-func [DHs] (up 0 (ref DHs 2) (- (ref DHs 1))))
 
 
@@ -10172,8 +9839,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((canonical-transform? (polar-canonical 'alpha)) (up 't 'theta 'I))
 
-(up (up 0 0 0) (up 0 0 0) (up 0 0 0))
-
 (defn a-non-canonical-transform [state]
   (let [t (state->t state)
             theta (coordinate state)
@@ -10183,8 +9848,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((canonical-transform? a-non-canonical-transform) (up 't 'theta 'p))
-
-(up (up 0 0 0) (up 0 0 (+ -1 p)) (up 0 (+ 1 (* -1 p)) 0))
 
 (let [s (up 't (up 'x 'y) (down 'px 'py))
       s* (compatible-shape s)
@@ -10407,13 +10070,9 @@ gfx-win   ; auto-shows the accumulated curves
                                                   (down
                                                       'pp_x 'pp_y 'pp_z)))
 
-(up 0 (up 0 0 0) (down 0 0 0))
-
 ((F->K (rotating 'Omega))
   (up
                             't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))
-
-(+ (* Omega pp_x yp) (* -1 Omega pp_y xp))
 
 (defn K [Omega]
   (fn [s]
@@ -10430,8 +10089,6 @@ gfx-win   ; auto-shows the accumulated curves
                                                  (down
                                                      'pp_x 'pp_y 'pp_z)))
 
-(up 0 (up 0 0 0) (down 0 0 0))
-
 (defn J-func [DHs] (up 0 (ref DHs 2) (- (ref DHs 1))))
 
 
@@ -10442,8 +10099,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((canonical-transform? (polar-canonical 'alpha)) (up 't 'theta 'I))
 
-(up (up 0 0 0) (up 0 0 0) (up 0 0 0))
-
 (defn a-non-canonical-transform [state]
   (let [t (state->t state)
             theta (coordinate state)
@@ -10453,8 +10108,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ((canonical-transform? a-non-canonical-transform) (up 't 'theta 'p))
-
-(up (up 0 0 0) (up 0 0 (+ -1 p)) (up 0 (+ 1 (* -1 p)) 0))
 
 (let [s (up 't (up 'x 'y) (down 'px 'py))
       s* (compatible-shape s)
@@ -10544,7 +10197,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C* C->Cp H->Hp shift-t solution)
+(declare C->Cp H->Hp shift-t solution)
 
 
 ;; --- Another time-evolution transformation ---
@@ -10564,9 +10217,6 @@ gfx-win   ; auto-shows the accumulated curves
 (defn H->Hp [delta-t] (fn [H] (compose H (shift-t (- delta-t)))))
 
 ;; (book p. 430)
-(defn C* [alpha omega omega0] (fn [delta-t] (fn [state] ...)))
-
-;; (book p. 430)
 (defn solution [alpha omega omega0]
   (fn [state0]
         (fn [t]
@@ -10580,7 +10230,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C* C->Cp H->Hp H-harmonic Lie-derivative Lie-transform shift-t solution)
+(declare C->Cp H->Hp H-harmonic Lie-derivative Lie-transform shift-t solution)
 
 ;; --- Prerequisites from earlier sections of Chapter 6 ---
 
@@ -10594,8 +10244,6 @@ gfx-win   ; auto-shows the accumulated curves
             (momentum state))))
 
 (defn H->Hp [delta-t] (fn [H] (compose H (shift-t (- delta-t)))))
-
-(defn C* [alpha omega omega0] (fn [delta-t] (fn [state] ...)))
 
 (defn solution [alpha omega omega0]
   (fn [state0]
@@ -10760,7 +10408,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C* C->Cp H->Hp H-harmonic HH-collector Lie-derivative Lie-derivative-procedure Lie-transform shift-t solution)
+(declare C->Cp H->Hp H-harmonic HH-collector Lie-derivative Lie-derivative-procedure Lie-transform shift-t solution)
 
 ;; --- Prerequisites from earlier sections of Chapter 6 ---
 
@@ -10774,8 +10422,6 @@ gfx-win   ; auto-shows the accumulated curves
             (momentum state))))
 
 (defn H->Hp [delta-t] (fn [H] (compose H (shift-t (- delta-t)))))
-
-(defn C* [alpha omega omega0] (fn [delta-t] (fn [state] ...)))
 
 (defn solution [alpha omega omega0]
   (fn [state0]
@@ -11307,8 +10953,7 @@ a-vector
 
 ;; (book p. 511)
 ((compose cube sin) 'a)
-
-(expt (sin a) 3)
+;;=> (expt (sin a) 3)
 
 ;; (book p. 511)
 ((- (+ (square sin) (square cos)) 1) 'a)

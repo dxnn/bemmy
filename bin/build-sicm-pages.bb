@@ -55,6 +55,49 @@
   ;; symbols we don't want to treat it as a comparable sexpr comment.
   #"[√≈≠⋅±∞∂∑∫π·]")
 
+(def print-result-heads
+  "Heads that mark a top-level form as a SICM-book printed expression
+  rather than user-runnable code. The corpus scrape sometimes inlines
+  these next to the input form in :translated, where they'd otherwise
+  evaluate to 'Unable to resolve symbol' errors on free symbols."
+  '#{+ - * / up down expt sqrt matrix})
+
+(defn- read-form-or-nil [s]
+  (try
+    (with-open [rdr (java.io.PushbackReader. (java.io.StringReader. s))]
+      (let [f (read {:eof ::eof :read-cond :allow} rdr)]
+        (when-not (= f ::eof) f)))
+    (catch Throwable _ nil)))
+
+(defn split-print-result
+  "Detect SICM-book printed-result artifacts in `:translated`. When the
+  last `\\n\\n`-separated chunk parses to a math-shaped form (`(+ …)`,
+  `(up …)`, etc.) and isn't the only form, that chunk is the printed
+  output, not user code. Returns
+  {:runnable-text  text without the trailing artifact (original
+                   indentation preserved for the rest)
+   :printed-result pr-str of the artifact form, or nil}."
+  [translated]
+  (let [chunks (str/split translated #"\n[\t ]*\n")
+        last-form (when (> (count chunks) 1)
+                    (read-form-or-nil (last chunks)))]
+    (if (and last-form
+             (seq? last-form)
+             (contains? print-result-heads (first last-form)))
+      {:runnable-text  (str/join "\n\n" (butlast chunks))
+       :printed-result (pr-str last-form)}
+      {:runnable-text  translated
+       :printed-result nil})))
+
+(defn placeholder-entry?
+  "True when the entry's :translated contains a literal `...` symbol —
+  the SICM book uses ... as a 'fill in the rest' pedagogical marker
+  inside an otherwise-incomplete defn (e.g. §1.5.1's `delta`). Such
+  snippets aren't runnable code; the generator skips them entirely
+  rather than emit a defn whose body has an unresolvable `...`."
+  [entry]
+  (boolean (re-find #"(\s|\()\.\.\.(\s|\))" (:translated entry ""))))
+
 (defn readable-expected?
   "Cheap predicate: only render :expected as an inline comment if it
   parses as a Clojure form (or is a bare number/string). Filters out
@@ -78,11 +121,17 @@
 
 (defn render-entry
   "Render one corpus entry as either prereq or main content. For prereq
-  use, we just dump the form; for main use, we add a page-number
-  comment, optional subheading divider (only on change from prior),
-  and an inline expected-value comment when readable."
+  use, we just dump the runnable form(s); for main use, we add a
+  page-number comment, optional subheading divider (only on change from
+  prior), and an inline ;;=> comment showing either the entry's
+  :expected or the SICM-book printed result split out of :translated."
   [entry {:keys [prereq? prev-subheading]}]
   (let [{:keys [translated expected page subheading]} entry
+        {:keys [runnable-text printed-result]} (split-print-result translated)
+        ;; Prefer the corpus's :expected (string transcribed from the
+        ;; book); fall back to the trailing printed-result form we
+        ;; just split out of :translated.
+        effective-expected (or expected printed-result)
         sb (StringBuilder.)]
     (when (and (not prereq?)
                subheading
@@ -90,10 +139,11 @@
       (.append sb (str "\n;; --- " subheading " ---\n\n")))
     (when (and (not prereq?) page)
       (.append sb (str ";; (book p. " page ")\n")))
-    (.append sb (str/trim translated))
-    (when (and (not prereq?) expected (readable-expected? expected))
+    (.append sb (str/trim runnable-text))
+    (when (and (not prereq?) effective-expected
+               (readable-expected? effective-expected))
       (.append sb (str "\n;;=> "
-                       (-> expected
+                       (-> effective-expected
                            (str/replace #"\n" "\n;;   ")))))
     (.toString sb)))
 
@@ -159,7 +209,10 @@
 (defn render-page
   [section]
   (let [{:keys [chapter section-title chapter-title source entries]} section
-        prereqs (dedupe-prereqs (chapter-prereq-entries section))
+        keep-runnable   (complement placeholder-entry?)
+        prereqs (dedupe-prereqs
+                  (filterv keep-runnable (chapter-prereq-entries section)))
+        entries (filterv keep-runnable entries)
         all-entries (concat prereqs entries)
         def-names   (page-def-names all-entries)
         sb      (StringBuilder.)]
