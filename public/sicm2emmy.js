@@ -306,6 +306,78 @@
     return [L(A('let'), B(pairs), ...rest)];
   }
 
+  // ---- TYPE INFERENCE (cons-as-pair detection) ----------------------------
+  //
+  // Scheme `cons` pairs anything; Clojure `cons` requires a seqable tail.
+  // When SICM code uses `(cons a b)` with `b` being a function (closure
+  // pattern), we emit `[a b]` (a vector) instead, and route `(car x)` /
+  // `(cdr x)` to `nth` for any name bound to such a pair.
+  //
+  // `currentEnv` maps name → 'pair' | 'list'. It's threaded through
+  // translate(src, env) so the caller can accumulate inferences across
+  // snippets in the same chapter.
+
+  let currentEnv = Object.create(null);
+
+  function isFunctionForm(node) {
+    if (!node || node.t !== 'list' || !node.c[0]) return false;
+    const head = node.c[0].t === 'atom' ? node.c[0].v : null;
+    return head === 'lambda' || head === 'fn' || head === 'fn*';
+  }
+
+  function inferType(node, env) {
+    if (!node) return null;
+    if (node.t === 'atom') return env[node.v] || null;
+    if (node.t === 'pfx' && node.v === "'" &&
+        node.c && node.c.t === 'list' && node.c.c.length === 0) {
+      return 'list';
+    }
+    if (node.t !== 'list' || !node.c[0]) return null;
+    const head = node.c[0].t === 'atom' ? node.c[0].v : null;
+    if (!head) return null;
+    if (head === 'cons' && node.c.length === 3) {
+      const second = node.c[2];
+      if (!second) return 'list';
+      if (isFunctionForm(second)) return 'pair';
+      const t = inferType(second, env);
+      return t === 'pair' ? 'pair' : 'list';
+    }
+    if (head === 'list') return 'list';
+    if (head === 'let' || head === 'let*' || head === 'letrec') {
+      const body = node.c.slice(2);
+      if (body.length > 0) return inferType(body[body.length - 1], env);
+    }
+    if (head === 'do' || head === 'begin') {
+      const body = node.c.slice(1);
+      if (body.length > 0) return inferType(body[body.length - 1], env);
+    }
+    if (env[head]) return env[head];
+    return null;
+  }
+
+  function updateEnv(node, env) {
+    if (!node || node.t !== 'list' || !node.c[0]) return;
+    const head = node.c[0].t === 'atom' ? node.c[0].v : null;
+    if (head !== 'define' && head !== 'def') return;
+    const target = node.c[1];
+    if (!target) return;
+    if (target.t === 'atom') {
+      const t = inferType(node.c[2], env);
+      if (t) env[target.v] = t;
+    } else if (target.t === 'list') {
+      let sig = target;
+      while (sig && sig.t === 'list' && sig.c[0] && sig.c[0].t === 'list') {
+        sig = sig.c[0];
+      }
+      const name = sig && sig.c[0] && sig.c[0].v;
+      if (!name) return;
+      const body = node.c.slice(2);
+      if (body.length === 0) return;
+      const t = inferType(body[body.length - 1], env);
+      if (t) env[name] = t;
+    }
+  }
+
   function tx(node) {
     if (!node) return node;
     if (node.t === 'atom') {
@@ -649,6 +721,14 @@
     }
 
     if (hs && /^ca[ad]+r$/.test(hs) && c.length === 2) {
+      // For (car name) / (cdr name) on a name bound to a Scheme pair,
+      // route to nth so we get the elements directly rather than the
+      // mismatched (first ...) / (rest ...) seq semantics.
+      const arg = c[1];
+      if ((hs === 'car' || hs === 'cdr') &&
+          arg && arg.t === 'atom' && currentEnv[arg.v] === 'pair') {
+        return L(A('nth'), tx(arg), A(hs === 'car' ? '0' : '1'));
+      }
       if (hs==='cadr')   return L(A('second'), tx(c[1]));
       if (hs==='caddr')  return L(A('nth'), tx(c[1]), A('2'));
       if (hs==='cadddr') return L(A('nth'), tx(c[1]), A('3'));
@@ -657,6 +737,16 @@
       for (const ch of [...chain].reverse())
         res = L(A(ch==='a'?'first':'rest'), res);
       return res;
+    }
+
+    // Cons-as-pair: when the second arg is visibly a function or a known
+    // pair, emit a Clojure vector instead of `(cons …)`. Pure list-cons
+    // falls through to the generic emitter.
+    if (hs === 'cons' && c.length === 3) {
+      const second = c[2];
+      if (isFunctionForm(second) || inferType(second, currentEnv) === 'pair') {
+        return V([tx(c[1]), tx(c[2])]);
+      }
     }
 
     if (hs === 'newline' && c.length===1) return L(A('println'));
@@ -788,8 +878,18 @@
     return out.join('\n');
   }
 
-  function translate(src) {
-    return emitAll(txAll(parseAll(src)));
+  function translate(src, env) {
+    const nodes = parseAll(src);
+    // Pass 1: harvest type info from this snippet's top-level defines so
+    // later forms in the same snippet — and, when `env` is supplied,
+    // later snippets — see the inferred types.
+    currentEnv = env || Object.create(null);
+    for (const n of nodes) updateEnv(n, currentEnv);
+    try {
+      return emitAll(txAll(nodes));
+    } finally {
+      currentEnv = Object.create(null);
+    }
   }
 
   global.SicmToEmmy = { translate, tokenize, parseAll, txAll, emitAll };

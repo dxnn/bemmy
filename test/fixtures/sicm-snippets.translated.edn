@@ -258,7 +258,7 @@
   {:chapter "8" :section "8" :page 506 :idx 256 :code "(c2)" :translated "(c2)" :expected "1"}
   {:chapter "8" :section "8" :page 506 :idx 257 :code "(c1)" :translated "(c1)" :expected "3"}
   {:chapter "8" :section "8" :page 506 :idx 258 :code "(c2)" :translated "(c2)" :expected "2"}
-  {:chapter "8" :section "8" :page 506 :idx 259 :code "(define (make-collector)\n  (let ((lst '()))\n    (cons (lambda (new)\n            (set! lst (cons new lst))\n            new)\n          (lambda () lst))))" :translated "(defn make-collector []\n  (let [lst (volatile! '())]\n        (cons\n             (fn [new] (vreset! lst (cons new (deref lst))) new)\n             (fn [] (deref lst)))))"}
+  {:chapter "8" :section "8" :page 506 :idx 259 :code "(define (make-collector)\n  (let ((lst '()))\n    (cons (lambda (new)\n            (set! lst (cons new lst))\n            new)\n          (lambda () lst))))" :translated "(defn make-collector []\n  (let [lst (volatile! '())]\n        [(fn [new] (vreset! lst (cons new (deref lst))) new)\n            (fn [] (deref lst))]))"}
   {:chapter "8" :section "8" :page 506 :idx 260 :code "(define c3 (make-collector))\n(define c4 (make-collector))\n\n((car c3) 42)" :translated "(def c3 (make-collector))\n\n(def c4 (make-collector))\n\n\n((first c3) 42)" :expected "42"}
   {:chapter "8" :section "8" :page 506 :idx 261 :code "((car c4) 'jerry)" :translated "((first c4) 'jerry)" :expected "jerry"}
   {:chapter "8" :section "8" :page 506 :idx 262 :code "((car c3) 28)" :translated "((first c3) 28)" :expected "28"}

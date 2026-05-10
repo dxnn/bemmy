@@ -23,9 +23,17 @@ function ednStr(s) {
 
 const corpus = JSON.parse(fs.readFileSync(inPath, 'utf8'));
 
+// Type-inference env, reset per chapter so cross-chapter aliases don't leak.
+let envChapter = null;
+let env = null;
+
 const lines = ['['];
 corpus.forEach((entry, idx) => {
-  const translated = translate(entry.code);
+  if (entry.chapter !== envChapter) {
+    envChapter = entry.chapter;
+    env = Object.create(null);
+  }
+  const translated = translate(entry.code, env);
   const fields = [
     `:chapter ${ednStr(entry.chapter)}`,
     `:section ${ednStr(entry.section ?? '')}`,
