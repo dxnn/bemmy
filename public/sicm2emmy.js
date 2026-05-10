@@ -602,9 +602,14 @@
     if (hs==='hash-table->alist') return L(A('seq'),  tx(c[1]));
 
     // scmutils series printer:
-    //   (series:for-each f s n) → (run! f (take n s))
+    //   (series:for-each f s n) → (run! #(println (f %)) (take n s))
+    // SICM idiomatically passes `print-expression` (which simplifies + prints
+    // in scmutils) but `f` could be any printer, so we wrap with println.
     if (hs === 'series:for-each' && c.length === 4) {
-      return L(A('run!'), tx(c[1]), L(A('take'), tx(c[3]), tx(c[2])));
+      return L(A('run!'),
+               L(A('fn'), V(A('x')),
+                 L(A('println'), L(tx(c[1]), A('x')))),
+               L(A('take'), tx(c[3]), tx(c[2])));
     }
 
     // (literal-function 'f (-> dom range)) — `->` is a symbol in scmutils'

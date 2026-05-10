@@ -279,13 +279,68 @@
                                 :funcs   (merge (:funcs act-cls) (:funcs exp-cls))}]
                   (numeric-probe-equiv? eval-ns act-form exp-form combined))))))))))
 
-(defn equivalent? [ns actual expected]
+(defn classify-joint
+  "Classify free symbols across a sequence of forms together, so a name that
+  appears as a leaf in one form and as a function head in another is
+  consistently tagged as a function."
+  [forms known?]
+  (let [classifications (keep #(when % (classify-symbols % known?)) forms)
+        funcs   (reduce merge {} (map :funcs classifications))
+        scalars (apply disj (reduce into #{} (map :scalars classifications))
+                       (keys funcs))]
+    {:scalars scalars :funcs funcs}))
+
+(defn algebraic-forms-equiv?
+  "Bind free symbols (literal-function for funcs, 'sym for scalars) per
+  the supplied classification, eval both forms in `eval-ns`, then compare
+  via Emmy = or simplify-of-difference."
+  [eval-ns a-form e-form classification]
+  (let [{:keys [scalars funcs]} classification
+        wrap (fn [form]
+               `(let [~@(mapcat (fn [s] [s `(quote ~s)]) scalars)
+                      ~@(mapcat (fn [s] [s `(emmy.env/literal-function (quote ~s))])
+                                (keys funcs))]
+                  ~form))]
+    (try
+      (let [a-val (binding [*ns* eval-ns] (eval (wrap a-form)))
+            e-val (binding [*ns* eval-ns] (eval (wrap e-form)))]
+        (or (= a-val e-val)
+            (try
+              (let [d (emmy.env/- a-val e-val)
+                    s (emmy.env/simplify d)]
+                (or (emmy.env/zero? s)
+                    (and (number? s) (numeric-close? (double s) 0.0))))
+              (catch Throwable _ false))))
+      (catch Throwable _ false))))
+
+(defn ellipsis-stdout-equiv?
+  "When `expected` ends with `...`, treat it as a truncated print transcript
+  and check that `stdout` matches line-by-line, falling back to algebraic
+  equivalence per line for terms reordered by Emmy's printer. Free symbols
+  are classified jointly across all lines so e.g. `f` in `(f t)` is tagged
+  as a function consistently with `f` in `((D f) t)`."
+  [eval-ns stdout expected]
+  (when (and (string? stdout) (seq stdout))
+    (let [exp-lines (str/split-lines expected)]
+      (when (and (seq exp-lines)
+                 (= "..." (str/trim (last exp-lines))))
+        (let [target  (->> (butlast exp-lines) (remove str/blank?) vec)
+              actuals (->> (str/split-lines stdout) (remove str/blank?) vec)]
+          (when (>= (count actuals) (count target))
+            (let [exp-forms (mapv read-one target)
+                  act-forms (mapv read-one (subvec actuals 0 (count target)))
+                  cls (classify-joint (concat exp-forms act-forms) known?)]
+              (every? (fn [i]
+                        (or (= (norm (nth actuals i)) (norm (nth target i)))
+                            (let [af (nth act-forms i) ef (nth exp-forms i)]
+                              (when (and af ef)
+                                (algebraic-forms-equiv? eval-ns af ef cls)))))
+                      (range (count target))))))))))
+
+(defn equivalent? [ns actual expected stdout]
   (let [simplified (try (emmy.env/simplify actual)
                         (catch Throwable _ actual))
         a-str (pr-str simplified)
-        ;; Some `expected` values are book REPL transcripts that include
-        ;; intermediate print output before the final return value. Try the
-        ;; whole string first, then fall back to the last non-blank line.
         last-line (->> (str/split-lines expected)
                        (remove str/blank?)
                        last)
@@ -295,23 +350,26 @@
                   (or (= (norm a-str) (norm exp))
                       (numeric-equiv? a-str exp)))
                 candidates))
-        (boolean (semantic-equiv? ns actual expected)))))
+        (boolean (semantic-equiv? ns actual expected))
+        (boolean (ellipsis-stdout-equiv? ns stdout expected)))))
 
 (defn try-eval [ns forms]
-  (try
-    {:ok (eval-forms-in-ns ns forms)}
-    (catch Throwable t
-      {:err t})))
+  (let [out (java.io.StringWriter.)]
+    (try
+      (let [r (binding [*out* out] (eval-forms-in-ns ns forms))]
+        {:ok r :stdout (str out)})
+      (catch Throwable t
+        {:err t :stdout (str out)}))))
 
 (def ^:private skip-counter (atom 0))
 
 (defn- check-entry [n {:keys [section page idx translated expected]}]
   (let [forms (try (read-all-forms translated)
                    (catch Throwable t [::read-error t]))
-        {:keys [ok err]} (if (and (vector? forms)
-                                  (= ::read-error (first forms)))
-                           {:err (second forms)}
-                           (try-eval n forms))]
+        {:keys [ok err stdout]} (if (and (vector? forms)
+                                         (= ::read-error (first forms)))
+                                  {:err (second forms)}
+                                  (try-eval n forms))]
     (when expected
       (testing (format "§%s p%s #%s" section page idx)
         (cond
@@ -326,7 +384,7 @@
                               (pr-str translated))))
 
           :else
-          (is (equivalent? n ok expected)
+          (is (equivalent? n ok expected stdout)
               (format "got %s\nwant %s"
                       (pr-str ok) (pr-str expected))))))))
 
