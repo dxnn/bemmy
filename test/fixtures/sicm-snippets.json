@@ -2924,7 +2924,7 @@
     "source": "https://tgvaughan.github.io/sicm/chapter009.html",
     "subheading": "Structured results",
     "page": 522,
-    "expected": "(down\n  (up\n    (+ (* 2 x) (* 2 y))\n    (+ (* -3 (expt x 2)) (* 6 x y) (* -3 (expt y 2)))\n    (* (exp y) (exp x)))\n  (\n    (+ (* 2 x) (* 2 y))\n    (+ (* 3 (expt x 2)) (* -6 x y) (* 3 (expt y 2)))\n    (* (exp y) (exp x))))"
+    "expected": "(down\n  (up\n    (+ (* 2 x) (* 2 y))\n    (+ (* -3 (expt x 2)) (* 6 x y) (* -3 (expt y 2)))\n    (* (exp y) (exp x)))\n  (up\n    (+ (* 2 x) (* 2 y))\n    (+ (* 3 (expt x 2)) (* -6 x y) (* 3 (expt y 2)))\n    (* (exp y) (exp x))))"
   },
   {
     "code": "(define (f x y)\n  (* (square x) (cube y)))\n\n(define (g x y)\n  (up (f x y) y))\n\n(define (h x y)\n  (f (f x y) y))",
