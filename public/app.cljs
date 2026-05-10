@@ -724,7 +724,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare L-free-particle L-harmonic Lagrangian-action find-path make-eta parametric-path-action q test-path varied-free-particle-action win2)
+(doseq [s '[L-free-particle L-harmonic Lagrangian-action find-path make-eta parametric-path-action q test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; (book p. 14)
 (defn L-free-particle [mass]
@@ -846,7 +847,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare L-free-particle L-harmonic Lagrangian-action f find-path make-eta parametric-path-action q test-path varied-free-particle-action win2)
+(doseq [s '[L-free-particle L-harmonic Lagrangian-action f find-path make-eta parametric-path-action q test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -948,7 +950,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare L-central-polar L-free-particle L-harmonic Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(doseq [s '[L-central-polar L-free-particle L-harmonic Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1098,7 +1101,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare L-central-polar L-central-rectangular L-free-particle L-harmonic L-uniform-acceleration Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(doseq [s '[L-central-polar L-central-rectangular L-free-particle L-harmonic L-uniform-acceleration Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1300,7 +1304,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1571,7 +1576,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -1861,7 +1867,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2)
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy make-eta p->r parametric-path-action proposed-solution q test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -2176,7 +2183,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->state-derivative Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2)
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->state-derivative Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -2596,7 +2604,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2)
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend V-pend dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -3005,7 +3014,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L3-central Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2)
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L3-central Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -3500,7 +3510,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2)
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -4064,7 +4075,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F F->C F-tilde L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
+(doseq [s '[F F->C F-tilde L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -4644,7 +4656,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
+(doseq [s '[Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -5270,7 +5283,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action Rx T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta make-path monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2)
+(doseq [s '[Dt Euler-Lagrange-operator F F->C F-tilde Gamma-bar L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action Rx T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta make-path monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path the-Noether-integral varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
@@ -5904,7 +5918,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t)
+(doseq [s '[M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 
 ;; --- Implementation of angular velocity functions ---
@@ -5944,7 +5959,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t T-body)
+(doseq [s '[M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t T-body]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -5992,7 +6008,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare L-body L-space M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t T-body)
+(doseq [s '[L-body L-space M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t T-body]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6052,7 +6069,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Euler->M Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler)
+(doseq [s '[Euler->M Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6179,7 +6197,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler)
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6299,13 +6318,7 @@ gfx-win   ; auto-shows the accumulated curves
   (up 't (up 'theta 'phi 'psi) (up 'thetadot 'phidot 'psidot)))
 
 
-(simplify (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
-
-;; (book p. 142)
-(-
-  (ref ((L-space-Euler 'A 'B 'C) Euler-state) 2)
-  (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
-;;=> 0"
+(simplify (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))"
     "SICM 2.8.1 Computing the Motion of Free Rigid Bodies"
     ";; ===========================================
 ;; SICM §2.8.1 — Computing the Motion of Free Rigid Bodies
@@ -6315,7 +6328,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler monitor-errors relative-error rigid-sysder win)
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler monitor-errors relative-error rigid-sysder win]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6430,10 +6444,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (simplify (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
-
-(-
-  (ref ((L-space-Euler 'A 'B 'C) Euler-state) 2)
-  (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
 
 ;; --- §2.8.1 — Computing the Motion of Free Rigid Bodies ---
 
@@ -6478,7 +6488,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler monitor-errors relative-error rigid-sysder win)
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler monitor-errors relative-error rigid-sysder win]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6593,10 +6604,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (simplify (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
-
-(-
-  (ref ((L-space-Euler 'A 'B 'C) Euler-state) 2)
-  (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
 
 (simplify
   (determinant
@@ -6643,7 +6650,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis quaternion->rotation-matrix quaternion-state->omega-body relative-error rigid-sysder win)
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis quaternion->rotation-matrix quaternion-state->omega-body relative-error rigid-sysder win]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -6758,10 +6766,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (simplify (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
-
-(-
-  (ref ((L-space-Euler 'A 'B 'C) Euler-state) 2)
-  (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
 
 (simplify
   (determinant
@@ -6903,7 +6907,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis quaternion->rotation-matrix quaternion-state->omega-body qw-state->L-space qw-sysder relative-error rigid-sysder win)
+(doseq [s '[Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis quaternion->rotation-matrix quaternion-state->omega-body qw-state->L-space qw-sysder relative-error rigid-sysder win]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
@@ -7018,10 +7023,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (simplify (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
-
-(-
-  (ref ((L-space-Euler 'A 'B 'C) Euler-state) 2)
-  (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state) 1))
 
 (simplify
   (determinant
@@ -7225,7 +7226,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare H-rectangular Hamilton-equations Hamiltonian->state-derivative qp->H-state-path)
+(doseq [s '[H-rectangular Hamilton-equations Hamiltonian->state-derivative qp->H-state-path]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 
 ;; --- Computing Hamilton's equations ---
@@ -7271,7 +7273,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path)
+(doseq [s '[H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -7372,7 +7375,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F G H H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path)
+(doseq [s '[F G H H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -7504,7 +7508,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F G H H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path)
+(doseq [s '[F G H H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform qp->H-state-path]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -7705,7 +7710,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F G H H-pend-sysder H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform monitor-p-theta qp->H-state-path window)
+(doseq [s '[F G H H-pend-sysder H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform monitor-p-theta qp->H-state-path window]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -7932,7 +7938,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F G H H-pend-sysder H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map monitor-p-theta qp->H-state-path win window)
+(doseq [s '[F G H H-pend-sysder H-rectangular Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map monitor-p-theta qp->H-state-path win window]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -8175,7 +8182,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F G H H-pend-sysder H-rectangular HHHam HHmap HHpotential HHsysder Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map find-next-crossing monitor-p-theta qp->H-state-path refine-crossing section->state win window)
+(doseq [s '[F G H H-pend-sysder H-rectangular HHHam HHmap HHpotential HHsysder Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map find-next-crossing monitor-p-theta qp->H-state-path refine-crossing section->state win window]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -8493,7 +8501,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F G H H-pend-sysder H-rectangular HHHam HHmap HHpotential HHsysder Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map find-next-crossing monitor-p-theta qp->H-state-path refine-crossing section->state standard-map win window)
+(doseq [s '[F G H H-pend-sysder H-rectangular HHHam HHmap HHpotential HHsysder Hamilton-equations Hamiltonian->Lagrangian Hamiltonian->state-derivative L-axisymmetric-top L-rectangular Lagrangian->Hamiltonian Legendre-transform driven-pendulum-map find-next-crossing monitor-p-theta qp->H-state-path refine-crossing section->state standard-map win window]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
@@ -8816,7 +8825,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare cylinder-near? plot-parametric-fill unstable-manifold)
+(doseq [s '[cylinder-near? plot-parametric-fill unstable-manifold]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; (book p. 308)
 (defn unstable-manifold [T xe ye dx dy rho eps]
@@ -8865,7 +8875,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare cylinder-near? plot-parametric-fill radially-mapping-points unstable-manifold)
+(doseq [s '[cylinder-near? plot-parametric-fill radially-mapping-points unstable-manifold]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 4 ---
 
@@ -8931,7 +8942,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare cylinder-near? find-invariant-curve plot-parametric-fill radially-mapping-points unstable-manifold which-way?)
+(doseq [s '[cylinder-near? find-invariant-curve plot-parametric-fill radially-mapping-points unstable-manifold which-way?]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 4 ---
 
@@ -9042,7 +9054,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F->CH F->K H-central H-free H-prime translating)
+(doseq [s '[F->CH F->K H-central H-free H-prime translating]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 
 ;; --- Implementing point transformations ---
@@ -9117,7 +9130,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F->CH F->K H-central H-free H-harmonic H-prime canonical? polar-canonical translating)
+(doseq [s '[F->CH F->K H-central H-free H-harmonic H-prime canonical? polar-canonical translating]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9218,7 +9232,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C-rotating D-phase-space F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime K T-func canonical-H? canonical-K? canonical? polar-canonical rotating translating)
+(doseq [s '[C-rotating D-phase-space F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime K T-func canonical-H? canonical-K? canonical? polar-canonical rotating translating]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9392,7 +9407,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? polar-canonical rotating symplectic-matrix? symplectic-transform? translating)
+(doseq [s '[C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? polar-canonical rotating symplectic-matrix? symplectic-transform? translating]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9658,7 +9674,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical rotating symplectic-matrix? symplectic-transform? translating)
+(doseq [s '[C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical rotating symplectic-matrix? symplectic-transform? translating]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9913,7 +9930,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C-general C-rotating C-simple-time D-as-matrix D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical qp-submatrix rotating symplectic-matrix? symplectic-transform? translating)
+(doseq [s '[C-general C-rotating C-simple-time D-as-matrix D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical qp-submatrix rotating symplectic-matrix? symplectic-transform? translating]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -10171,7 +10189,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C->Cp H->Hp shift-t solution)
+(doseq [s '[C->Cp H->Hp shift-t solution]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 
 ;; --- Another time-evolution transformation ---
@@ -10204,7 +10223,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C->Cp H->Hp H-harmonic Lie-derivative Lie-transform shift-t solution)
+(doseq [s '[C->Cp H->Hp H-harmonic Lie-derivative Lie-transform shift-t solution]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 6 ---
 
@@ -10261,12 +10281,6 @@ gfx-win   ; auto-shows the accumulated curves
 ;;   (* -5/128 (expt epsilon 4))
 ;;   (* 7/256 (expt epsilon 5))
 ;;   ...
-
-;; (book p. 445)
-(+
-  (* 1/5040 (expt n 7)) (* -1/240 (expt n 6)) (* 5/144 (expt n 5))
-  (* -7/48 (expt n 4)) (* 29/90 (expt n 3)) (* -7/20 (expt n 2))
-  (* 1/7 n))
 
 
 ;; --- Computing Lie series ---
@@ -10382,7 +10396,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C->Cp H->Hp H-harmonic HH-collector Lie-derivative Lie-derivative-procedure Lie-transform shift-t solution)
+(doseq [s '[C->Cp H->Hp H-harmonic HH-collector Lie-derivative Lie-derivative-procedure Lie-transform shift-t solution]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 6 ---
 
@@ -10413,11 +10428,6 @@ gfx-win   ; auto-shows the accumulated curves
 (run!
   (fn [x] (println (simplify x)))
   (take 6 (((exp (* 'epsilon D)) (fn [x] (sqrt (+ x 1)))) 0)))
-
-(+
-  (* 1/5040 (expt n 7)) (* -1/240 (expt n 6)) (* 5/144 (expt n 5))
-  (* -7/48 (expt n 4)) (* 29/90 (expt n 3)) (* -7/20 (expt n 2))
-  (* 1/7 n))
 
 (defn Lie-derivative [H] (fn [F] (Poisson-bracket F H)))
 
@@ -10527,7 +10537,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C C-inv H-pendulum-series H0 H1 W solution solution0)
+(doseq [s '[C C-inv H-pendulum-series H0 H1 W solution solution0]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; (book p. 462)
 (defn H0 [alpha]
@@ -10613,18 +10624,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare a-list a-vector abs another-list c1 c2 c3 c4 compose f factorial make-collector make-counter pi square sum?)
-
-
-;; --- Procedure calls ---
-
-;; (book p. 497)
-(+ 1 2.14)
-;;=> 3.14
-
-;; (book p. 497)
-(+ 1 (* 2 1.07))
-;;=> 3.14
+(doseq [s '[a-list a-vector abs another-list c1 c2 c3 c4 compose f factorial make-collector make-counter pi square sum?]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 
 ;; --- Lambda expressions ---
@@ -10644,10 +10645,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (defn square [x] (* x x))
-
-;; (book p. 499)
-(* 4 pi (square 5))
-;;=> 314.1592653589793
 
 ;; (book p. 499)
 (defn square [x] (* x x))
@@ -10893,7 +10890,8 @@ a-vector
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare H d derivative-of-sine f g h helix p s v)
+(doseq [s '[H d derivative-of-sine f g h helix p s v]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 
 ;; --- Functions ---
@@ -10917,10 +10915,6 @@ a-vector
 
 
 (g 2)
-;;=> 7.274379414605454
-
-;; (book p. 511)
-(* (cube 2) (sin 2))
 ;;=> 7.274379414605454
 
 
@@ -10979,10 +10973,6 @@ p
 ;; (book p. 514)
 (ref (up (up 'a 'b) (up 'c 'd)) 0 1)
 ;;=> b
-
-;; (book p. 515)
-(* p v)
-;;=> (+ (* p_0 v↑0) (* p_1 v↑1) (* p_2 v↑2))
 
 
 ;; --- Derivatives ---

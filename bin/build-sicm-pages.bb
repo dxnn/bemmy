@@ -98,6 +98,23 @@
   [entry]
   (boolean (re-find #"(\s|\()\.\.\.(\s|\))" (:translated entry ""))))
 
+(defn print-result-only-entry?
+  "True when the entry's :translated parses to a single math-shaped
+  form like `(+ … expt n …)` with free symbols (n, x_r, Omega, …).
+  These are SICM-book printed-result excerpts the scrape captured as
+  standalone snippets without an associated input expression. Skip
+  them — they have no defs to contribute and just blow up on the free
+  symbol when the page evaluates."
+  [entry]
+  (let [forms (try (let [chunks (str/split (:translated entry "") #"\n[\t ]*\n")]
+                     (keep read-form-or-nil chunks))
+                   (catch Throwable _ nil))]
+    (and forms
+         (= 1 (count forms))
+         (let [f (first forms)]
+           (and (seq? f)
+                (contains? print-result-heads (first f)))))))
+
 (defn readable-expected?
   "Cheap predicate: only render :expected as an inline comment if it
   parses as a Clojure form (or is a bare number/string). Filters out
@@ -196,20 +213,25 @@
          (str " " section-title))))
 
 (defn- declare-setup-form
-  "Render `(declare X Y Z)` for every name the page defines. This
-  forward-declares them so cross-snippet references resolve regardless
-  of definition order (the SICM book defines e.g. qp->H-state-path
-  after its first use), and once each name is locally interned, the
-  subsequent (defn …) forms don't re-trigger the emmy.env shadow
-  warning per def — at most once at the declare line."
+  "Forward-declare each page-defined name, but ONLY when it isn't
+  already resolvable in the current ns (via emmy.env :refer or a
+  compat shim). Otherwise an unconditional `(declare X)` would shadow
+  a working `emmy.env/X` with an unbound local var, breaking prereq
+  forms that were previously calling into the env (e.g. find-path's
+  body references make-path; emmy.env/make-path is fine, but a bare
+  `(declare make-path)` before §1.12's (defn make-path …) leaves the
+  call unbound during the prereq evaluation)."
   [def-names]
   (when (seq def-names)
-    (str "(declare " (clojure.string/join " " (map name def-names)) ")")))
+    (str "(doseq [s '"
+         (pr-str (vec def-names))
+         "]\n  (when-not (ns-resolve *ns* s) (intern *ns* s)))")))
 
 (defn render-page
   [section]
   (let [{:keys [chapter section-title chapter-title source entries]} section
-        keep-runnable   (complement placeholder-entry?)
+        keep-runnable   #(not (or (placeholder-entry? %)
+                                  (print-result-only-entry? %)))
         prereqs (dedupe-prereqs
                   (filterv keep-runnable (chapter-prereq-entries section)))
         entries (filterv keep-runnable entries)
