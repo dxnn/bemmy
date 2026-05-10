@@ -720,15 +720,16 @@
       return L(A('defrecord'), A(name), V(fields.map(tx)));
     }
 
+    // Bare car/cdr on a name bound to a Scheme pair: route to nth so the
+    // accessors return the elements directly. The regex below doesn't
+    // match `car`/`cdr` (it requires at least one a/d between ca and r),
+    // so the non-pair path falls through and txAtom renames car→first.
+    if ((hs === 'car' || hs === 'cdr') && c.length === 2 &&
+        c[1] && c[1].t === 'atom' && currentEnv[c[1].v] === 'pair') {
+      return L(A('nth'), tx(c[1]), A(hs === 'car' ? '0' : '1'));
+    }
+
     if (hs && /^ca[ad]+r$/.test(hs) && c.length === 2) {
-      // For (car name) / (cdr name) on a name bound to a Scheme pair,
-      // route to nth so we get the elements directly rather than the
-      // mismatched (first ...) / (rest ...) seq semantics.
-      const arg = c[1];
-      if ((hs === 'car' || hs === 'cdr') &&
-          arg && arg.t === 'atom' && currentEnv[arg.v] === 'pair') {
-        return L(A('nth'), tx(arg), A(hs === 'car' ? '0' : '1'));
-      }
       if (hs==='cadr')   return L(A('second'), tx(c[1]));
       if (hs==='caddr')  return L(A('nth'), tx(c[1]), A('2'));
       if (hs==='cadddr') return L(A('nth'), tx(c[1]), A('3'));

@@ -259,13 +259,13 @@
   {:chapter "8" :section "8" :page 506 :idx 257 :code "(c1)" :translated "(c1)" :expected "3"}
   {:chapter "8" :section "8" :page 506 :idx 258 :code "(c2)" :translated "(c2)" :expected "2"}
   {:chapter "8" :section "8" :page 506 :idx 259 :code "(define (make-collector)\n  (let ((lst '()))\n    (cons (lambda (new)\n            (set! lst (cons new lst))\n            new)\n          (lambda () lst))))" :translated "(defn make-collector []\n  (let [lst (volatile! '())]\n        [(fn [new] (vreset! lst (cons new (deref lst))) new)\n            (fn [] (deref lst))]))"}
-  {:chapter "8" :section "8" :page 506 :idx 260 :code "(define c3 (make-collector))\n(define c4 (make-collector))\n\n((car c3) 42)" :translated "(def c3 (make-collector))\n\n(def c4 (make-collector))\n\n\n((first c3) 42)" :expected "42"}
-  {:chapter "8" :section "8" :page 506 :idx 261 :code "((car c4) 'jerry)" :translated "((first c4) 'jerry)" :expected "jerry"}
-  {:chapter "8" :section "8" :page 506 :idx 262 :code "((car c3) 28)" :translated "((first c3) 28)" :expected "28"}
-  {:chapter "8" :section "8" :page 506 :idx 263 :code "((car c3) 14)" :translated "((first c3) 14)" :expected "14"}
-  {:chapter "8" :section "8" :page 506 :idx 264 :code "((car c4) 'jack)" :translated "((first c4) 'jack)" :expected "jack"}
-  {:chapter "8" :section "8" :page 506 :idx 265 :code "((cdr c3))" :translated "((rest c3))" :expected "(14 28 42)"}
-  {:chapter "8" :section "8" :page 506 :idx 266 :code "((cdr c4))" :translated "((rest c4))" :expected "(jack jerry)"}
+  {:chapter "8" :section "8" :page 506 :idx 260 :code "(define c3 (make-collector))\n(define c4 (make-collector))\n\n((car c3) 42)" :translated "(def c3 (make-collector))\n\n(def c4 (make-collector))\n\n\n((nth c3 0) 42)" :expected "42"}
+  {:chapter "8" :section "8" :page 506 :idx 261 :code "((car c4) 'jerry)" :translated "((nth c4 0) 'jerry)" :expected "jerry"}
+  {:chapter "8" :section "8" :page 506 :idx 262 :code "((car c3) 28)" :translated "((nth c3 0) 28)" :expected "28"}
+  {:chapter "8" :section "8" :page 506 :idx 263 :code "((car c3) 14)" :translated "((nth c3 0) 14)" :expected "14"}
+  {:chapter "8" :section "8" :page 506 :idx 264 :code "((car c4) 'jack)" :translated "((nth c4 0) 'jack)" :expected "jack"}
+  {:chapter "8" :section "8" :page 506 :idx 265 :code "((cdr c3))" :translated "((nth c3 1))" :expected "(14 28 42)"}
+  {:chapter "8" :section "8" :page 506 :idx 266 :code "((cdr c4))" :translated "((nth c4 1))" :expected "(jack jerry)"}
   {:chapter "9" :section "9" :page 510 :idx 267 :code "(define (d x1 y1 x2 y2)\n  (sqrt (+ (square (- x2 x1)) (square (- y2 y1)))))" :translated "(defn d [x1 y1 x2 y2] (sqrt (+ (square (- x2 x1)) (square (- y2 y1)))))"}
   {:chapter "9" :section "9" :page 510 :idx 268 :code "(define h (compose cube sin))\n\n(h 2)" :translated "(def h (compose cube sin))\n\n\n(h 2)" :expected ".7518269446689928"}
   {:chapter "9" :section "9" :page 510 :idx 269 :code "(cube (sin 2))" :translated "(cube (sin 2))" :expected ".7518269446689928"}
