@@ -126,8 +126,10 @@
     'list-ref':'nth', 'vector-ref':'nth',
     // scmutils matrix accessors → Emmy (live in emmy.matrix as row/column).
     'm:nth-row':'row', 'm:nth-col':'column',
-    // scmutils plural; Emmy exposes the singular state-tuple selector.
-    'coordinates':'coordinate',
+    // scmutils plural; Emmy exposes the singular state-tuple selectors.
+    'coordinates':'coordinate', 'momenta':'momentum',
+    // `time` is a Clojure macro (benchmarking); use Emmy's state-time selector.
+    'time':'state->t',
     'delete-duplicates':'distinct', 'remove-duplicates':'distinct',
     'every':'every?', 'any':'some',
     'fold-left':'reduce',
@@ -603,6 +605,16 @@
     //   (series:for-each f s n) → (run! f (take n s))
     if (hs === 'series:for-each' && c.length === 4) {
       return L(A('run!'), tx(c[1]), L(A('take'), tx(c[3]), tx(c[2])));
+    }
+
+    // (literal-function 'f (-> dom range)) — `->` is a symbol in scmutils'
+    // type-signature DSL but a threading macro in Clojure. Quote it so
+    // Emmy receives the signature as data.
+    if (hs === 'literal-function' && c.length === 3 &&
+        c[2] && c[2].t === 'list' &&
+        c[2].c[0] && c[2].c[0].t === 'atom' && c[2].c[0].v === '->') {
+      return L(A('literal-function'), tx(c[1]),
+               {t:'pfx', v:"'", c: tx(c[2])});
     }
 
     if (hs === 'define-record-type') {
