@@ -4052,15 +4052,9 @@ gfx-win   ; auto-shows the accumulated curves
                                                                     'x_r
                                                                     'y_r)
                                                                 (up
-                                                                    'v_r^x
-                                                                    'v_r^y)))
-
-(+
-  (* 1/2 m (expt v_r^x 2)) (* 1/2 m (expt v_r^y 2))
-  (/ (* -1 GM_0 m) (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2))))
-  (/ (* -1 GM_1 m) (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2))))
-  (* -1/2 m (expt Omega 2) (expt x_r 2))
-  (* -1/2 m (expt Omega 2) (expt y_r 2)))"
+                                                                    'v_r↑x
+                                                                    'v_r↑y)))
+;;=> (+ (* 1/2 m (expt v_r↑x 2)) (* 1/2 m (expt v_r↑y 2)) (/ (* -1 GM_0 m) (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2)))) (/ (* -1 GM_1 m) (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2)))) (* -1/2 m (expt Omega 2) (expt x_r 2)) (* -1/2 m (expt Omega 2) (expt y_r 2)))"
     "SICM 1.8.5 Noether's Theorem"
     ";; ===========================================
 ;; SICM §1.8.5 — Noether's Theorem
@@ -4615,15 +4609,8 @@ gfx-win   ; auto-shows the accumulated curves
                                                                     'x_r
                                                                     'y_r)
                                                                 (up
-                                                                    'v_r^x
-                                                                    'v_r^y)))
-
-(+
-  (* 1/2 m (expt v_r^x 2)) (* 1/2 m (expt v_r^y 2))
-  (/ (* -1 GM_0 m) (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2))))
-  (/ (* -1 GM_1 m) (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2))))
-  (* -1/2 m (expt Omega 2) (expt x_r 2))
-  (* -1/2 m (expt Omega 2) (expt y_r 2)))
+                                                                    'v_r↑x
+                                                                    'v_r↑y)))
 
 ;; --- §1.8.5 — Noether's Theorem ---
 
@@ -5202,15 +5189,8 @@ gfx-win   ; auto-shows the accumulated curves
                                                                     'x_r
                                                                     'y_r)
                                                                 (up
-                                                                    'v_r^x
-                                                                    'v_r^y)))
-
-(+
-  (* 1/2 m (expt v_r^x 2)) (* 1/2 m (expt v_r^y 2))
-  (/ (* -1 GM_0 m) (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2))))
-  (/ (* -1 GM_1 m) (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2))))
-  (* -1/2 m (expt Omega 2) (expt x_r 2))
-  (* -1/2 m (expt Omega 2) (expt y_r 2)))
+                                                                    'v_r↑x
+                                                                    'v_r↑y)))
 
 (defn F-tilde [angle-x angle-y angle-z]
   (compose (Rx angle-x) (Ry angle-y) (Rz angle-z) coordinate))
@@ -5238,10 +5218,11 @@ gfx-win   ; auto-shows the accumulated curves
   (letfn [(C
                 [local]
                 (let [n (vector-length local)]
-                   (defn f-bar [q-prime]
-                        (let [q (compose F (Gamma q-prime))]
-                              (Gamma q n)))
-                   ((Gamma-bar f-bar) local)))]
+                   (letfn [(f-bar
+                                [q-prime]
+                                (let [q (compose F (Gamma q-prime))]
+                                       (Gamma q n)))]
+                        ((Gamma-bar f-bar) local))))]
         C))
 
 
@@ -5252,9 +5233,14 @@ gfx-win   ; auto-shows the accumulated curves
   (letfn [(DtF
                 [state]
                 (let [n (vector-length state)]
-                     (defn DF-on-path [q]
-                          (D (compose F (Gamma q (- n 1)))))
-                     ((Gamma-bar DF-on-path) state)))]
+                     (letfn [(DF-on-path
+                                  [q]
+                                  (D
+                                              (compose
+                                                 F
+                                                 (Gamma
+                                                          q (- n 1)))))]
+                          ((Gamma-bar DF-on-path) state))))]
         DtF))
 
 
@@ -5829,15 +5815,8 @@ gfx-win   ; auto-shows the accumulated curves
                                                                     'x_r
                                                                     'y_r)
                                                                 (up
-                                                                    'v_r^x
-                                                                    'v_r^y)))
-
-(+
-  (* 1/2 m (expt v_r^x 2)) (* 1/2 m (expt v_r^y 2))
-  (/ (* -1 GM_0 m) (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2))))
-  (/ (* -1 GM_1 m) (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2))))
-  (* -1/2 m (expt Omega 2) (expt x_r 2))
-  (* -1/2 m (expt Omega 2) (expt y_r 2)))
+                                                                    'v_r↑x
+                                                                    'v_r↑y)))
 
 (defn F-tilde [angle-x angle-y angle-z]
   (compose (Rx angle-x) (Ry angle-y) (Rz angle-z) coordinate))
@@ -5861,10 +5840,11 @@ gfx-win   ; auto-shows the accumulated curves
   (letfn [(C
                 [local]
                 (let [n (vector-length local)]
-                   (defn f-bar [q-prime]
-                        (let [q (compose F (Gamma q-prime))]
-                              (Gamma q n)))
-                   ((Gamma-bar f-bar) local)))]
+                   (letfn [(f-bar
+                                [q-prime]
+                                (let [q (compose F (Gamma q-prime))]
+                                       (Gamma q n)))]
+                        ((Gamma-bar f-bar) local))))]
         C))
 
 
@@ -5874,9 +5854,14 @@ gfx-win   ; auto-shows the accumulated curves
   (letfn [(DtF
                 [state]
                 (let [n (vector-length state)]
-                     (defn DF-on-path [q]
-                          (D (compose F (Gamma q (- n 1)))))
-                     ((Gamma-bar DF-on-path) state)))]
+                     (letfn [(DF-on-path
+                                  [q]
+                                  (D
+                                              (compose
+                                                 F
+                                                 (Gamma
+                                                          q (- n 1)))))]
+                          ((Gamma-bar DF-on-path) state))))]
         DtF))
 
 (defn Euler-Lagrange-operator [L]
@@ -5928,13 +5913,13 @@ gfx-win   ; auto-shows the accumulated curves
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 ;; (book p. 126)
 (defn M-of-q->omega-body-of-t [M-of-q]
@@ -5966,13 +5951,13 @@ gfx-win   ; auto-shows the accumulated curves
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
@@ -6014,13 +5999,13 @@ gfx-win   ; auto-shows the accumulated curves
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
@@ -6074,13 +6059,13 @@ gfx-win   ; auto-shows the accumulated curves
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
@@ -6201,13 +6186,13 @@ gfx-win   ; auto-shows the accumulated curves
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
@@ -6337,13 +6322,13 @@ gfx-win   ; auto-shows the accumulated curves
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
@@ -6500,13 +6485,13 @@ gfx-win   ; auto-shows the accumulated curves
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
@@ -6658,20 +6643,20 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis relative-error rigid-sysder win)
+(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis quaternion->rotation-matrix quaternion-state->omega-body relative-error rigid-sysder win)
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
@@ -6841,8 +6826,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; (book p. 184)
 (simplify
   (let [v (up 'q_0 'q_1 'q_2 'q_3)]
-            (let [m^2 (dot-product v v)]
-                 (* m^2 (quaternion->RM (make-quaternion v))))))
+            (let [m↑2 (dot-product v v)]
+                 (* m↑2 (quaternion->RM (make-quaternion v))))))
 
 ;; (book p. 185)
 (defn quaternion->rotation-matrix [q]
@@ -6850,7 +6835,7 @@ gfx-win   ; auto-shows the accumulated curves
             q1 (quaternion-ref q 1)
             q2 (quaternion-ref q 2)
             q3 (quaternion-ref q 3)]
-        (let [m^2 (+ (expt q0 2) (expt q1 2) (expt q2 2) (expt q3 2))]
+        (let [m↑2 (+ (expt q0 2) (expt q1 2) (expt q2 2) (expt q3 2))]
              (/
                   (matrix-by-rows
                      (list
@@ -6871,7 +6856,7 @@ gfx-win   ; auto-shows the accumulated curves
                                      (-
                                            (+ (expt q0 2) (expt q3 2))
                                            (+ (expt q1 2) (expt q2 2)))))
-                  m^2))))
+                  m↑2))))
 
 ;; (book p. 185)
 (simplify
@@ -6894,11 +6879,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; (book p. 186)
 (defn quaternion-state->omega-body [s]
   (let [q (coordinate s) qdot (velocities s)]
-        (let [m^2 (dot-product q q)]
-             (let [omega^a (/ (* 2 (dot-product q (* q:i qdot))) m^2)
-                      omega^b (/ (* 2 (dot-product q (* q:j qdot))) m^2)
-                      omega^c (/ (* 2 (dot-product q (* q:k qdot))) m^2)]
-                  (up omega^a omega^b omega^c)))))
+        (let [m↑2 (dot-product q q)]
+             (let [omega↑a (/ (* 2 (dot-product q (* q:i qdot))) m↑2)
+                      omega↑b (/ (* 2 (dot-product q (* q:j qdot))) m↑2)
+                      omega↑c (/ (* 2 (dot-product q (* q:k qdot))) m↑2)]
+                  (up omega↑a omega↑b omega↑c)))))
 
 
 ;; --- Composition of rotations ---
@@ -6918,20 +6903,20 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis qw-state->L-space relative-error rigid-sysder win)
+(declare Euler->M Euler-state Euler-state->omega-body L-body L-body-Euler L-space L-space-Euler M->omega M->omega-body M-of-q->omega-body-of-t M-of-q->omega-of-t Rx-matrix Rz-matrix T-body T-body-Euler angle-axis->rotation-matrix monitor-errors quaternion->RM quaternion->angle-axis quaternion->rotation-matrix quaternion-state->omega-body qw-state->L-space qw-sysder relative-error rigid-sysder win)
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
-            (letfn [(omega-cross
-                        [t]
-                        (*
-                                     ((D M-on-path) t)
-                                     (transpose (M-on-path t))))]
-                (let [M-on-path (compose M-of-q q)]
-                       (antisymmetric->column-matrix (omega-cross t)))))))
+            (let [M-on-path (compose M-of-q q)]
+                (letfn [(omega-cross
+                             [t]
+                             (*
+                                          ((D M-on-path) t)
+                                          (transpose (M-on-path t))))]
+                     (antisymmetric->column-matrix (omega-cross t)))))))
 
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
@@ -7095,15 +7080,15 @@ gfx-win   ; auto-shows the accumulated curves
 
 (simplify
   (let [v (up 'q_0 'q_1 'q_2 'q_3)]
-            (let [m^2 (dot-product v v)]
-                 (* m^2 (quaternion->RM (make-quaternion v))))))
+            (let [m↑2 (dot-product v v)]
+                 (* m↑2 (quaternion->RM (make-quaternion v))))))
 
 (defn quaternion->rotation-matrix [q]
   (let [q0 (quaternion-ref q 0)
             q1 (quaternion-ref q 1)
             q2 (quaternion-ref q 2)
             q3 (quaternion-ref q 3)]
-        (let [m^2 (+ (expt q0 2) (expt q1 2) (expt q2 2) (expt q3 2))]
+        (let [m↑2 (+ (expt q0 2) (expt q1 2) (expt q2 2) (expt q3 2))]
              (/
                   (matrix-by-rows
                      (list
@@ -7124,7 +7109,7 @@ gfx-win   ; auto-shows the accumulated curves
                                      (-
                                            (+ (expt q0 2) (expt q3 2))
                                            (+ (expt q1 2) (expt q2 2)))))
-                  m^2))))
+                  m↑2))))
 
 (simplify
   ((M->omega-body
@@ -7145,11 +7130,11 @@ gfx-win   ; auto-shows the accumulated curves
 
 (defn quaternion-state->omega-body [s]
   (let [q (coordinate s) qdot (velocities s)]
-        (let [m^2 (dot-product q q)]
-             (let [omega^a (/ (* 2 (dot-product q (* q:i qdot))) m^2)
-                      omega^b (/ (* 2 (dot-product q (* q:j qdot))) m^2)
-                      omega^c (/ (* 2 (dot-product q (* q:k qdot))) m^2)]
-                  (up omega^a omega^b omega^c)))))
+        (let [m↑2 (dot-product q q)]
+             (let [omega↑a (/ (* 2 (dot-product q (* q:i qdot))) m↑2)
+                      omega↑b (/ (* 2 (dot-product q (* q:j qdot))) m↑2)
+                      omega↑c (/ (* 2 (dot-product q (* q:k qdot))) m↑2)]
+                  (up omega↑a omega↑b omega↑c)))))
 
 (let [q (quaternion 'q_0 'q_1 'q_2 'q_3)
       p (quaternion 'p_0 'p_1 'p_2 'p_3)]
@@ -7161,28 +7146,38 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; (book p. 189)
 (defn qw-sysder [A B C]
-  (let [B-C/A (/ (- B C) A) C-A/B (/ (- C A) B) A-B/C (/ (- A B) C)]
-        (defn the-deriv [qw-state]
-             (let [t (state->t qw-state)
-                       q (coordinate qw-state)
-                       omega-body (ref qw-state 2)]
-                   (let [omega^a (ref omega-body 0)
-                            omega^b (ref omega-body 1)
-                            omega^c (ref omega-body 2)]
-                        (let [tdot 1
-                                 qdot (*
-                                        -1/2
-                                        (+
-                                           (* omega^a q:i)
-                                           (* omega^b q:j)
-                                           (* omega^c q:k))
-                                        q)
-                                 omegadot (up
-                                            (* B-C/A omega^b omega^c)
-                                            (* C-A/B omega^c omega^a)
-                                            (* A-B/C omega^a omega^b))]
-                             (up tdot qdot omegadot)))))
-        the-deriv))
+  (let [B-C∕A (/ (- B C) A) C-A∕B (/ (- C A) B) A-B∕C (/ (- A B) C)]
+        (letfn [(the-deriv
+                     [qw-state]
+                     (let [t (state->t qw-state)
+                                    q (coordinate qw-state)
+                                    omega-body (ref qw-state 2)]
+                                (let [omega↑a (ref omega-body 0)
+                                         omega↑b (ref omega-body 1)
+                                         omega↑c (ref omega-body 2)]
+                                     (let [tdot 1
+                                              qdot (*
+                                                     -1/2
+                                                     (+
+                                                        (* omega↑a q:i)
+                                                        (* omega↑b q:j)
+                                                        (* omega↑c q:k))
+                                                     q)
+                                              omegadot (up
+                                                         (*
+                                                             B-C∕A
+                                                             omega↑b
+                                                             omega↑c)
+                                                         (*
+                                                             C-A∕B
+                                                             omega↑c
+                                                             omega↑a)
+                                                         (*
+                                                             A-B∕C
+                                                             omega↑a
+                                                             omega↑b))]
+                                          (up tdot qdot omegadot)))))]
+             the-deriv)))
 
 ;; (book p. 190)
 (defn qw-state->L-space [A B C]
@@ -7316,12 +7311,13 @@ gfx-win   ; auto-shows the accumulated curves
 ;; (book p. 212)
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
-        (defn G [w]
-             (let [zero (compatible-zero w)]
-                   (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                        (let [v (solve-linear-left M (- w b))]
-                             (- (* w v) (F v))))))
-        G))
+        (letfn [(G
+                     [w]
+                     (let [zero (compatible-zero w)]
+                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
+                             (let [v (solve-linear-left M (- w b))]
+                                  (- (* w v) (F v))))))]
+             G)))
 
 ;; (book p. 212)
 (defn Lagrangian->Hamiltonian [Lagrangian]
@@ -7329,8 +7325,8 @@ gfx-win   ; auto-shows the accumulated curves
         (let [t (state->t H-state)
                 q (coordinate H-state)
                 p (momentum H-state)]
-            (defn L [qdot] (Lagrangian (up t q qdot)))
-            ((Legendre-transform L) p))))
+            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+                 ((Legendre-transform L) p)))))
 
 ;; (book p. 212)
 (defn Hamiltonian->Lagrangian [Hamiltonian]
@@ -7338,8 +7334,8 @@ gfx-win   ; auto-shows the accumulated curves
         (let [t (state->t L-state)
                 q (coordinate L-state)
                 qdot (velocity L-state)]
-            (defn H [p] (Hamiltonian (up t q p)))
-            ((Legendre-transform H) qdot))))
+            (letfn [(H [p] (Hamiltonian (up t q p)))]
+                 ((Legendre-transform H) qdot)))))
 
 ;; (book p. 212)
 (defn L-rectangular [m V]
@@ -7410,28 +7406,29 @@ gfx-win   ; auto-shows the accumulated curves
 
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
-        (defn G [w]
-             (let [zero (compatible-zero w)]
-                   (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                        (let [v (solve-linear-left M (- w b))]
-                             (- (* w v) (F v))))))
-        G))
+        (letfn [(G
+                     [w]
+                     (let [zero (compatible-zero w)]
+                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
+                             (let [v (solve-linear-left M (- w b))]
+                                  (- (* w v) (F v))))))]
+             G)))
 
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
                 q (coordinate H-state)
                 p (momentum H-state)]
-            (defn L [qdot] (Lagrangian (up t q qdot)))
-            ((Legendre-transform L) p))))
+            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+                 ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
                 q (coordinate L-state)
                 qdot (velocity L-state)]
-            (defn H [p] (Hamiltonian (up t q p)))
-            ((Legendre-transform H) qdot))))
+            (letfn [(H [p] (Hamiltonian (up t q p)))]
+                 ((Legendre-transform H) qdot)))))
 
 (defn L-rectangular [m V]
   (fn [local]
@@ -7541,28 +7538,29 @@ gfx-win   ; auto-shows the accumulated curves
 
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
-        (defn G [w]
-             (let [zero (compatible-zero w)]
-                   (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                        (let [v (solve-linear-left M (- w b))]
-                             (- (* w v) (F v))))))
-        G))
+        (letfn [(G
+                     [w]
+                     (let [zero (compatible-zero w)]
+                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
+                             (let [v (solve-linear-left M (- w b))]
+                                  (- (* w v) (F v))))))]
+             G)))
 
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
                 q (coordinate H-state)
                 p (momentum H-state)]
-            (defn L [qdot] (Lagrangian (up t q qdot)))
-            ((Legendre-transform L) p))))
+            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+                 ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
                 q (coordinate L-state)
                 qdot (velocity L-state)]
-            (defn H [p] (Hamiltonian (up t q p)))
-            ((Legendre-transform H) qdot))))
+            (letfn [(H [p] (Hamiltonian (up t q p)))]
+                 ((Legendre-transform H) qdot)))))
 
 (defn L-rectangular [m V]
   (fn [local]
@@ -7741,28 +7739,29 @@ gfx-win   ; auto-shows the accumulated curves
 
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
-        (defn G [w]
-             (let [zero (compatible-zero w)]
-                   (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                        (let [v (solve-linear-left M (- w b))]
-                             (- (* w v) (F v))))))
-        G))
+        (letfn [(G
+                     [w]
+                     (let [zero (compatible-zero w)]
+                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
+                             (let [v (solve-linear-left M (- w b))]
+                                  (- (* w v) (F v))))))]
+             G)))
 
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
                 q (coordinate H-state)
                 p (momentum H-state)]
-            (defn L [qdot] (Lagrangian (up t q qdot)))
-            ((Legendre-transform L) p))))
+            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+                 ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
                 q (coordinate L-state)
                 qdot (velocity L-state)]
-            (defn H [p] (Hamiltonian (up t q p)))
-            ((Legendre-transform H) qdot))))
+            (letfn [(H [p] (Hamiltonian (up t q p)))]
+                 ((Legendre-transform H) qdot)))))
 
 (defn L-rectangular [m V]
   (fn [local]
@@ -7967,28 +7966,29 @@ gfx-win   ; auto-shows the accumulated curves
 
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
-        (defn G [w]
-             (let [zero (compatible-zero w)]
-                   (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                        (let [v (solve-linear-left M (- w b))]
-                             (- (* w v) (F v))))))
-        G))
+        (letfn [(G
+                     [w]
+                     (let [zero (compatible-zero w)]
+                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
+                             (let [v (solve-linear-left M (- w b))]
+                                  (- (* w v) (F v))))))]
+             G)))
 
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
                 q (coordinate H-state)
                 p (momentum H-state)]
-            (defn L [qdot] (Lagrangian (up t q qdot)))
-            ((Legendre-transform L) p))))
+            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+                 ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
                 q (coordinate L-state)
                 qdot (velocity L-state)]
-            (defn H [p] (Hamiltonian (up t q p)))
-            ((Legendre-transform H) qdot))))
+            (letfn [(H [p] (Hamiltonian (up t q p)))]
+                 ((Legendre-transform H) qdot)))))
 
 (defn L-rectangular [m V]
   (fn [local]
@@ -8209,28 +8209,29 @@ gfx-win   ; auto-shows the accumulated curves
 
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
-        (defn G [w]
-             (let [zero (compatible-zero w)]
-                   (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                        (let [v (solve-linear-left M (- w b))]
-                             (- (* w v) (F v))))))
-        G))
+        (letfn [(G
+                     [w]
+                     (let [zero (compatible-zero w)]
+                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
+                             (let [v (solve-linear-left M (- w b))]
+                                  (- (* w v) (F v))))))]
+             G)))
 
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
                 q (coordinate H-state)
                 p (momentum H-state)]
-            (defn L [qdot] (Lagrangian (up t q qdot)))
-            ((Legendre-transform L) p))))
+            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+                 ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
                 q (coordinate L-state)
                 qdot (velocity L-state)]
-            (defn H [p] (Hamiltonian (up t q p)))
-            ((Legendre-transform H) qdot))))
+            (letfn [(H [p] (Hamiltonian (up t q p)))]
+                 ((Legendre-transform H) qdot)))))
 
 (defn L-rectangular [m V]
   (fn [local]
@@ -8526,28 +8527,29 @@ gfx-win   ; auto-shows the accumulated curves
 
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
-        (defn G [w]
-             (let [zero (compatible-zero w)]
-                   (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                        (let [v (solve-linear-left M (- w b))]
-                             (- (* w v) (F v))))))
-        G))
+        (letfn [(G
+                     [w]
+                     (let [zero (compatible-zero w)]
+                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
+                             (let [v (solve-linear-left M (- w b))]
+                                  (- (* w v) (F v))))))]
+             G)))
 
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
                 q (coordinate H-state)
                 p (momentum H-state)]
-            (defn L [qdot] (Lagrangian (up t q qdot)))
-            ((Legendre-transform L) p))))
+            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+                 ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
                 q (coordinate L-state)
                 qdot (velocity L-state)]
-            (defn H [p] (Hamiltonian (up t q p)))
-            ((Legendre-transform H) qdot))))
+            (letfn [(H [p] (Hamiltonian (up t q p)))]
+                 ((Legendre-transform H) qdot)))))
 
 (defn L-rectangular [m V]
   (fn [local]
@@ -9040,7 +9042,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F->CH F->K H-central H-free translating)
+(declare F->CH F->K H-central H-free H-prime translating)
 
 
 ;; --- Implementing point transformations ---
@@ -9085,10 +9087,11 @@ gfx-win   ; auto-shows the accumulated curves
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
 ;; (book p. 340)
-((F->K (translating (up 'v^x 'v^y 'v^z)))
+((F->K (translating (up 'v↑x 'v↑y 'v↑z)))
   (up
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
+;;=> (+ (* -1 p_x v↑x) (* -1 p_y v↑y) (* -1 p_z v↑z))
 
 ;; (book p. 340)
 (defn H-free [m] (fn [s] (/ (square (momentum s)) (* 2 m))))
@@ -9096,19 +9099,15 @@ gfx-win   ; auto-shows the accumulated curves
 ;; (book p. 340)
 (def H-prime
   (+
-       (compose (H-free 'm) (F->CH (translating (up 'v^x 'v^y 'v^z))))
-       (F->K (translating (up 'v^x 'v^y 'v^z)))))
+       (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
+       (F->K (translating (up 'v↑x 'v↑y 'v↑z)))))
 
 ;; (book p. 340)
 (H-prime
   (up
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
-
-(+
-  (* -1 pprime_x v^x) (* -1 pprime_y v^y) (* -1 pprime_z v^z)
-  (/ (* 1/2 (expt pprime_x 2)) m) (/ (* 1/2 (expt pprime_y 2)) m)
-  (/ (* 1/2 (expt pprime_z 2)) m))"
+;;=> (+ (* -1 pprime_x v↑x) (* -1 pprime_y v↑y) (* -1 pprime_z v↑z) (/ (* 1/2 (expt pprime_x 2)) m) (/ (* 1/2 (expt pprime_y 2)) m) (/ (* 1/2 (expt pprime_z 2)) m))"
     "SICM 5.2 General Canonical Transformations"
     ";; ===========================================
 ;; SICM §5.2 — General Canonical Transformations
@@ -9118,7 +9117,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare F->CH F->K H-central H-free H-harmonic canonical? polar-canonical translating)
+(declare F->CH F->K H-central H-free H-harmonic H-prime canonical? polar-canonical translating)
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9156,7 +9155,7 @@ gfx-win   ; auto-shows the accumulated curves
 (defn translating [v]
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
-((F->K (translating (up 'v^x 'v^y 'v^z)))
+((F->K (translating (up 'v↑x 'v↑y 'v↑z)))
   (up
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
@@ -9165,18 +9164,13 @@ gfx-win   ; auto-shows the accumulated curves
 
 (def H-prime
   (+
-       (compose (H-free 'm) (F->CH (translating (up 'v^x 'v^y 'v^z))))
-       (F->K (translating (up 'v^x 'v^y 'v^z)))))
+       (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
+       (F->K (translating (up 'v↑x 'v↑y 'v↑z)))))
 
 (H-prime
   (up
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
-
-(+
-  (* -1 pprime_x v^x) (* -1 pprime_y v^y) (* -1 pprime_z v^z)
-  (/ (* 1/2 (expt pprime_x 2)) m) (/ (* 1/2 (expt pprime_y 2)) m)
-  (/ (* 1/2 (expt pprime_z 2)) m))
 
 ;; --- §5.2 — General Canonical Transformations ---
 
@@ -9224,7 +9218,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C-rotating D-phase-space F->CH F->K H-arbitrary H-central H-free H-harmonic K T-func canonical-H? canonical-K? canonical? polar-canonical rotating translating)
+(declare C-rotating D-phase-space F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime K T-func canonical-H? canonical-K? canonical? polar-canonical rotating translating)
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9262,7 +9256,7 @@ gfx-win   ; auto-shows the accumulated curves
 (defn translating [v]
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
-((F->K (translating (up 'v^x 'v^y 'v^z)))
+((F->K (translating (up 'v↑x 'v↑y 'v↑z)))
   (up
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
@@ -9271,18 +9265,13 @@ gfx-win   ; auto-shows the accumulated curves
 
 (def H-prime
   (+
-       (compose (H-free 'm) (F->CH (translating (up 'v^x 'v^y 'v^z))))
-       (F->K (translating (up 'v^x 'v^y 'v^z)))))
+       (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
+       (F->K (translating (up 'v↑x 'v↑y 'v↑z)))))
 
 (H-prime
   (up
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
-
-(+
-  (* -1 pprime_x v^x) (* -1 pprime_y v^y) (* -1 pprime_z v^z)
-  (/ (* 1/2 (expt pprime_x 2)) m) (/ (* 1/2 (expt pprime_y 2)) m)
-  (/ (* 1/2 (expt pprime_z 2)) m))
 
 (defn canonical? [C H Hprime]
   (-
@@ -9403,7 +9392,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? polar-canonical rotating symplectic-matrix? symplectic-transform? translating)
+(declare C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? polar-canonical rotating symplectic-matrix? symplectic-transform? translating)
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9441,7 +9430,7 @@ gfx-win   ; auto-shows the accumulated curves
 (defn translating [v]
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
-((F->K (translating (up 'v^x 'v^y 'v^z)))
+((F->K (translating (up 'v↑x 'v↑y 'v↑z)))
   (up
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
@@ -9450,18 +9439,13 @@ gfx-win   ; auto-shows the accumulated curves
 
 (def H-prime
   (+
-       (compose (H-free 'm) (F->CH (translating (up 'v^x 'v^y 'v^z))))
-       (F->K (translating (up 'v^x 'v^y 'v^z)))))
+       (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
+       (F->K (translating (up 'v↑x 'v↑y 'v↑z)))))
 
 (H-prime
   (up
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
-
-(+
-  (* -1 pprime_x v^x) (* -1 pprime_y v^y) (* -1 pprime_z v^z)
-  (/ (* 1/2 (expt pprime_x 2)) m) (/ (* 1/2 (expt pprime_y 2)) m)
-  (/ (* 1/2 (expt pprime_z 2)) m))
 
 (defn canonical? [C H Hprime]
   (-
@@ -9674,7 +9658,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical rotating symplectic-matrix? symplectic-transform? translating)
+(declare C-general C-rotating C-simple-time D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical rotating symplectic-matrix? symplectic-transform? translating)
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9712,7 +9696,7 @@ gfx-win   ; auto-shows the accumulated curves
 (defn translating [v]
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
-((F->K (translating (up 'v^x 'v^y 'v^z)))
+((F->K (translating (up 'v↑x 'v↑y 'v↑z)))
   (up
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
@@ -9721,18 +9705,13 @@ gfx-win   ; auto-shows the accumulated curves
 
 (def H-prime
   (+
-       (compose (H-free 'm) (F->CH (translating (up 'v^x 'v^y 'v^z))))
-       (F->K (translating (up 'v^x 'v^y 'v^z)))))
+       (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
+       (F->K (translating (up 'v↑x 'v↑y 'v↑z)))))
 
 (H-prime
   (up
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
-
-(+
-  (* -1 pprime_x v^x) (* -1 pprime_y v^y) (* -1 pprime_z v^z)
-  (/ (* 1/2 (expt pprime_x 2)) m) (/ (* 1/2 (expt pprime_y 2)) m)
-  (/ (* 1/2 (expt pprime_z 2)) m))
 
 (defn canonical? [C H Hprime]
   (-
@@ -9934,7 +9913,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare C-general C-rotating C-simple-time D-as-matrix D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical qp-submatrix rotating symplectic-matrix? symplectic-transform? translating)
+(declare C-general C-rotating C-simple-time D-as-matrix D-phase-space F F->CH F->K H-arbitrary H-central H-free H-harmonic H-prime J-func K T-func a-non-canonical-transform canonical-H? canonical-K? canonical-transform? canonical? omega polar-canonical qp-submatrix rotating symplectic-matrix? symplectic-transform? translating)
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
@@ -9972,7 +9951,7 @@ gfx-win   ; auto-shows the accumulated curves
 (defn translating [v]
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
-((F->K (translating (up 'v^x 'v^y 'v^z)))
+((F->K (translating (up 'v↑x 'v↑y 'v↑z)))
   (up
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
@@ -9981,18 +9960,13 @@ gfx-win   ; auto-shows the accumulated curves
 
 (def H-prime
   (+
-       (compose (H-free 'm) (F->CH (translating (up 'v^x 'v^y 'v^z))))
-       (F->K (translating (up 'v^x 'v^y 'v^z)))))
+       (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
+       (F->K (translating (up 'v↑x 'v↑y 'v↑z)))))
 
 (H-prime
   (up
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
-
-(+
-  (* -1 pprime_x v^x) (* -1 pprime_y v^y) (* -1 pprime_z v^z)
-  (/ (* 1/2 (expt pprime_x 2)) m) (/ (* 1/2 (expt pprime_y 2)) m)
-  (/ (* 1/2 (expt pprime_z 2)) m))
 
 (defn canonical? [C H Hprime]
   (-
@@ -10504,23 +10478,24 @@ gfx-win   ; auto-shows the accumulated curves
 ;; (book p. 455)
 (defn HH-collector [win advance E dt sec-eps n]
   (fn [x y done fail]
-        (letfn [(monitor
-                    [last-crossing-state state]
-                    (plot-point
-                             win
-                             (ref
-                                         (coordinate
-                                              last-crossing-state)
-                                         1)
-                             (ref
-                                         (momentum
-                                              last-crossing-state)
-                                         1)))
-                  (pmap
-                    [x y cont fail]
-                    (find-next-crossing y advance dt sec-eps cont))]
-            (let [collector (default-collector monitor pmap n)]
-                   (cond
+        (let [collector (default-collector monitor pmap n)]
+            (letfn [(monitor
+                         [last-crossing-state state]
+                         (plot-point
+                                  win
+                                  (ref
+                                              (coordinate
+                                                   last-crossing-state)
+                                              1)
+                                  (ref
+                                              (momentum
+                                                   last-crossing-state)
+                                              1)))
+                       (pmap
+                         [x y cont fail]
+                         (find-next-crossing
+                               y advance dt sec-eps cont))]
+                 (cond
                         (and (up? x) (up? y)) (collector x y done fail)
                         (and (number? x) (number? y))
                         (let [initial-state (section->state E x y)]
@@ -10918,7 +10893,7 @@ a-vector
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(declare H d derivative-of-sine f g h helix p s)
+(declare H d derivative-of-sine f g h helix p s v)
 
 
 ;; --- Functions ---
@@ -10977,10 +10952,11 @@ a-vector
 ;; --- Tuples ---
 
 ;; (book p. 513)
-(def v (up 'v^0 'v^1 'v^2))
+(def v (up 'v↑0 'v↑1 'v↑2))
 
 
 v
+;;=> (up v↑0 v↑1 v↑2)
 
 ;; (book p. 513)
 (def p (down 'p_0 'p_1 'p_2))
@@ -11006,6 +10982,7 @@ p
 
 ;; (book p. 515)
 (* p v)
+;;=> (+ (* p_0 v↑0) (* p_1 v↑1) (* p_2 v↑2))
 
 
 ;; --- Derivatives ---

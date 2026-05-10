@@ -179,6 +179,44 @@ describe('internal defines', () => {
     assert.equal(tr('(define (f x) (define (g y) y) (g x))'),
                  '(defn f [x] (letfn [(g [y] y)] (g x)))');
   });
+
+  test('val + fn def: vals outer let, fns inner letfn', () => {
+    // SICM's typical pattern (e.g. §2.2 M-of-q->omega-of-t): the val
+    // is defined first, the fn closes over it, body calls the fn.
+    // Putting vals in the outer let makes them visible inside letfn.
+    assert.equal(
+      tr(`(define (f x)
+            (define a (* x 2))
+            (define (g y) (+ a y))
+            (g 10))`),
+      '(defn f [x] (let [a (* x 2)] (letfn [(g [y] (+ a y))] (g 10))))'
+    );
+  });
+});
+
+describe('symbol mangling', () => {
+  test('caret in quoted symbol → ↑', () => {
+    // Clojure's reader treats `^` as the metadata reader macro, so
+    // SICM's superscript notation must be re-encoded.
+    assert.equal(tr("'v^x"), "'v↑x");
+    assert.equal(tr("(up 'v^x 'v^y 'v^z)"), "(up 'v↑x 'v↑y 'v↑z)");
+  });
+
+  test('caret in bare symbol → ↑', () => {
+    assert.equal(tr("v^x"), "v↑x");
+  });
+
+  test('mid-name slash → ∕', () => {
+    // SICM names like B-C/A (meaning "(B-C) divided by A" as a binding)
+    // would otherwise parse as a Clojure namespaced symbol.
+    assert.equal(tr("(let ((B-C/A (/ (- B C) A))) B-C/A)"),
+                 "(let [B-C∕A (/ (- B C) A)] B-C∕A)");
+  });
+
+  test('division operator and rationals stay intact', () => {
+    assert.equal(tr("(/ a b)"), "(/ a b)");
+    assert.equal(tr("(* 1/2 m v)"), "(* 1/2 m v)");
+  });
 });
 
 // ---- conditionals ---------------------------------------------------------

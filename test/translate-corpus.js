@@ -51,7 +51,10 @@ corpus.forEach((entry, idx) => {
     fields.push(`:source ${ednStr(entry.source)}`);
   }
   if (entry.expected !== undefined) {
-    fields.push(`:expected ${ednStr(entry.expected)}`);
+    // Mirror the translator's `^` → `↑` mangling on the SICM-book
+    // printed output so the equivalence-test comparator sees the same
+    // symbol encoding as the eval result.
+    fields.push(`:expected ${ednStr(entry.expected.replace(/\^/g, '↑'))}`);
   }
   lines.push(`  {${fields.join(' ')}}`);
 });

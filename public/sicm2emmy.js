@@ -188,11 +188,34 @@
     ':-pi/6': () => L(A('-'), L(A('/'), PI(), A('6'))),
   };
 
+  // Symbol-character regexes used to leave canonical forms alone:
+  //   numeric rationals like 1/2, -3/4 (Scheme + Clojure both)
+  //   namespaced names like clojure.core/+, emmy.env/D
+  const RATIONAL_RE = /^-?\d+\/\d+$/;
+  const NAMESPACED_RE = /^[a-z][a-zA-Z0-9.]*\/[A-Za-z]/;
+
   function txAtom(v) {
     if (v === '+inf.0') return '##Inf';
     if (v === '-inf.0') return '##-Inf';
     if (v === '+nan.0' || v === '-nan.0') return '##NaN';
-    return SYM_MAP[v] != null ? SYM_MAP[v] : v;
+    let mapped = SYM_MAP[v] != null ? SYM_MAP[v] : v;
+    // Clojure's reader treats `^` as the metadata reader macro, so SICM's
+    // superscript notation `'v^x` parses as `(quote v) ^x` — broken. Map
+    // `^` to `↑` (which Clojure accepts in symbol names and Emmy itself
+    // already uses for indexed-symbol display, e.g. `C↑1↑0`).
+    if (mapped.indexOf('^') !== -1) mapped = mapped.replace(/\^/g, '↑');
+    // SICM names like B-C/A (meaning "(B-C)/A" as a single binding)
+    // collide with Clojure's namespace-separator `/`. Mangle to
+    // `∕` (U+2215 division slash, valid Clojure symbol char) when the
+    // atom isn't the bare division operator, a numeric rational, or
+    // a real namespaced name.
+    if (mapped.length > 1 &&
+        mapped.indexOf('/') !== -1 &&
+        !RATIONAL_RE.test(mapped) &&
+        !NAMESPACED_RE.test(mapped)) {
+      mapped = mapped.replace(/\//g, '∕');
+    }
+    return mapped;
   }
 
   // Names bound by a list-form's binding spec (let/lambda/fn). Used to
@@ -299,8 +322,14 @@
       return [L(A('letfn'), V(fnDefs.map(mkFnSpec)), ...rest)];
     }
     if (fnDefs.length > 0) {
+      // Vals OUTER, fns INNER. Scheme's internal `define`s are visible
+      // to all sibling defs and the body, but Clojure's `letfn` doesn't
+      // see lexically-later let bindings. Putting vals in the outer
+      // `let` and fns in the inner `letfn` matches the typical SICM
+      // pattern (val defined first, fn closes over it) — e.g. §2.2's
+      // `M-on-path` is bound and then `omega-cross` references it.
       const pairs = valDefs.flatMap(d => [d.c[1], d.c[2] || A('nil')]);
-      return [L(A('letfn'), V(fnDefs.map(mkFnSpec)), L(A('let'), B(pairs), ...rest))];
+      return [L(A('let'), B(pairs), L(A('letfn'), V(fnDefs.map(mkFnSpec)), ...rest))];
     }
     const pairs = defs.flatMap(d => [d.c[1], d.c[2] || A('nil')]);
     return [L(A('let'), B(pairs), ...rest)];
@@ -497,11 +526,11 @@
         });
         const newBody = body.map(stmt =>
           tx(rewriteRefsAndSets(stmt, mutatedHere)));
-        return L(A('let'), B(newBindings), ...newBody);
+        return L(A('let'), B(newBindings), ...liftInternalDefs(newBody));
       }
 
       const pairs = bindingPairs.flatMap(p => [tx(p.c[0]), tx(p.c[1])]);
-      return L(A('let'), B(pairs), ...body.map(tx));
+      return L(A('let'), B(pairs), ...liftInternalDefs(body.map(tx)));
     }
 
     if (hs === 'let' && c[1] && c[1].t === 'atom' && c[2] && c[2].t === 'list') {
@@ -526,7 +555,7 @@
     }
 
     if (hs === 'begin') {
-      const body = c.slice(1).map(tx);
+      const body = liftInternalDefs(c.slice(1).map(tx));
       if (body.length === 1) return body[0];
       return L(A('do'), ...body);
     }
