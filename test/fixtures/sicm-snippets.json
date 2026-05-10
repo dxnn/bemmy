@@ -1,0 +1,2949 @@
+[
+  {
+    "code": "(define ((L-free-particle mass) local)\n  (let ((v (velocity local)))\n    (* 1/2 mass (dot-product v v))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 14
+  },
+  {
+    "code": "(define q\n  (up (literal-function 'x)\n      (literal-function 'y)\n      (literal-function 'z)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 15
+  },
+  {
+    "code": "(q 't)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 15,
+    "expected": "(up (x t) (y t) (z t))"
+  },
+  {
+    "code": "((D q) 't)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 16,
+    "expected": "(up ((D x) t) ((D y) t) ((D z) t))"
+  },
+  {
+    "code": "((Gamma q) 't)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 16,
+    "expected": "(up t\n    (up (x t) (y t) (z t))\n    (up ((D x) t) ((D y) t) ((D z) t)))"
+  },
+  {
+    "code": "((compose (L-free-particle 'm) (Gamma q)) 't)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 16,
+    "expected": "(+ (* 1/2 m (expt ((D x) t) 2))\n    (* 1/2 m (expt ((D y) t) 2))\n    (* 1/2 m (expt ((D z) t) 2)))"
+  },
+  {
+    "code": "(show-expression\n  ((compose (L-free-particle 'm) (Gamma q)) 't))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 17,
+    "expected": "12m  (Dx  (t))2+12m  (Dy  (t))2+12m  (Dz  (t))2"
+  },
+  {
+    "code": "(define (Lagrangian-action L q t1 t2)\n  (definite-integral (compose L (Gamma q)) t1 t2))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 18
+  },
+  {
+    "code": "(define (test-path t)\n  (up (+ (* 4 t) 7)\n      (+ (* 3 t) 5)\n      (+ (* 2 t) 1)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 18
+  },
+  {
+    "code": "(Lagrangian-action (L-free-particle 3.0)\n                   test-path 0.0 10.0)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 18,
+    "expected": "435"
+  },
+  {
+    "code": "(define ((make-eta nu t1 t2) t)\n  (* (- t t1) (- t t2) (nu t)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Paths of minimum action",
+    "page": 19
+  },
+  {
+    "code": "(define ((varied-free-particle-action mass q nu t1 t2) eps)\n  (let ((eta (make-eta nu t1 t2)))\n    (Lagrangian-action (L-free-particle mass)\n                       (+ q (* eps eta))\n                       t1\n                       t2)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Paths of minimum action",
+    "page": 19
+  },
+  {
+    "code": "((varied-free-particle-action 3.0 test-path\n                              (up sin cos square)\n                              0.0 10.0)\n 0.001)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Paths of minimum action",
+    "page": 19,
+    "expected": "436.29121428571153"
+  },
+  {
+    "code": "(minimize\n  (varied-free-particle-action 3.0 test-path\n                               (up sin cos square)\n                               0.0 10.0)\n  -2.0 1.0)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Paths of minimum action",
+    "page": 19,
+    "expected": "(-1.5987211554602254e-14 435.0000000000237 5)"
+  },
+  {
+    "code": "(define ((parametric-path-action Lagrangian t0 q0 t1 q1) qs)\n  (let ((path (make-path t0 q0 t1 q1 qs)))\n    (Lagrangian-action Lagrangian path t0 t1)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Finding trajectories that minimize the action",
+    "page": 21
+  },
+  {
+    "code": "(define (find-path Lagrangian t0 q0 t1 q1 n)\n  (let ((initial-qs (linear-interpolants q0 q1 n)))\n    (let ((minimizing-qs\n            (multidimensional-minimize\n              (parametric-path-action Lagrangian t0 q0 t1 q1)\n              initial-qs)))\n      (make-path t0 q0 t1 q1 minimizing-qs))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Finding trajectories that minimize the action",
+    "page": 21
+  },
+  {
+    "code": "(define ((L-harmonic m k) local)\n  (let ((q (coordinate local))\n        (v (velocity local)))\n    (- (* 1/2 m (square v)) (* 1/2 k (square q)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Finding trajectories that minimize the action",
+    "page": 22
+  },
+  {
+    "code": "(define q\n  (find-path (L-harmonic 1.0 1.0) 0.0 1.0 :pi/2 0.0 3))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Finding trajectories that minimize the action",
+    "page": 22
+  },
+  {
+    "code": "(define win2 (frame 0.0 :pi/2 0.0 1.2))\n\n(define ((parametric-path-action Lagrangian t0 q0 t1 q1)\n         intermediate-qs)\n  (let ((path (make-path t0 q0 t1 q1 intermediate-qs)))\n    ;; display path\n    (graphics-clear win2)\n    (plot-function win2 path t0 t1 (/ (- t1 t0) 100))\n    ;; compute action\n    (Lagrangian-action Lagrangian path t0 t1)))\n\n(find-path (L-harmonic 1.0 1.0) 0.0 1.0 :pi/2 0.0 2)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.4",
+    "section_title": "Computing Actions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Finding trajectories that minimize the action",
+    "page": 23
+  },
+  {
+    "code": "(define (((delta eta) f) q)\n    ...\n)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.5.1",
+    "section_title": "Derivation of the Lagrange Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "The Variation Operator",
+    "page": 28
+  },
+  {
+    "code": "(define (f q)\n  (compose\n    (literal-function 'F\n                      (-> (UP Real (UP* Real) (UP* Real)) Real))\n    (Gamma q)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.5.1",
+    "section_title": "Derivation of the Lagrange Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "The Variation Operator",
+    "page": 28
+  },
+  {
+    "code": "(define ((Lagrange-equations Lagrangian) q)\n  (- (D (compose ((partial 2) Lagrangian) (Gamma q)))\n     (compose ((partial 1) Lagrangian) (Gamma q))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.5.2",
+    "section_title": "Computing Lagrange's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 33
+  },
+  {
+    "code": "(define (test-path t)\n  (up (+ (* 'a t) 'a0)\n      (+ (* 'b t) 'b0)\n      (+ (* 'c t) 'c0)))\n\n(((Lagrange-equations (L-free-particle 'm))\n  test-path)\n 't)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.5.2",
+    "section_title": "Computing Lagrange's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "The free particle",
+    "page": 34,
+    "expected": "(down 0 0 0)"
+  },
+  {
+    "code": "(show-expression\n  (((Lagrange-equations (L-free-particle 'm))\n    (literal-function 'x))\n   't))\n(*(((expt D 2) x) t) m)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.5.2",
+    "section_title": "Computing Lagrange's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "The free particle",
+    "page": 34
+  },
+  {
+    "code": "(define (proposed-solution t)\n  (* 'A (cos (+ (* 'omega t) 'phi))))\n\n(show-expression\n  (((Lagrange-equations (L-harmonic 'm 'k))\n    proposed-solution)\n   't))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.5.2",
+    "section_title": "Computing Lagrange's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "The harmonic oscillator",
+    "page": 35
+  },
+  {
+    "code": "(define ((L-central-polar m V) local)\n  (let ((q (coordinate local))\n        (qdot (velocity local)))\n    (let ((r (ref q 0))     (phi (ref q 1))\n                            (rdot (ref qdot 0)) (phidot (ref qdot 1)))\n      (- (* 1/2 m\n            (+ (square rdot) (square (* r phidot))) )\n         (V r)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.5.2",
+    "section_title": "Computing Lagrange's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "The harmonic oscillator",
+    "page": 35
+  },
+  {
+    "code": "(define ((gravitational-energy G m1 m2) r)\n  (- (/ (* G m1 m2) r)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.5.2",
+    "section_title": "Computing Lagrange's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "The harmonic oscillator",
+    "page": 35
+  },
+  {
+    "code": "(define ((L-uniform-acceleration m g) local)\n  (let ((q (coordinate local))\n        (v (velocity local)))\n    (let ((y (ref q 1)))\n      (- (* 1/2 m (square v)) (* m g y)))))\n\n(show-expression\n  (((Lagrange-equations\n      (L-uniform-acceleration 'm 'g))\n    (up (literal-function 'x)\n        (literal-function 'y)))\n   't))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6",
+    "section_title": "How to Find Lagrangians",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Constant acceleration",
+    "page": 40
+  },
+  {
+    "code": "(define ((L-central-rectangular m U) local)\n  (let ((q (coordinate local))\n        (v (velocity local)))\n    (- (* 1/2 m (square v))\n       (U (sqrt (square q))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6",
+    "section_title": "How to Find Lagrangians",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Central force field",
+    "page": 41
+  },
+  {
+    "code": "(show-expression\n  (((Lagrange-equations\n      (L-central-rectangular 'm (literal-function 'U)))\n    (up (literal-function 'x)\n        (literal-function 'y)))\n   't))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6",
+    "section_title": "How to Find Lagrangians",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Central force field",
+    "page": 41
+  },
+  {
+    "code": "(define ((L-central-polar m U) local)\n  (let ((q (coordinate local))\n        (qdot (velocity local)))\n    (let ((r (ref q 0)) (phi (ref q 1))\n                        (rdot (ref qdot 0)) (phidot (ref qdot 1)))\n      (- (* 1/2 m\n            (+ (square rdot)\n               (square (* r phidot))) )\n         (U r)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6",
+    "section_title": "How to Find Lagrangians",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Central force field",
+    "page": 43
+  },
+  {
+    "code": "(show-expression\n  (((Lagrange-equations\n      (L-central-polar 'm (literal-function 'U)))\n    (up (literal-function 'r)\n        (literal-function 'phi)))\n   't))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6",
+    "section_title": "How to Find Lagrangians",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Central force field",
+    "page": 43
+  },
+  {
+    "code": "(define ((F->C F) local)\n  (up (time local)\n      (F local)\n      (+ (((partial 0) F) local)\n         (* (((partial 1) F) local)\n            (velocity local)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 46
+  },
+  {
+    "code": "(define (p->r local)\n  (let ((polar-tuple (coordinate local)))\n    (let ((r (ref polar-tuple 0))\n          (phi (ref polar-tuple 1)))\n      (let ((x (* r (cos phi)))\n            (y (* r (sin phi))))\n        (up x y)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 46
+  },
+  {
+    "code": "(show-expression\n  (velocity\n    ((F->C p->r)\n     (up 't (up 'r 'phi) (up 'rdot 'phidot)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 47
+  },
+  {
+    "code": "(define (L-central-polar m U)\n  (compose (L-central-rectangular m U) (F->C p->r)))\n\n(show-expression\n  ((L-central-polar 'm (literal-function 'U))\n   (up 't (up 'r 'phi) (up 'rdot 'phidot))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 47
+  },
+  {
+    "code": "(define ((L-free-rectangular m) local)\n  (let ((vx (ref (velocities local) 0))\n        (vy (ref (velocities local) 1)))\n    (* 1/2 m (+ (square vx) (square vy)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Coriolis and centrifugal forces",
+    "page": 47
+  },
+  {
+    "code": "(define (L-free-polar m)\n  (compose (L-free-rectangular m) (F->C p->r)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Coriolis and centrifugal forces",
+    "page": 48
+  },
+  {
+    "code": "(define ((F Omega) local)\n  (let ((t (time local))\n        (r (ref (coordinates local) 0))\n        (theta (ref (coordinates local) 1)))\n    (up r (+ theta (* Omega t)))))\n\n(define (L-rotating-polar m Omega)\n  (compose (L-free-polar m) (F->C (F Omega))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Coriolis and centrifugal forces",
+    "page": 48
+  },
+  {
+    "code": "(define (L-rotating-rectangular m Omega)\n  (compose (L-rotating-polar m Omega) (F->C r->p)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Coriolis and centrifugal forces",
+    "page": 48
+  },
+  {
+    "code": "((L-rotating-rectangular 'm 'Omega)\n (up 't (up 'x_r 'y_r) (up 'xdot_r 'ydot_r)))\n(+ (* 1/2 (expt Omega 2) m (expt x_r 2))\n   (* 1/2 (expt Omega 2) m (expt y_r 2))\n   (* -1 Omega m xdot_r y_r)\n   (* Omega m ydot_r x_r)\n   (* 1/2 m (expt xdot_r 2))\n   (* 1/2 m (expt ydot_r 2)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Coriolis and centrifugal forces",
+    "page": 48
+  },
+  {
+    "code": "(((Lagrange-equations (L-rotating-rectangular 'm 'Omega))\n  (up (literal-function 'x r) (literal-function 'y r)))\n 't)\n(down\n  (+ (* -1 (expt Omega 2) m (x_r t))\n     (* -2 Omega m ((D y_r) t))\n     (* m (((expt D 2) x_r) t)))\n  (+ (* -1 (expt Omega 2) m (y_r t))\n     (* 2 Omega m ((D x_r) t))\n     (* m (((expt D 2) y_r) t))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.1",
+    "section_title": "Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Coriolis and centrifugal forces",
+    "page": 48
+  },
+  {
+    "code": "(define ((T-pend m l g ys) local)\n  (let ((t (time local))\n        (theta (coordinate local))\n        (thetadot (velocity local)))\n    (let ((vys (D ys)))\n      (* 1/2 m\n         (+ (square (* l thetadot))\n            (square (vys t))\n            (* 2 l (vys t) thetadot (sin theta)))))))\n\n(define ((V-pend m l g ys) local)\n  (let ((t (time local))\n        (theta (coordinate local)))\n    (* m g (- (ys t) (* l (cos theta))))))\n\n(define L-pend (- T-pend V-pend))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.2",
+    "section_title": "Systems with Rigid Constraints",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "A pendulum driven at the pivot",
+    "page": 52
+  },
+  {
+    "code": "(show-expression\n  (((Lagrange-equations\n      (L-pend 'm 'l 'g (literal-function 'y_s)))\n    (literal-function 'theta))\n   't))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.2",
+    "section_title": "Systems with Rigid Constraints",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "A pendulum driven at the pivot",
+    "page": 52
+  },
+  {
+    "code": "(define ((L-uniform-acceleration m g) local)\n  (let ((q (coordinate local))\n        (v (velocity local)))\n    (let ((y (ref q 1)))\n      (- (* 1/2 m (square v)) (* m g y)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.3",
+    "section_title": "Constraints as Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 61
+  },
+  {
+    "code": "(define ((dp-coordinates l y_s) local)\n  (let ((t (time local))\n        (theta (coordinate local)))\n    (let ((x (* l (sin theta)))\n          (y (- (y_s t) (* l (cos theta)))))\n      (up x y))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.3",
+    "section_title": "Constraints as Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 61
+  },
+  {
+    "code": "(define (L-pend m l g y_s)\n  (compose (L-uniform-acceleration m g)\n           (F->C (dp-coordinates l y_s))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.3",
+    "section_title": "Constraints as Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 61
+  },
+  {
+    "code": "(show-expression\n  ((L-pend 'm 'l 'g (literal-function 'y_s))\n   (up 't 'theta 'thetadot)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.3",
+    "section_title": "Constraints as Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 62
+  },
+  {
+    "code": "((compose (Rz (* 'Omega 't)) (Ry 'phi))\n (up 'x_0 'y_0 'z_0))\n(up\n  (+ (* x_0 (cos phi) (cos (* Omega t)))\n     (* z_0 (sin phi) (cos (* Omega t)))\n     (* -1 y_0 (sin (* Omega t))))\n  (+ (* x_0 (cos phi) (sin (* Omega t)))\n     (* z_0 (sin phi) (sin (* Omega t)))\n     (* y_0 (cos (* Omega t))))\n  (+ (* -1 x_0 (sin phi)) (* z_0 (cos phi))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.6.3",
+    "section_title": "Constraints as Coordinate Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 63
+  },
+  {
+    "code": "(define (Lagrangian->acceleration L)\n  (let ((P ((partial 2) L)) (F ((partial 1) L)))\n    (solve-linear-left\n      ((partial 2) P)\n      (- F\n         (+ ((partial 0) P)\n            (* ((partial 1) P) velocity))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 71
+  },
+  {
+    "code": "(define (Lagrangian->state-derivative L)\n  (let ((acceleration (Lagrangian->acceleration L)))\n    (lambda (state)\n      (up 1\n          (velocity state)\n          (acceleration state)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 71
+  },
+  {
+    "code": "(define (harmonic-state-derivative m k)\n  (Lagrangian->state-derivative (L-harmonic m k)))\n\n((harmonic-state-derivative 'm 'k)\n (up 't (up 'x 'y) (up 'v_x 'v_y)))\n(up 1 (up v_x v_y) (up (/ (* -1 k x) m) (/ (* -1 k y) m)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 72
+  },
+  {
+    "code": "(define ((Lagrange-equations-first-order L) q v)\n  (let ((state-path (qv->state-path q v)))\n    (- (D state-path)\n       (compose (Lagrangian->state-derivative L)\n                state-path))))\n\n(define ((qv->state-path q v) t)\n  (up t (q t) (v t)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 72
+  },
+  {
+    "code": "(show-expression\n  (((Lagrange-equations-first-order (L-harmonic 'm 'k))\n    (up (literal-function 'x)\n        (literal-function 'y))\n    (up (literal-function 'v_x)\n        (literal-function 'v_y)))\n   't))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 72
+  },
+  {
+    "code": "((state-advancer harmonic-state-derivative 2.0 1.0)\n (up 1.0 (up 1.0 2.0) (up 3.0 4.0))\n 10.0\n 1.0e-12)\n(up 11.0\n    (up 3.7127916645844437 5.420620823651583)\n    (up 1.6148030925459782 1.8189103724750855))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Numerical integration",
+    "page": 74
+  },
+  {
+    "code": "(define ((periodic-drive amplitude frequency phase) t)\n  (* amplitude (cos (+ (* frequency t) phase))))\n\n(define (L-periodically-driven-pendulum m l g A omega)\n  (let ((ys (periodic-drive A omega 0)))\n    (L-pend m l g ys)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Numerical integration",
+    "page": 74
+  },
+  {
+    "code": "(show-expression\n  (((Lagrange-equations\n      (L-periodically-driven-pendulum 'm 'l 'g 'A 'omega))\n    (literal-function 'theta))\n   't))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Numerical integration",
+    "page": 75
+  },
+  {
+    "code": "(define (pend-state-derivative m l g A omega)\n  (Lagrangian->state-derivative\n    (L-periodically-driven-pendulum m l g A omega)))\n\n(show-expression\n  ((pend-state-derivative 'm 'l 'g 'A 'omega)\n   (up 't 'theta 'thetadot)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Numerical integration",
+    "page": 75
+  },
+  {
+    "code": "(define ((monitor-theta win) state)\n  (let ((theta ((principal-value :pi) (coordinate state))))\n    (plot-point win (time state) theta)))\n\n(define plot-win (frame 0.0 100.0 :-pi :pi))\n\n((evolve pend-state-derivative\n         1.0 ;m=1kg\n         1.0 ;l=1m\n         9.8 ;g=9.8m/s^2\n         0.1 ;a=1/10 m\n         (* 2.0 (sqrt 9.8)) ) ;omega\n (up 0.0 ;t0=0\n     1.0 ;theta0=1 radian\n     0.0) ;thetadot0=0 radians/s\n (monitor-theta plot-win)\n 0.01 ;step between plotted points\n 100.0 ;final time\n 1.0e-13) ;local error tolerance",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.7",
+    "section_title": "Evolution of Dynamical State",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Numerical integration",
+    "page": 76
+  },
+  {
+    "code": "(define (Lagrangian->energy L)\n  (let ((P ((partial 2) L)))\n    (- (* P velocity) L)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.2",
+    "section_title": "Energy Conservation",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 82
+  },
+  {
+    "code": "(define ((T3-spherical m) state)\n  (let ((q (coordinate state))\n        (qdot (velocity state)))\n    (let ((r (ref q 0))\n          (theta (ref q 1))\n          (rdot (ref qdot 0))\n          (thetadot (ref qdot 1))\n          (phidot (ref qdot 2)))\n      (* 1/2 m\n         (+ (square rdot)\n            (square (* r thetadot))\n            (square (* r (sin theta) phidot)))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.3",
+    "section_title": "Central Forces in Three Dimensions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 84
+  },
+  {
+    "code": "(define (L3-central m Vr)\n  (define (Vs state)\n    (let ((r (ref (coordinate state) 0)))\n      (Vr r)))\n  (- (T3-spherical m) Vs))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.3",
+    "section_title": "Central Forces in Three Dimensions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 84
+  },
+  {
+    "code": "(show-expression\n  (((partial 1) (L3-central 'm (literal-function 'V)))\n   (up 't\n       (up 'r 'theta 'phi)\n       (up 'rdot 'thetadot 'phidot))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.3",
+    "section_title": "Central Forces in Three Dimensions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 84
+  },
+  {
+    "code": "(show-expression\n  (((partial 2) (L3-central 'm (literal-function 'V)))\n   (up 't\n       (up 'r 'theta 'phi)\n       (up 'rdot 'thetadot 'phidot))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.3",
+    "section_title": "Central Forces in Three Dimensions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 84
+  },
+  {
+    "code": "(define ((ang-mom-z m) rectangular-state)\n  (let ((xyz (coordinate rectangular-state))\n        (v (velocity rectangular-state)))\n    (ref (cross-product xyz (* m v)) 2)))\n\n(define (s->r spherical-state)\n  (let ((q (coordinate spherical-state)))\n    (let ((r (ref q 0))\n          (theta (ref q 1))\n          (phi (ref q 2)))\n      (let ((x (* r (sin theta) (cos phi)))\n            (y (* r (sin theta) (sin phi)))\n            (z (* r (cos theta))))\n        (up x y z)))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.3",
+    "section_title": "Central Forces in Three Dimensions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 84
+  },
+  {
+    "code": "(show-expression\n  ((compose (ang-mom-z 'm) (F->C s->r))\n   (up 't\n       (up 'r 'theta 'phi)\n       (up 'rdot 'thetadot 'phidot))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.3",
+    "section_title": "Central Forces in Three Dimensions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 84
+  },
+  {
+    "code": "(show-expression\n  ((Lagrangian->energy (L3-central 'm (literal-function 'V)))\n   (up 't\n       (up 'r 'theta 'phi)\n       (up 'rdot 'thetadot 'phidot))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.3",
+    "section_title": "Central Forces in Three Dimensions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 84
+  },
+  {
+    "code": "(define ((L0 m V) local)\n  (let ((t (time local))\n        (q (coordinates local))\n        (v (velocities local)))\n    (- (* 1/2 m (square v)) (V t q))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.4",
+    "section_title": "The Restricted Three-Body Problem",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 87
+  },
+  {
+    "code": "(define ((V a GM0 GM1 m) t xy)\n  (let ((Omega (sqrt (/ (+ GM0 GM1) (expt a 3))))\n        (a0 (* (/ GM1 (+ GM0 GM1)) a))\n        (a1 (* (/ GM0 (+ GM0 GM1)) a)))\n    (let ((x (ref xy 0)) (y (ref xy 1))\n                         (x0 (* -1 a0 (cos (* Omega t))))\n                         (y0 (* -1 a0 (sin (* Omega t))))\n                         (x1 (* +1 a1 (cos (* Omega t))))\n                         (y1 (* +1 a1 (sin (* Omega t)))))\n      (let ((r0\n              (sqrt (+ (square (- x x0)) (square (- y y0)))))\n            (r1\n              (sqrt (+ (square (- x x1)) (square (- y y1))))))\n        (- (+ (/ (* GM0 m) r0) (/ (* GM1 m) r1)))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.4",
+    "section_title": "The Restricted Three-Body Problem",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 87
+  },
+  {
+    "code": "(define ((LR3B m a GM0 GM1) local)\n  (let ((q (coordinates local))\n        (qdot (velocities local))\n        (Omega (sqrt (/ (+ GM0 GM1) (expt a 3))))\n        (a0 (* (/ GM1 (+ GM0 GM1)) a))\n        (a1 (* (/ GM0 (+ GM0 GM1)) a)))\n    (let ((x (ref q 0))     (y (ref q 1))\n                            (xdot (ref qdot 0)) (ydot (ref qdot 1)))\n      (let ((r0 (sqrt (+ (square (+ x a0)) (square y))))\n            (r1 (sqrt (+ (square (- x a1)) (square y)))))\n        (+ (* 1/2 m (square qdot))\n           (* 1/2 m (square Omega) (square q))\n           (* m Omega (- (* x ydot) (* xdot y)))\n           (/ (* GM0 m) r0) (/ (* GM1 m) r1))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.4",
+    "section_title": "The Restricted Three-Body Problem",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 88
+  },
+  {
+    "code": "(define ((LR3B1 m a0 a1 Omega GM0 GM1) local)\n  (let ((q (coordinates local))\n        (qdot (velocities local)))\n    (let ((x (ref q 0))     (y (ref q 1))\n                            (xdot (ref qdot 0)) (ydot (ref qdot 1)))\n      (let ((r0 (sqrt (+ (square (+ x a0)) (square y))))\n            (r1 (sqrt (+ (square (- x a1)) (square y)))))\n        (+ (* 1/2 m (square qdot))\n           (* 1/2 m (square Omega) (square q))\n           (* m Omega (- (* x ydot) (* xdot y)))\n           (/ (* GM0 m) r0) (/ (* GM1 m) r1))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.4",
+    "section_title": "The Restricted Three-Body Problem",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 88
+  },
+  {
+    "code": "((Lagrangian->energy (LR3B1 'm 'a_0 'a_1 'Omega 'GM_0 'GM_1))\n (up 't (up 'x_r 'y_r) (up 'v_r^x 'v_r^y)))\n(+ (* 1/2 m (expt v_r^x 2))\n   (* 1/2 m (expt v_r^y 2))\n   (/ (* -1 GM_0 m)\n      (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2))))\n   (/ (* -1 GM_1 m)\n      (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2))))\n   (* -1/2 m (expt Omega 2) (expt x_r 2))\n   (* -1/2 m (expt Omega 2) (expt y_r 2)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.4",
+    "section_title": "The Restricted Three-Body Problem",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 88
+  },
+  {
+    "code": "(define (F-tilde angle-x angle-y angle-z)\n  (compose (Rx angle-x) (Ry angle-y) (Rz angle-z) coordinate))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.5",
+    "section_title": "Noether's Theorem",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Illustration: motion in a central potential",
+    "page": 93
+  },
+  {
+    "code": "(define ((L-central-rectangular m U) state)\n  (let ((q (coordinate state))\n        (v (velocity state)))\n    (- (* 1/2 m (square v))\n       (U (sqrt (square q))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.5",
+    "section_title": "Noether's Theorem",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Illustration: motion in a central potential",
+    "page": 93
+  },
+  {
+    "code": "(define the-Noether-integral\n  (let ((L (L-central-rectangular\n             'm (literal-function 'U))))\n    (* ((partial 2) L) ((D F-tilde) 0 0 0))))\n\n(the-Noether-integral\n  (up 't\n      (up 'x 'y 'z)\n      (up 'vx 'vy 'vz)))\n(down (+ (* m vy z) (* -1 m vz y))\n      (+ (* m vz x) (* -1 m vx z))\n      (+ (* m vx y) (* -1 m vy x)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.8.5",
+    "section_title": "Noether's Theorem",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Illustration: motion in a central potential",
+    "page": 93
+  },
+  {
+    "code": "(define ((Gamma-bar f-bar) local)\n  ((f-bar (osculating-path local)) (time local)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.9",
+    "section_title": "Abstraction of Path Functions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 95
+  },
+  {
+    "code": "(define (F->C F)\n  (define (C local)\n    (let ((n (vector-length local)))\n      (define (f-bar q-prime)\n        (define q\n          (compose F (Gamma q-prime)))\n        (Gamma q n))\n      ((Gamma-bar f-bar) local)))\n  C)\n\n(show-expression\n  ((F->C p->r)\n   (up 't (up 'r 'theta) (up 'rdot 'thetadot))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.9",
+    "section_title": "Abstraction of Path Functions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 96
+  },
+  {
+    "code": "(define (Dt F)\n  (define (DtF state)\n    (let ((n (vector-length state)))\n      (define (DF-on-path q)\n        (D (compose F (Gamma q (- n 1)))))\n      ((Gamma-bar DF-on-path) state)))\n  DtF)",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.9",
+    "section_title": "Abstraction of Path Functions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 97
+  },
+  {
+    "code": "(define (Euler-Lagrange-operator L)\n  (- (Dt ((partial 2) L)) ((partial 1) L))).",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.9",
+    "section_title": "Abstraction of Path Functions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Lagrange equations at a moment",
+    "page": 98
+  },
+  {
+    "code": "((Euler-Lagrange-operator\n   (L-harmonic 'm 'k))\n (up 't 'x 'v 'a))\n(+ (* a m) (* k x))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.9",
+    "section_title": "Abstraction of Path Functions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Lagrange equations at a moment",
+    "page": 98
+  },
+  {
+    "code": "((compose\n   (Euler-Lagrange-operator (L-harmonic 'm 'k))\n   (Gamma (literal-function 'x) 4))\n 't)\n(+ (* k (x t)) (* m (((expt D 2) x) t)))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.9",
+    "section_title": "Abstraction of Path Functions",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "subheading": "Lagrange equations at a moment",
+    "page": 98
+  },
+  {
+    "code": "(define (make-path t0 q0 t1 q1 qs)\n  (let ((n (length qs)))\n    (let ((ts (linear-interpolants t0 t1 n)))\n      (Lagrange-interpolation-function\n        (append (list q0) qs (list q1))\n        (append (list t0) ts (list t1))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.12",
+    "section_title": "Projects",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 118
+  },
+  {
+    "code": "(define ((Rx angle) q)\n  (let ((ca (cos angle)) (sa (sin angle)))\n    (let ((x (ref q 0)) (y (ref q 1)) (z (ref q 2)))\n      (up x\n          (- (* ca y) (* sa z))\n          (+ (* sa y) (* ca z))))))",
+    "chapter": "1",
+    "chapter_title": "Lagrangian Mechanics",
+    "section": "1.12",
+    "section_title": "Projects",
+    "source": "https://tgvaughan.github.io/sicm/chapter001.html",
+    "page": 118
+  },
+  {
+    "code": "(define (((M-of-q->omega-of-t M-of-q) q) t)\n  (define M-on-path (compose M-of-q q))\n  (define (omega-cross t)\n    (* ((D M-on-path) t)\n       (transpose (M-on-path t))))\n  (antisymmetric->column-matrix (omega-cross t)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.2",
+    "section_title": "Kinematics of Rotation",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "subheading": "Implementation of angular velocity functions",
+    "page": 126
+  },
+  {
+    "code": "(define (((M-of-q->omega-body-of-t M-of-q) q) t)\n  (* (transpose (M-of-q (q t)))\n     (((M-of-q->omega-of-t M-of-q) q) t)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.2",
+    "section_title": "Kinematics of Rotation",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "subheading": "Implementation of angular velocity functions",
+    "page": 126
+  },
+  {
+    "code": "(define (M->omega M-of-q)\n  (Gamma-bar\n    (M-of-q->omega-of-t M-of-q)))\n\n(define (M->omega-body M-of-q)\n  (Gamma-bar\n    (M-of-q->omega-body-of-t M-of-q)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.2",
+    "section_title": "Kinematics of Rotation",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "subheading": "Implementation of angular velocity functions",
+    "page": 126
+  },
+  {
+    "code": "(define ((T-body A B C) omega-body)\n  (* 1/2\n     (+ (* A (square (ref omega-body 0)))\n        (* B (square (ref omega-body 1)))\n        (* C (square (ref omega-body 2))))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.5",
+    "section_title": "Principal Moments of Inertia",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 134
+  },
+  {
+    "code": "(define ((L-body A B C) omega-body)\n  (down (* A (ref omega-body 0))\n        (* B (ref omega-body 1))\n        (* C (ref omega-body 2))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.6",
+    "section_title": "Vector Angular Momentum",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 137
+  },
+  {
+    "code": "(define (((L-space M) A B C) omega-body)\n  (* ((L-body A B C) omega-body)\n     (transpose M)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.6",
+    "section_title": "Vector Angular Momentum",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 137
+  },
+  {
+    "code": "(define (Rz-matrix angle)\n  (matrix-by-rows\n    (list (cos angle) (- (sin angle)) 0)\n    (list (sin angle) (cos angle) 0)\n    (list 0 0 1)))\n\n(define (Rx-matrix angle)\n  (matrix-by-rows\n    (list 1 0 0)\n    (list 0 (cos angle) (- (sin angle)))\n    (list 0 (sin angle) (cos angle))))\n\n(define (Euler->M angles)\n  (let ((theta (ref angles 0))\n        (phi (ref angles 1))\n        (psi (ref angles 2)))\n\n    (* (Rz-matrix phi)\n       (Rx-matrix theta)\n       (Rz-matrix psi))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.7",
+    "section_title": "Euler Angles",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 139
+  },
+  {
+    "code": "(show-expression\n  (((M-of-q->omega-body-of-t Euler->M)\n    (up (literal-function 'theta)\n        (literal-function 'phi)\n        (literal-function 'psi)))\n   't))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.7",
+    "section_title": "Euler Angles",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 139
+  },
+  {
+    "code": "(show-expression\n  ((M->omega-body Euler->M)\n   (up 't\n       (up 'theta 'phi 'psi)\n       (up 'thetadot 'phidot 'psidot))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.7",
+    "section_title": "Euler Angles",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 139
+  },
+  {
+    "code": "(define (Euler-state->omega-body local)\n  (let ((q (coordinate local)) (qdot (velocity local)))\n    (let ((theta (ref q 0))\n          (psi (ref q 2))\n          (thetadot (ref qdot 0))\n          (phidot (ref qdot 1))\n          (psidot (ref qdot 2)))\n      (let ((omega-a (+\n                       (* thetadot (cos psi))\n                       (* phidot (sin theta) (sin psi))))\n            (omega-b (+\n                       (* -1 thetadot (sin psi))\n                       (* phidot (sin theta) (cos psi))))\n            (omega-c (+\n                       (* phidot (cos theta)) psidot)))\n        (up omega-a omega-b omega-c)))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.7",
+    "section_title": "Euler Angles",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 139
+  },
+  {
+    "code": "(define ((T-body-Euler A B C) local)\n  ((T-body A B C)\n   (Euler-state->omega-body local)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.7",
+    "section_title": "Euler Angles",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 141
+  },
+  {
+    "code": "(define ((L-body-Euler A B C) local)\n  ((L-body A B C)\n   (Euler-state->omega-body local)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.7",
+    "section_title": "Euler Angles",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 141
+  },
+  {
+    "code": "(define ((L-space-Euler A B C) local)\n  (let ((angles (coordinate local)))\n    (* ((L-body-Euler A B C) local)\n       (transpose (Euler->M angles)))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.7",
+    "section_title": "Euler Angles",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 141
+  },
+  {
+    "code": "(define Euler-state\n  (up 't\n      (up 'theta 'phi 'psi)\n      (up 'thetadot 'phidot 'psidot)))\n\n(show-expression\n  (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state)\n       1))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.8",
+    "section_title": "Motion of a Free Rigid Body",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "subheading": "Conserved quantities",
+    "page": 142
+  },
+  {
+    "code": "(- (ref ((L-space-Euler 'A 'B 'C) Euler-state)\n        2)\n   (ref (((partial 2) (T-body-Euler 'A 'B 'C)) Euler-state)\n        1))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.8",
+    "section_title": "Motion of a Free Rigid Body",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "subheading": "Conserved quantities",
+    "page": 142,
+    "expected": "0"
+  },
+  {
+    "code": "(show-expression\n  (determinant\n    (((square (partial 2)) (T-body-Euler 'A 'B 'C))\n     Euler-state)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.8.1",
+    "section_title": "Computing the Motion of Free Rigid Bodies",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 143
+  },
+  {
+    "code": "(define (rigid-sysder A B C)\n  (Lagrangian->state-derivative (T-body-Euler A B C)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.8.1",
+    "section_title": "Computing the Motion of Free Rigid Bodies",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 143
+  },
+  {
+    "code": "(define ((monitor-errors win A B C L0 E0) state)\n  (let ((t (time state))\n        (L ((L-space-Euler A B C) state))\n        (E ((T-body-Euler A B C) state)))\n    (plot-point win t (relative-error (ref L 0) (ref L0 0)))\n    (plot-point win t (relative-error (ref L 1) (ref L0 1)))\n    (plot-point win t (relative-error (ref L 2) (ref L0 2)))\n    (plot-point win t (relative-error E E0))))\n\n(define (relative-error value reference-value)\n  (if (zero? reference-value)\n    (error \"Zero reference value -- RELATIVE-ERROR\")\n    (/ (- value reference-value) reference-value)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.8.1",
+    "section_title": "Computing the Motion of Free Rigid Bodies",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 143
+  },
+  {
+    "code": "(define win (frame 0.0 100.0 -1.0e-12 1.0e-12))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.8.1",
+    "section_title": "Computing the Motion of Free Rigid Bodies",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 143
+  },
+  {
+    "code": "(set-ode-integration-method! 'qcrk4)",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.8.1",
+    "section_title": "Computing the Motion of Free Rigid Bodies",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 143
+  },
+  {
+    "code": "(show-expression\n  ((T-body-Euler 'A 'A 'C)\n   (up 't\n       (up 'theta 'phi 'psi)\n       (up 'thetadot 'phidot 'psidot))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.10",
+    "section_title": "Axisymmetric Tops",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 159
+  },
+  {
+    "code": "(define (angle-axis->rotation-matrix theta n)\n  (let ((nx (ref n 0)) (ny (ref n 1)) (nz (ref n 2)))\n    (let ((colatitude (acos nz)) (longitude (atan ny nx)))\n      (* (Rz-matrix longitude)\n         (Ry-matrix colatitude)\n         (Rz-matrix theta)\n         (transpose (Ry-matrix colatitude))\n         (transpose (Rz-matrix longitude))))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12",
+    "section_title": "Nonsingular Coordinates and Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 184
+  },
+  {
+    "code": "(define (quaternion->angle-axis q)\n  (let* ((v (quaternion->3vector q))\n         (theta (* 2 (atan (euclidean-norm v)\n                           (quaternion->real-part q))))\n         (axis (/ v (euclidean-norm v))))\n    (list theta axis)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12",
+    "section_title": "Nonsingular Coordinates and Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 184
+  },
+  {
+    "code": "(define (quaternion->RM q)\n  (let ((aa (quaternion->angle-axis q)))\n    (let ((theta (ref aa 0)) (n (ref aa 1)))\n      (angle-axis->rotation-matrix theta n))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12",
+    "section_title": "Nonsingular Coordinates and Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 184
+  },
+  {
+    "code": "(show-expression\n  (let ((v (up 'q_0 'q_1 'q_2 'q_3)))\n    (let ((m^2 (dot-product v v)))\n      (* m^2 (quaternion->RM (make-quaternion v))))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12",
+    "section_title": "Nonsingular Coordinates and Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 184
+  },
+  {
+    "code": "(define (quaternion->rotation-matrix q)\n  (let ((q0 (quaternion-ref q 0)) (q1 (quaternion-ref q 1))\n                                  (q2 (quaternion-ref q 2))\n                                  (q3 (quaternion-ref q 3)))\n    (let ((m^2\n            (+ (expt q0 2) (expt q1 2)\n               (expt q2 2) (expt q3 2))))\n      (/ (matrix-by-rows\n           (list (- (+ (expt q0 2) (expt q1 2))\n                    (+ (expt q2 2) (expt q3 2)))\n                 (* 2 (- (* q1 q2) (* q0 q3)))\n                 (* 2 (+ (* q1 q3) (* q0 q2))))\n           (list (* 2 (+ (* q1 q2) (* q0 q3)))\n                 (- (+ (expt q0 2) (expt q2 2))\n                    (+ (expt q1 2) (expt q3 2)))\n                 (* 2 (- (* q2 q3) (* q0 q1))))\n           (list (* 2 (- (* q1 q3) (* q0 q2)))\n                 (* 2 (+ (* q2 q3) (* q0 q1)))\n                 (- (+ (expt q0 2) (expt q3 2))\n                    (+ (expt q1 2) (expt q2 2)))))\n         m^2))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12",
+    "section_title": "Nonsingular Coordinates and Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 185
+  },
+  {
+    "code": "(show-expression\n  ((M->omega-body\n     (compose quaternion->rotation-matrix make-quaternion))\n   (up 't\n       (up 'q_0 'q_1 'q_2 'q_3)\n       (up 'qdot_0 'qdot_1 'qdot_2 'qdot_3))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12",
+    "section_title": "Nonsingular Coordinates and Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 185
+  },
+  {
+    "code": "(define (quaternion-state->omega-body s)\n  (let ((q (coordinates s)) (qdot (velocities s)))\n    (let ((m^2 (dot-product q q)))\n      (let ((omega^a\n              (/ (* 2 (dot-product q (* q:i qdot))) m^2))\n            (omega^b\n              (/ (* 2 (dot-product q (* q:j qdot))) m^2))\n            (omega^c\n              (/ (* 2 (dot-product q (* q:k qdot))) m^2)))\n        (up omega^a omega^b omega^c)))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12",
+    "section_title": "Nonsingular Coordinates and Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 186
+  },
+  {
+    "code": "(let ((q (quaternion 'q_0 'q_1 'q_2 'q_3))\n      (p (quaternion 'p_0 'p_1 'p_2 'p_3)))\n  (let ((Mq (quaternion->rotation-matrix q))\n        (Mp (quaternion->rotation-matrix p)))\n    (rotation-matrix->quaternion (* Mq Mp))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12",
+    "section_title": "Nonsingular Coordinates and Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "subheading": "Composition of rotations",
+    "page": 187
+  },
+  {
+    "code": "(define (qw-sysder A B C)\n  (let ((B-C/A (/ (- B C) A))\n        (C-A/B (/ (- C A) B))\n        (A-B/C (/ (- A B) C)))\n    (define (the-deriv qw-state)\n      (let ((t (time qw-state))\n            (q (coordinates qw-state))\n            (omega-body (ref qw-state 2)))\n        (let ((omega^a (ref omega-body 0))\n              (omega^b (ref omega-body 1))\n              (omega^c (ref omega-body 2)))\n          (let ((tdot 1)\n                (qdot      ;driven quaternion\n                  (* -1/2\n                     (+ (* omega^a q:i)\n                        (* omega^b q:j)\n                        (* omega^c q:k))\n                     q))\n\n                (omegadot ;Euler's equations\n                  (up (* B-C/A omega^b omega^c)\n                      (* C-A/B omega^c omega^a)\n                      (* A-B/C omega^a omega^b))))\n\n            (up tdot qdot omegadot)))))\n    the-deriv))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12.1",
+    "section_title": "Motion in Terms of Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 189
+  },
+  {
+    "code": "(define ((qw-state->L-space A B C) qw-state)\n  (let ((q (coordinates qw-state)))\n    (let ((Lbody ((L-body A B C) (ref qw-state 2)))\n          (M (quaternion->rotation-matrix\n               (make-quaternion q))))\n      (* Lbody (transpose M)))))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12.1",
+    "section_title": "Motion in Terms of Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 190
+  },
+  {
+    "code": "(define ((monitor-errors win A B C L0 E0) qw-state)\n  (let ((t (time qw-state))\n        (L ((qw-state->L-space A B C) qw-state))\n        (E ((T-body A B C) (ref qw-state 2))))\n    (plot-point win t (relative-error (ref L 0) (ref L0 0)))\n    (plot-point win t (relative-error (ref L 1) (ref L0 1)))\n    (plot-point win t (relative-error (ref L 2) (ref L0 2)))\n    (plot-point win t (relative-error E E0))\n    qw-state))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12.1",
+    "section_title": "Motion in Terms of Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 190
+  },
+  {
+    "code": "(define win (frame 0.0 100.0 -1.0e-13 1.0e-13))\n\n(let* ((A 1.0) (B (sqrt 2.0)) (C 2.0) ; moments of inertia\n               (Euler-state (up 0.0 ; initial state\n                                (up 1.0 0.0 0.0)\n                                (up 0.1 0.1 0.1)))\n               (M (Euler->M (coordinates Euler-state)))\n               (q (quaternion->vector (rotation-matrix->quaternion M)))\n               (qw-state0\n                 (up (time Euler-state)\n                     q\n                     (Euler-state->omega-body Euler-state))))\n  (let ((L0 ((qw-state->L-space A B C) qw-state0))\n        (E0 ((T-body A B C) (ref qw-state0 2))))\n    ((evolve qw-sysder A B C)\n     qw-state0\n     (monitor-errors win A B C L0 E0)\n     0.1 ; step between plotted points\n     100.0 ; final time\n     1.0e-12)))",
+    "chapter": "2",
+    "chapter_title": "Rigid Bodies",
+    "section": "2.12.1",
+    "section_title": "Motion in Terms of Quaternions",
+    "source": "https://tgvaughan.github.io/sicm/chapter002.html",
+    "page": 190
+  },
+  {
+    "code": "(define ((Hamilton-equations Hamiltonian) q p)\n  (let ((state-path (qp->H-state-path q p)))\n    (- (D state-path)\n       (compose (Hamiltonian->state-derivative Hamiltonian)\n                state-path))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1",
+    "section_title": "Hamilton's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamilton's equations",
+    "page": 203
+  },
+  {
+    "code": "(define ((Hamiltonian->state-derivative Hamiltonian) H-state)\n  (up 1\n      (((partial 2) Hamiltonian) H-state)\n      (- (((partial 1) Hamiltonian) H-state))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1",
+    "section_title": "Hamilton's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamilton's equations",
+    "page": 204
+  },
+  {
+    "code": "(define ((qp->H-state-path q p) t)\n  (up t (q t) (p t)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1",
+    "section_title": "Hamilton's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamilton's equations",
+    "page": 204
+  },
+  {
+    "code": "(define ((H-rectangular m V) state)\n  (let ((q (coordinate state))\n        (p (momentum state)))\n    (+ (/ (square p) (* 2 m))\n       (V (ref q 0) (ref q 1)))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1",
+    "section_title": "Hamilton's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamilton's equations",
+    "page": 204
+  },
+  {
+    "code": "(show-expression\n  (let ((V (literal-function 'V (-> (X Real Real) Real)))\n        (q (up (literal-function 'x)\n               (literal-function 'y)))\n        (p (down (literal-function 'p_x)\n                 (literal-function 'p_y))))\n    (((Hamilton-equations (H-rectangular 'm V)) q p) 't)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1",
+    "section_title": "Hamilton's Equations",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamilton's equations",
+    "page": 204
+  },
+  {
+    "code": "(define (Legendre-transform F)\n  (let ((w-of-v (D F)))\n    (define (G w)\n      (let ((zero (compatible-zero w)))\n        (let ((M ((D w-of-v) zero))\n              (b (w-of-v zero)))\n          (let ((v (solve-linear-left M (- w b))))\n            (- (* w v) (F v))))))\n    G))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1.1",
+    "section_title": "The Legendre Transformation",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamiltonians",
+    "page": 212
+  },
+  {
+    "code": "(define ((Lagrangian->Hamiltonian Lagrangian) H-state)\n  (let ((t (time H-state))\n        (q (coordinate H-state))\n        (p (momentum H-state)))\n    (define (L qdot)\n      (Lagrangian (up t q qdot)))\n    ((Legendre-transform L) p)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1.1",
+    "section_title": "The Legendre Transformation",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamiltonians",
+    "page": 212
+  },
+  {
+    "code": "(define ((Hamiltonian->Lagrangian Hamiltonian) L-state)\n  (let ((t (time L-state))\n        (q (coordinate L-state))\n        (qdot (velocity L-state)))\n    (define (H p)\n      (Hamiltonian (up t q p)))\n    ((Legendre-transform H) qdot)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1.1",
+    "section_title": "The Legendre Transformation",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamiltonians",
+    "page": 212
+  },
+  {
+    "code": "(define ((L-rectangular m V) local)\n  (let ((q (coordinate local))\n        (qdot (velocity local)))\n    (- (* 1/2 m (square qdot))\n       (V (ref q 0) (ref q 1)))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1.1",
+    "section_title": "The Legendre Transformation",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamiltonians",
+    "page": 212
+  },
+  {
+    "code": "(show-expression\n  ((Lagrangian->Hamiltonian\n     (L-rectangular\n       'm\n       (literal-function 'V (-> (X Real Real) Real))))\n   (up 't (up 'x 'y) (down 'p_x 'p_y))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.1.1",
+    "section_title": "The Legendre Transformation",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Computing Hamiltonians",
+    "page": 212
+  },
+  {
+    "code": "(define F\n  (literal-function 'F\n                    (-> (UP Real (UP Real Real) (DOWN Real Real)) Real)))\n\n(define G\n  (literal-function 'G\n                    (-> (UP Real (UP Real Real) (DOWN Real Real)) Real)))\n\n(define H\n  (literal-function 'H\n                    (-> (UP Real (UP Real Real) (DOWN Real Real)) Real)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.2",
+    "section_title": "Poisson Brackets",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Properties of the Poisson bracket",
+    "page": 221
+  },
+  {
+    "code": "((+ (Poisson-bracket F (Poisson-bracket G H))\n    (Poisson-bracket G (Poisson-bracket H F))\n    (Poisson-bracket H (Poisson-bracket F G)))\n (up 't (up 'x 'y) (down 'px 'py)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.2",
+    "section_title": "Poisson Brackets",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Properties of the Poisson bracket",
+    "page": 221,
+    "expected": "0"
+  },
+  {
+    "code": "(show-expression\n  ((Lagrangian->Hamiltonian\n     (L-central-polar 'm (literal-function 'V)))\n   (up 't (up 'r 'phi) (down 'p_r 'p_phi))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.4",
+    "section_title": "Phase Space Reduction",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Motion in a central potential",
+    "page": 228
+  },
+  {
+    "code": "(show-expression\n  (((Hamilton-equations\n      (Lagrangian->Hamiltonian\n        (L-central-polar 'm (literal-function 'V))))\n    (up (literal-function 'r)\n        (literal-function 'phi))\n    (down (literal-function 'p_r)\n          (literal-function 'p_phi)))\n   't))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.4",
+    "section_title": "Phase Space Reduction",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Motion in a central potential",
+    "page": 228
+  },
+  {
+    "code": "(define ((L-axisymmetric-top A C gMR) local)\n  (let ((q (coordinate local))\n        (qdot (velocity local)))\n    (let ((theta (ref q 0))\n          (thetadot (ref qdot 0))\n          (phidot (ref qdot 1))\n          (psidot (ref qdot 2)))\n      (+ (* 1/2 A\n            (+ (square thetadot)\n               (square (* phidot (sin theta)))))\n         (* 1/2 C\n            (square (+ psidot (* phidot (cos theta)))))\n         (* -1 gMR (cos theta))))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.4",
+    "section_title": "Phase Space Reduction",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Axisymmetric top",
+    "page": 229
+  },
+  {
+    "code": "(show-expression\n  ((Lagrangian->Hamiltonian (L-axisymmetric-top 'A 'C 'gMR))\n   (up 't\n       (up 'theta 'phi 'psi)\n       (down 'p_theta 'p_phi 'p_psi))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.4",
+    "section_title": "Phase Space Reduction",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "subheading": "Axisymmetric top",
+    "page": 229
+  },
+  {
+    "code": "(show-expression\n  ((Lagrangian->Hamiltonian\n     (L-periodically-driven-pendulum 'm 'l 'g 'a 'omega))\n   (up 't 'theta 'p_theta)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.5",
+    "section_title": "Phase Space Evolution",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 236
+  },
+  {
+    "code": "(define (H-pend-sysder m l g a omega)\n  (Hamiltonian->state-derivative\n    (Lagrangian->Hamiltonian\n      (L-periodically-driven-pendulum m l g a omega))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.5",
+    "section_title": "Phase Space Evolution",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 237
+  },
+  {
+    "code": "(define window (frame :-pi :pi -10.0 10.0))\n\n(define ((monitor-p-theta win) state)\n  (let ((q ((principal-value :pi) (coordinate state)))\n        (p (momentum state)))\n    (plot-point win q p)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.5",
+    "section_title": "Phase Space Evolution",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 237
+  },
+  {
+    "code": "(let ((m 1.0)           ;m=1 kg\n      (l 1.0)           ;l=1 m\n      (g 9.8)           ;g=9.8 m/s²\n      (A 0.1)           ;A=1/10 m\n      (omega (* 2 (sqrt 9.8)))\n      ((evolve H-pend-sysder m l g A omega)\n       (up 0.0          ;t₀=0\n           1.0          ;θ₀=1 rad\n           0.0)         ;p₀=0 kg m²/s\n       (monitor-p-theta window)\n       0.01             ;plot interval\n       100.0            ;final time\n       1.0e-12)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.5",
+    "section_title": "Phase Space Evolution",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 237
+  },
+  {
+    "code": "(define (driven-pendulum-map m l g A omega)\n  (let ((advance (state-advancer H-pend-sysder m l g A omega))\n        (map-period (/ :2pi omega)))\n    (lambda (theta ptheta return fail)\n      (let ((ns (advance\n                  (up 0 theta ptheta) ; initial state</span></td>\n                  map-period))) ; integration interval</span></td>\n        (return ((principal-value :pi)\n                 (coordinate ns))\n                (momentum ns))))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.2",
+    "section_title": "Computing Stroboscopic Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 247
+  },
+  {
+    "code": "(define win (frame :-pi :pi -20 20))\n(let ((m 1.0)   ;m=1kg\n      (l 1.0)   ;l=1m\n      (g 9.8)   ;g=9.8m/s^2\n      (A 0.05)) ;A=1/20m\n  (let ((omega0 (sqrt (/ g l))))\n    (let ((omega (* 4.2 omega0)))\n      (explore-map\n        win\n        (driven-pendulum-map m l g A omega)\n        1000)))) ;1000 points for each initial condition",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.2",
+    "section_title": "Computing Stroboscopic Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 248
+  },
+  {
+    "code": "(define (HHmap E dt sec-eps int-eps)\n  (define ((make-advance advancer eps) s dt)\n    (advancer s dt eps))\n  (let ((adv\n          (make-advance (state-advancer HHsysder) int-eps)))\n    (lambda (y py cont fail)\n      (let ((initial-state (section->state E y py)))\n        (if (not initial-state)\n          (fail)\n          (find-next-crossing initial-state adv dt sec-eps\n                              (lambda (crossing-state running-state)\n                                (cont (ref (coordinate crossing-state)\n                                           1)\n                                      (ref (momentum crossing-state)\n                                           1)))))))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.4",
+    "section_title": "Computing Hénon–Heiles Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 261
+  },
+  {
+    "code": "(define (section->state E y py)\n  (let ((d (- E (+ (HHpotential (up 0 (up 0 y)))\n                   (* 1/2 (square py))))))\n    (if (>= d 0.0)\n      (let ((px (sqrt (* 2 d))))\n        (up 0 (up 0 y) (down px py)))\n      #f)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.4",
+    "section_title": "Computing Hénon–Heiles Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 261
+  },
+  {
+    "code": "(define (HHHam s)\n  (+ (* 1/2 (square (momentum s)))\n     (HHpotential s)))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.4",
+    "section_title": "Computing Hénon–Heiles Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 261
+  },
+  {
+    "code": "(define (HHpotential s)\n  (let ((x (ref (coordinate s) 0))\n        (y (ref (coordinate s) 1)))\n    (+ (* 1/2 (+ (square x) (square y)))\n       (- (* (square x) y) (* 1/3 (cube y))))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.4",
+    "section_title": "Computing Hénon–Heiles Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 261
+  },
+  {
+    "code": "(define (HHsysder)\n  (Hamiltonian->state-derivative HHHam))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.4",
+    "section_title": "Computing Hénon–Heiles Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 261
+  },
+  {
+    "code": "(define (find-next-crossing state advance dt sec-eps cont)\n  (let lp ((s state))\n    (let ((next-state (advance s dt)))\n      (if (and (> (ref (coordinate next-state) 0) 0)\n               (< (ref (coordinate s) 0) 0))\n        (let ((crossing-state\n                (refine-crossing sec-eps advance s)))\n          (cont crossing-state next-state))\n        (lp next-state)))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.4",
+    "section_title": "Computing Hénon–Heiles Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 261
+  },
+  {
+    "code": "(define (refine-crossing sec-eps advance state)\n  (let lp ((state state))\n    (let ((x (ref (coordinate state) 0))\n          (xd (ref (momentum state) 0)))\n      (let ((zstate (advance state (- (/ x xd)))))\n        (if (< (abs (ref (coordinate zstate) 0))\n               sec-eps)\n          zstate\n          (lp zstate))))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.4",
+    "section_title": "Computing Hénon–Heiles Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 261
+  },
+  {
+    "code": "(define win (frame -0.5 0.7 -0.6 0.6))\n(explore-map win (HHmap 0.125 0.1 1.0e-10 1.0e-12) 500)",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.6.4",
+    "section_title": "Computing Hénon–Heiles Surfaces of Section",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 261
+  },
+  {
+    "code": "(define ((standard-map K) theta I return failure)\n  (let ((nI (+ I (* K (sin theta)))))\n    (return ((principal-value :2pi) (+ theta nI))\n            ((principal-value :2pi) nI))))",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.9",
+    "section_title": "Standard Map",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 278
+  },
+  {
+    "code": "(define window (frame 0.0 :2pi 0.0 :2pi))\n(explore-map window (standard-map 0.6) 2000)",
+    "chapter": "3",
+    "chapter_title": "Hamiltonian Mechanics",
+    "section": "3.9",
+    "section_title": "Standard Map",
+    "source": "https://tgvaughan.github.io/sicm/chapter003.html",
+    "page": 279
+  },
+  {
+    "code": "(define ((unstable-manifold T xe ye dx dy rho eps) param)\n  (let ((n (floor->exact (/ (log (/ param eps)) (log rho)))))\n    ((iterated-map T n)\n     (+ xe (* dx (/ param (expt rho n))))\n     (+ ye (* dy (/ param (expt rho n))))\n     make-point\n     (lambda () (error \"Failed\")))))",
+    "chapter": "4",
+    "chapter_title": "Phase Space Structure",
+    "section": "4.3.1",
+    "section_title": "Computation of Stable and Unstable Manifolds",
+    "source": "https://tgvaughan.github.io/sicm/chapter004.html",
+    "page": 308
+  },
+  {
+    "code": "(define (plot-parametric-fill win f a b near?)\n  (let loop ((a a) (xa (f a)) (b b) (xb (f b)))\n    (if (not (close-enuf? a b (* 10 *machine-epsilon*)))\n      (let ((m (/ (+ a b) 2)))\n        (let ((xm (f m)))\n          (plot-point win (abscissa xm) (ordinate xm))\n          (if (not (near? xa xm))\n            (loop a xa m xm))\n          (if (not (near? xb xm))\n            (loop m xm b xb)))))))",
+    "chapter": "4",
+    "chapter_title": "Phase Space Structure",
+    "section": "4.3.1",
+    "section_title": "Computation of Stable and Unstable Manifolds",
+    "source": "https://tgvaughan.github.io/sicm/chapter004.html",
+    "page": 308
+  },
+  {
+    "code": "(define (cylinder-near? eps)\n  (let ((eps2 (square eps)))\n    (lambda (point1 point2)\n      (< (+ (square ((principal-value pi)\n                     (- (abscissa point1) (abscissa point2))))\n            (square (- (ordinate point1) (ordinate point2))))\n         eps2))))",
+    "chapter": "4",
+    "chapter_title": "Phase Space Structure",
+    "section": "4.3.1",
+    "section_title": "Computation of Stable and Unstable Manifolds",
+    "source": "https://tgvaughan.github.io/sicm/chapter004.html",
+    "page": 309
+  },
+  {
+    "code": "(define (radially-mapping-points Tmap Jmin Jmax phi eps)\n  (bisect\n    (lambda (J)\n      ((principal-value pi)\n       (Tmap phi J\n             (lambda (phip Jp) (- phi phip))\n             (lambda () (error \"should not get here\")))))\n    Jmin Jmax eps))",
+    "chapter": "4",
+    "chapter_title": "Phase Space Structure",
+    "section": "4.5.1",
+    "section_title": "Computing the Poincaré–Birkhoff Construction",
+    "source": "https://tgvaughan.github.io/sicm/chapter004.html",
+    "page": 321
+  },
+  {
+    "code": "(define (find-invariant-curve the-map rn theta0 Jmin Jmax eps)\n  (bisect (lambda (J) (which-way? rn theta0 J the-map))\n          Jmin Jmax eps))",
+    "chapter": "4",
+    "chapter_title": "Phase Space Structure",
+    "section": "4.6.1",
+    "section_title": "Finding Invariant Curves",
+    "source": "https://tgvaughan.github.io/sicm/chapter004.html",
+    "page": 326
+  },
+  {
+    "code": "(define (which-way? rotation-number x0 y0 the-map)\n  (let ((pv (principal-value ( x0 pi))))\n    (let lp ((z x0) (zmin (- x0 :2pi)) (zmax (+ x0 :2pi))\n                    (x x0) (xmin (- x0 :2pi)) (xmax (+ x0 :2pi))\n                    (y y0))\n      (let ((nz (pv (+ z (* :2pi rotation-number)))))\n        (the-map x y\n                 (lambda (nx ny)\n                   (let ((nx (pv nx)))\n                     (cond ((< x0 z zmax)\n                            (if (< x0 x xmax)\n                              (lp nz zmin z nx xmin x ny)\n                              (if (> x xmax) 1 -1)))\n                           ((< zmin z x0)\n                            (if (< xmin x x0)\n                              (lp nz z zmax nx x xmax ny)\n                              (if (< x xmin) -1 1)))\n                           (else\n                             (lp nz zmin zmax nx xmin xmax ny)))))\n                 (lambda ()\n                   (error \"Map failed\" x y)))))))",
+    "chapter": "4",
+    "chapter_title": "Phase Space Structure",
+    "section": "4.6.1",
+    "section_title": "Finding Invariant Curves",
+    "source": "https://tgvaughan.github.io/sicm/chapter004.html",
+    "page": 327
+  },
+  {
+    "code": "(define ((F->CH F) state)\n  (up (time state)\n      (F state)\n      (solve-linear-right\n        (momentum state)\n        (((partial 1) F) state))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 339
+  },
+  {
+    "code": "(define ((H-central m V) state)\n  (let ((x (coordinate state))\n        (p (momentum state)))\n    (+ (/ (square p) (* 2 m))\n       (V (sqrt (square x))))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 339
+  },
+  {
+    "code": "(show-expression\n  ((compose\n     (H-central 'm (literal-function 'V))\n     (F->CH p->r))\n   (up 't (up 'r 'phi) (down 'p_r 'p_phi))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 339
+  },
+  {
+    "code": "(define ((F->K F) state)\n  (- (* (solve-linear-right\n          (momentum state)\n          (((partial 1) F) state))\n        (((partial 0) F) state))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 340
+  },
+  {
+    "code": "(define ((translating v) state)\n  (+ (coordinates state) (* v (time state))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 340
+  },
+  {
+    "code": "((F->K (translating (up 'v^x 'v^y 'v^z)))\n (up 't (up 'x 'y 'z) (down 'p_x 'p_y 'p_z)))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 340,
+    "expected": "(+ (* -1 p_x v^x) (* -1 p_y v^y) (* -1 p_z v^z))"
+  },
+  {
+    "code": "(define ((H-free m) s)\n(/ (square (momentum s)) (* 2 m)))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 340
+  },
+  {
+    "code": "(define H-prime\n  (+ (compose (H-free 'm)\n              (F->CH (translating (up 'v^x 'v^y 'v^z))))\n     (F->K (translating (up 'v^x 'v^y 'v^z)))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 340
+  },
+  {
+    "code": "(H-prime\n  (up 't\n      (up 'xprime 'yprime 'zprime)\n      (down 'pprime_x 'pprime_y 'pprime_z)))\n(+ (* -1 pprime_x v^x)\n   (* -1 pprime_y v^y)\n   (* -1 pprime_z v^z)\n   (/ (* 1/2 (expt pprime_x 2)) m)\n   (/ (* 1/2 (expt pprime_y 2)) m)\n   (/ (* 1/2 (expt pprime_z 2)) m))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.1",
+    "section_title": "Point Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Implementing point transformations",
+    "page": 340
+  },
+  {
+    "code": "(define (canonical? C H Hprime)\n  (- (compose (Hamiltonian->state-derivative H) C)\n     (* (D C) (Hamiltonian->state-derivative Hprime))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2",
+    "section_title": "General Canonical Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "page": 344
+  },
+  {
+    "code": "(define ((polar-canonical alpha) state)\n  (let ((t (time state))\n        (theta (coordinate state))\n        (I (momentum state)))\n    (let ((x (* (sqrt (/ (* 2 I) alpha)) (sin theta)))\n          (p_x (* (sqrt (* 2 alpha I)) (cos theta))))\n      (up t x p_x))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2",
+    "section_title": "General Canonical Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Polar-canonical transformation",
+    "page": 345
+  },
+  {
+    "code": "(define ((H-harmonic m k) s)\n  (+ (/ (square (momentum s)) (* 2 m))\n     (* 1/2 k (square (coordinate s)))))\n\n((canonical?\n   (polar-canonical 'alpha)\n   (H-harmonic 'm 'k)\n   (compose (H-harmonic 'm 'k)\n            (polar-canonical 'alpha)))\n (up 't 'theta 'I))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2",
+    "section_title": "General Canonical Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Polar-canonical transformation",
+    "page": 345,
+    "expected": "(up 0 0 0)"
+  },
+  {
+    "code": "(define (T-func s)\n  (up 1\n      (zero-like (coordinates s))\n      (zero-like (momenta s))))\n\n(define ((D-phase-space H) s)\n  (up 0 (((partial 2) H) s) (- (((partial 1) H) s))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.1",
+    "section_title": "Time-Dependent Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "page": 347
+  },
+  {
+    "code": "(define (canonical-H? C H)\n  (- (compose (D-phase-space H) C)\n     (* (D C)\n        (D-phase-space (compose H C)))))\n\n(define (canonical-K? C K)\n  (- (compose T-func C)\n     (* (D C)\n        (+ T-func (D-phase-space K)))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.1",
+    "section_title": "Time-Dependent Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "page": 348
+  },
+  {
+    "code": "(define ((rotating Omega) state)\n  (let ((t (time state)) (qp (coordinate state)))\n    (let ((xp (ref qp 0)) (yp (ref qp 1)) (zp (ref qp 2)))\n      (up (- (* (cos (* Omega t)) xp)\n             (* (sin (* Omega t)) yp))\n          (+ (* (sin (* Omega t)) xp)\n             (* (cos (* Omega t)) yp))\n          zp))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.1",
+    "section_title": "Time-Dependent Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Rotating coordinates",
+    "page": 348
+  },
+  {
+    "code": "(define (C-rotating Omega) (F->CH (rotating Omega)))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.1",
+    "section_title": "Time-Dependent Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Rotating coordinates",
+    "page": 348
+  },
+  {
+    "code": "(define H-arbitrary\n  (literal-function 'H\n                    (-> (UP Real (UP Real Real Real) (DOWN Real Real Real))\n                        Real)))\n\n((canonical-H? (C-rotating 'Omega) H-arbitrary)\n (up 't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))\n(up 0 (up 0 0 0) (down 0 0 0))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.1",
+    "section_title": "Time-Dependent Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Rotating coordinates",
+    "page": 348
+  },
+  {
+    "code": "((F->K (rotating 'Omega))\n (up 't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))\n(+ (* Omega pp_x yp) (* -1 Omega pp_y xp))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.1",
+    "section_title": "Time-Dependent Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Rotating coordinates",
+    "page": 348
+  },
+  {
+    "code": "(define ((K Omega) s)\n  (let ((qp (coordinate s)) (pp (momentum s)))\n    (let ((xp (ref qp 0)) (yp (ref qp 1))\n                          (ppx (ref pp 0)) (ppy (ref pp 1)))\n      (* -1 Omega (- (* xp ppy) (* yp ppx))))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.1",
+    "section_title": "Time-Dependent Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Rotating coordinates",
+    "page": 348
+  },
+  {
+    "code": "((canonical-K? (C-rotating 'Omega) (K 'Omega))\n (up 't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))\n(up 0 (up 0 0 0) (down 0 0 0))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.1",
+    "section_title": "Time-Dependent Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Rotating coordinates",
+    "page": 348
+  },
+  {
+    "code": "(define (J-func DHs)\n  (up 0 (ref DHs 2) (- (ref DHs 1))))\n\n(define ((canonical-transform? C) s)\n  (let ((J ((D J-func) (compatible-shape s)))\n        (DCs ((D C) s)))\n    (- J (* DCs J (transpose DCs s)))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "page": 351
+  },
+  {
+    "code": "((canonical-transform? (polar-canonical 'alpha))\n (up 't 'theta 'I))\n(up (up 0 0 0) (up 0 0 0) (up 0 0 0))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Examples",
+    "page": 351
+  },
+  {
+    "code": "(define (a-non-canonical-transform state)\n  (let ((t (time state))\n        (theta (coordinate state))\n        (p (momentum state)))\n    (let ((x (* p (sin theta)))\n          (p_x (* p (cos theta))))\n      (up t x p_x))))\n\n((canonical-transform? a-non-canonical-transform)\n (up 't 'theta 'p))\n(up (up 0 0 0) (up 0 0 (+ -1 p)) (up 0 (+ 1 (* -1 p)) 0))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Examples",
+    "page": 352
+  },
+  {
+    "code": "(let* ((s (up 't (up 'x 'y) (down 'px 'py)))\n       (s* (compatible-shape s))\n       (J ((D J-func) s*)))\n  (s->m s* J s*))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 353,
+    "expected": "(matrix-by-rows\n  (list 0 0 0 0 0)\n  (list 0 0 0 1 0)\n  (list 0 0 0 0 1)\n  (list 0 -1 0 0 0)\n  (list 0 0 -1 0 0))"
+  },
+  {
+    "code": "(define C-general\n  (literal-function 'C\n                    (-> (UP Real (UP Real Real) (DOWN Real Real))\n                        (UP Real (UP Real Real) (DOWN Real Real)))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 354
+  },
+  {
+    "code": "(define (C-simple-time s)\n  (let ((cs (C-general s)))\n    (up ((literal-function 'tau) (time s))\n        (coordinates cs)\n        (momenta cs))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 354
+  },
+  {
+    "code": "(let* ((s (up 't (up 'x 'y) (down 'p_x 'p_y)))\n       (s* (compatible-shape s)))\n  (m:nth-row\n    (s->m s* ((canonical-transform? C-simple-time) s) s*)\n    0))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 354,
+    "expected": "(up 0 0 0 0 0)"
+  },
+  {
+    "code": "(let ((s (up 't (up 'x 'y) (down 'p_x 'p_y)))\n      (s* (compatible-shape s)))\n  (m:nth-col\n    (s->m s* ((canonical-transform? C-simple-time) s) s*)\n    0))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 354,
+    "expected": "(up 0 0 0 0 0)"
+  },
+  {
+    "code": "(define (symplectic-matrix? M)\n  (let ((2n (m:dimension M)))\n    (let ((J (symplectic-unit (quotient 2n 2))))\n      (- J (* M J (transpose M))))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 355
+  },
+  {
+    "code": "(define ((symplectic-transform? C) s)\n  (symplectic-matrix? (qp-submatrix ((D-as-matrix C) s))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 355
+  },
+  {
+    "code": "(define (F s)\n  ((literal-function 'F\n                     (-> (X Real (UP Real Real)) (UP Real Real)))\n   (time s) (coordinates s)))\n\n((symplectic-transform? (F->CH F))\n (up 't (up 'x 'y) (down 'px 'py)))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 356,
+    "expected": "(matrix-by-rows\n  (list 0 0 0 0)\n  (list 0 0 0 0)\n  (list 0 0 0 0)\n  (list 0 0 0 0))"
+  },
+  {
+    "code": "(let* ((s (up 't (up 'x 'y) (down 'p_x 'p_y)))\n       (s* (compatible-shape s)))\n  (- (qp-submatrix\n       (s->m s* ((canonical-transform? C-general) s) s*))\n     ((symplectic-transform? C-general) s)))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.2.2",
+    "section_title": "Abstracting the Canonical Condition",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "Symplectic matrices",
+    "page": 356,
+    "expected": "(matrix-by-rows\n  (list 0 0 0 0)\n  (list 0 0 0 0)\n  (list 0 0 0 0)\n  (list 0 0 0 0))"
+  },
+  {
+    "code": "(define (omega zeta1 zeta2)\n  (- (* (momentum zeta2) (coordinate zeta1))\n     (* (momentum zeta1) (coordinate zeta2))))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.3",
+    "section_title": "Invariants of Canonical Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "The symplectic 2-form",
+    "page": 361
+  },
+  {
+    "code": "(define (F s)\n  ((literal-function 'F\n                     (-> (X Real (UP Real Real)) (UP Real Real)))\n   (time s)\n   (coordinates s)))\n\n(let ((s (up 't (up 'x 'y) (down 'p_x 'p_y)))\n      (zeta1 (up 0 (up 'dx1 'dy1) (down 'dp1_x 'dp1_y)))\n      (zeta2 (up 0 (up 'dx2 'dy2) (down 'dp2_x 'dp2_y))))\n  (let ((DCs ((D (F->CH F)) s)))\n    (- (omega zeta1 zeta2)\n       (omega (* DCs zeta1) (* DCs zeta2)))))\n0",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.3",
+    "section_title": "Invariants of Canonical Transformations",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "subheading": "The symplectic 2-form",
+    "page": 361
+  },
+  {
+    "code": "(define (qp-submatrix m)\n  (m:submatrix m 1 (m:num-rows m) 1 (m:num-cols m)))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.8",
+    "section_title": "Projects",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "page": 410
+  },
+  {
+    "code": "(define ((D-as-matrix F) s)\n  (s->m (compatible-shape (F s)) ((D F) s) s)))",
+    "chapter": "5",
+    "chapter_title": "Canonical Transformations",
+    "section": "5.8",
+    "section_title": "Projects",
+    "source": "https://tgvaughan.github.io/sicm/chapter005.html",
+    "page": 410
+  },
+  {
+    "code": "(define ((C->Cp C) delta-t)\n  (compose (C delta-t) (shift-t (- delta-t))))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.2",
+    "section_title": "Time Evolution is Canonical",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Another time-evolution transformation",
+    "page": 429
+  },
+  {
+    "code": "(define ((shift-t delta-t) state)\n  (up\n    (+ (time state) delta-t)\n    (coordinate state)\n    (momentum state)))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.2",
+    "section_title": "Time Evolution is Canonical",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Another time-evolution transformation",
+    "page": 429
+  },
+  {
+    "code": "(define ((H->Hp delta-t) H)\n  (compose H (shift-t (- delta-t))))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.2",
+    "section_title": "Time Evolution is Canonical",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Another time-evolution transformation",
+    "page": 429
+  },
+  {
+    "code": "(define (((C* alpha omega omega0) delta-t) state)\n  ... )",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.2",
+    "section_title": "Time Evolution is Canonical",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Another time-evolution transformation",
+    "page": 430
+  },
+  {
+    "code": "(define (((solution alpha omega omega0) state0) t)\n  (((C* alpha omega omega0) (- t (time state0))) state0))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.2",
+    "section_title": "Time Evolution is Canonical",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Another time-evolution transformation",
+    "page": 430
+  },
+  {
+    "code": "(series:for-each print-expression\n                 (((exp (* 'epsilon D))\n                   (literal-function 'f))\n                  't)\n                 6)",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "page": 444,
+    "expected": "(f t)\n(* ((D f) t) epsilon)\n(* 1/2 (((expt D 2) f) t) (expt epsilon 2))\n(* 1/6 (((expt D 3) f) t) (expt epsilon 3))\n(* 1/24 (((expt D 4) f) t) (expt epsilon 4))\n(* 1/120 (((expt D 5) f) t) (expt epsilon 5))\n..."
+  },
+  {
+    "code": "(series:for-each print-expression\n                 (((exp (* 'epsilon D)) sin) 0)\n                 6)",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "page": 444,
+    "expected": "0\nepsilon\n0\n(* -1/6 (expt epsilon 3))\n0\n(* 1/120 (expt epsilon 5))\n..."
+  },
+  {
+    "code": "(series:for-each print-expression\n                 (((exp (* 'epsilon D))\n                   (lambda (x) (sqrt (+ x 1))))\n                  0)\n                 6)",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "page": 445,
+    "expected": "1\n(* 1/2 epsilon)\n(* -1/8 (expt epsilon 2))\n(* 1/16 (expt epsilon 3))\n(* -5/128 (expt epsilon 4))\n(* 7/256 (expt epsilon 5))\n..."
+  },
+  {
+    "code": "(+ (* 1/5040 (expt n 7))\n   (* -1/240 (expt n 6))\n   (* 5/144 (expt n 5))\n   (* -7/48 (expt n 4))\n   (* 29/90 (expt n 3))\n   (* -7/20 (expt n 2))\n   (* 1/7 n))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "page": 445
+  },
+  {
+    "code": "(define ((Lie-derivative H) F)\n  (Poisson-bracket F H))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Computing Lie series",
+    "page": 448
+  },
+  {
+    "code": "(define (Lie-transform H t)\n  (exp (* t (Lie-derivative H))))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Computing Lie series",
+    "page": 448
+  },
+  {
+    "code": "(define ((H-harmonic m k) state)\n  (+ (/ (square (momentum state)) (* 2 m))\n     (* 1/2 k (square (coordinate state)))))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Computing Lie series",
+    "page": 448
+  },
+  {
+    "code": "(series:for-each print-expression\n                 (((Lie-transform (H-harmonic 'm 'k) 'dt)\n                   coordinate)\n                  (up 0 'x0 'p0))\n                 6)",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Computing Lie series",
+    "page": 449,
+    "expected": "x0\n(/ (* dt p0) m)\n(/ (* -1/2 (expt dt 2) k x0) m)\n(/ (* -1/6 (expt dt 3) k p0) (expt m 2))\n(/ (* 1/24 (expt dt 4) (expt k 2) x0) (expt m 2))\n(/ (* 1/120 (expt dt 5) (expt k 2) p0) (expt m 3))\n..."
+  },
+  {
+    "code": "(series:for-each print-expression\n                 (((Lie-transform (H-harmonic 'm 'k) 'dt)\n                   momentum)\n                  (up 0 'x0 'p0))\n                 6)",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Computing Lie series",
+    "page": 449,
+    "expected": "p0\n(* -1 dt k x0)\n(/ (* -1/2 (expt dt 2) k p0) m)\n(/ (* 1/6 (expt dt 3) (expt k 2) x0) m)\n(/ (* 1/24 (expt dt 4) (expt k 2) p0) (expt m 2))\n(/ (* -1/120 (expt dt 5) (expt k 3) x0) (expt m 2))\n..."
+  },
+  {
+    "code": "(series:for-each print-expression\n                 (((Lie-transform (H-harmonic 'm 'k) 'dt)\n                   (H-harmonic 'm 'k))\n                  (up 0 'x0 'p0))\n                 6)",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Computing Lie series",
+    "page": 449,
+    "expected": "(/ (+ (* 1/2 k m (expt x0 2)) (* 1/2 (expt p0 2))) m)\n0\n0\n0\n0\n0\n..."
+  },
+  {
+    "code": "(series:for-each print-expression\n                 (((Lie-transform\n                     (H-central-polar 'm (literal-function 'U))\n                     'dt)\n                   coordinate)\n                  (up 0\n                      (up 'r_0 'phi_0)\n                      (down 'p_r_0 'p_phi_0)))\n                 4)",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.4",
+    "section_title": "Lie Series",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "subheading": "Computing Lie series",
+    "page": 449,
+    "expected": "(up r_0 phi_0)\n(up (/ (* dt p_r_0) m)\n    (/ (* dt p_phi_0) (* m (expt r_0 2))))\n(up\n  (+ (/ (* -1/2 ((D U) r_0) (expt dt 2)) m)\n     (/ (* 1/2 (expt dt 2) (expt p_phi_0 2))\n        (* (expt m 2) (expt r_0 3))))\n  (/ (* -1 (expt dt 2) p_phi_0 p_r_0)\n     (* (expt m 2) (expt r_0 3))))\n(up\n  (+ (/ (* -1/6 (((expt D 2) U) r_0) (expt dt 3) p_r_0)\n        (expt m 2))\n     (/ (* -1/2 (expt dt 3) (expt p_phi_0 2) p_r_0)\n        (* (expt m 3) (expt r_0 4)))))\n(+ (/ (* 1/3 ((D U) r_0) (expt dt 3) p_phi_0)\n      (* (expt m 2) (expt r_0 3))))\n(/ (* -1/3 (expt dt 3) (expt p_phi_0 3))\n   (* (expt m 3) (expt r_0 6)))\n(/ (* (expt dt 3) p_phi_0 (expt p_r_0 2))\n   (* (expt m 3) (expt_r_0 4)))\n..."
+  },
+  {
+    "code": "(define ((HH-collector win advance E dt sec-eps n) x y done fail)\n  (define (monitor last-crossing-state state)\n    (plot-point win\n                (ref (coordinate last-crossing-state) 1)\n                (ref (momentum last-crossing-state) 1)))\n  (define (pmap x y cont fail)\n    (find-next-crossing y advance dt sec-eps cont))\n  (define collector (default-collector monitor pmap n))\n  (cond ((and (up? x) (up? y))      ;passed states\n         (collector x y done fail))\n        ((and (number? x) (number? y))   ;initialization\n         (let ((initial-state (section->state E x y)))\n           (if (not initial-state)\n             (fail)\n             (collector initial-state initial-state done fail))))\n        (else (error \"bad input to HH-collector\" x y))))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.7",
+    "section_title": "Projects",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "page": 455
+  },
+  {
+    "code": "(explore-map win\n             (HH-collector win 1st-order-map 0.125 0.1 1.e-10 1000)\n             #f)",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.7",
+    "section_title": "Projects",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "page": 455
+  },
+  {
+    "code": "(define ((Lie-derivative-procedure H) F)\n  (Poisson-bracket F H))\n(define Lie-derivative\n  (make-operator Lie-derivative-procedure 'Lie-derivative))",
+    "chapter": "6",
+    "chapter_title": "Canonical Evolution",
+    "section": "6.7",
+    "section_title": "Projects",
+    "source": "https://tgvaughan.github.io/sicm/chapter006.html",
+    "page": 455
+  },
+  {
+    "code": "(define ((H0 alpha) state)\n  (let ((p (momentum state)))\n    (/ (square p) (* 2 alpha))))\n\n(define ((H1 beta) state)\n  (let ((theta (coordinate state)))\n    (* -1 beta (cos theta))))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 462
+  },
+  {
+    "code": "(define (H-pendulum-series alpha beta epsilon)\n  (series (H0 alpha) (* epsilon (H1 beta))))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 462
+  },
+  {
+    "code": "(define ((W alpha beta) state)\n  (let ((theta (coordinate state))\n        (p (momentum state)))\n    (/ (* -1 alpha beta (sin theta)) p)))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 462
+  },
+  {
+    "code": "((+ ((Lie-derivative (W 'alpha 'beta)) (H0 'alpha))\n    (H1 'beta))\n (up 't 'theta 'p))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 462,
+    "expected": "0"
+  },
+  {
+    "code": "(show-expression\n  (series:sum\n    (((exp (* 'epsilon (Lie-derivative (W 'alpha 'beta))))\n      (H-pendulum-series 'alpha 'beta 'epsilon))\n     (up 't 'theta 'p))\n    2))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 462
+  },
+  {
+    "code": "(define (((solution0 alpha beta) t) state0)\n  (let ((t0 (time state0))\n        (theta0 (coordinate state0))\n        (p0 (momentum state0)))\n    (up t\n        (+ theta0 (/ (* (- t t0) p0) alpha))\n        p0)))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 462
+  },
+  {
+    "code": "(define ((C alpha beta epsilon order) state)\n  (series:sum\n    (((Lie-transform (W alpha beta) epsilon)\n      identity)\n     state)\n    order))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 462
+  },
+  {
+    "code": "(show-expression\n  ((C 'alpha 'beta 'epsilon 2) (up 't 'theta 'p)))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 464
+  },
+  {
+    "code": "(define (C-inv alpha beta epsilon order)\n  (C alpha beta (- epsilon) order))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 464
+  },
+  {
+    "code": "(define (((solution epsilon order) alpha beta) delta-t)\n  (compose (C alpha beta epsilon order)\n           ((solution0 alpha beta) delta-t)\n           (C-inv alpha beta epsilon order)))",
+    "chapter": "7",
+    "chapter_title": "Canonical Perturbation Theory",
+    "section": "7.2",
+    "section_title": "Pendulum as a Perturbed Rotor",
+    "source": "https://tgvaughan.github.io/sicm/chapter007.html",
+    "page": 464
+  },
+  {
+    "code": "(+ 1 2.14)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Procedure calls",
+    "page": 497,
+    "expected": "3.14"
+  },
+  {
+    "code": "(+ 1 (* 2 1.07))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Procedure calls",
+    "page": 497,
+    "expected": "3.14"
+  },
+  {
+    "code": "(lambda (x) (* x x))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Lambda expressions",
+    "page": 497
+  },
+  {
+    "code": "((lambda (x) (* x x)) 4)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Lambda expressions",
+    "page": 497,
+    "expected": "16"
+  },
+  {
+    "code": "(define pi 3.141592653589793)\n\n(define square (lambda (x) (* x x)))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Definitions",
+    "page": 499
+  },
+  {
+    "code": "(* 4 pi (square 5))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Definitions",
+    "page": 499,
+    "expected": "314.1592653589793"
+  },
+  {
+    "code": "(define (square x) (* x x))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Definitions",
+    "page": 499
+  },
+  {
+    "code": "(define compose\n  (lambda (f g)\n    (lambda (x)\n      (f (g x)))))\n\n((compose square sin) 2)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Definitions",
+    "page": 499,
+    "expected": ".826821810431806"
+  },
+  {
+    "code": "(square (sin 2))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Definitions",
+    "page": 499,
+    "expected": ".826821810431806"
+  },
+  {
+    "code": "(define (compose f g)\n  (lambda (x)\n    (f (g x))))\n\n(define ((compose f g) x)\n  (f (g x)))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Definitions",
+    "page": 499
+  },
+  {
+    "code": "(define (abs x)\n  (cond ((< x 0) (- x))\n        ((= x 0) x)\n        ((> x 0) x)))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Conditionals",
+    "page": 499
+  },
+  {
+    "code": "(cond\n  (predicate-1 consequent-1)\n  ...\n  (predicate-n consequent-n))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Conditionals",
+    "page": 499
+  },
+  {
+    "code": "(define (abs x)\n  (if (< x 0)\n    (- x)\n    x))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Conditionals",
+    "page": 501
+  },
+  {
+    "code": "(define (factorial n)\n  (if (= n 0)\n    1\n    (* n (factorial (- n 1)))))\n\n(factorial 6)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Recursive procedures",
+    "page": 501,
+    "expected": "720"
+  },
+  {
+    "code": "(factorial 40)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Recursive procedures",
+    "page": 501,
+    "expected": "815915283247897734345611269596115894272000000000"
+  },
+  {
+    "code": "(define (f radius)\n  (let ((area (* 4 pi (square radius)))\n        (volume (* 4/3 pi (cube radius))))\n    (/ volume area)))\n\n(f 3)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Local names",
+    "page": 501,
+    "expected": "1"
+  },
+  {
+    "code": "(let ((variable-1 expression-1)\n      ...\n      (variable-n expression-n))\n  body)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Local names",
+    "page": 502
+  },
+  {
+    "code": "(define (factorial n)\n  (let factlp ((count 1) (answer 1))\n    (if (> count n)\n      answer\n      (factlp (+ count 1) (* count answer)))))\n\n(factorial 6)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Local names",
+    "page": 502,
+    "expected": "720"
+  },
+  {
+    "code": "(define a-list (list 6 946 8 356 12 620))\n\na-list",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 503,
+    "expected": "(6 946 8 356 12 620)"
+  },
+  {
+    "code": "(list-ref a-list 3)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 503,
+    "expected": "356"
+  },
+  {
+    "code": "(list-ref a-list 0)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 503,
+    "expected": "6"
+  },
+  {
+    "code": "(car a-list)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 503,
+    "expected": "6"
+  },
+  {
+    "code": "(cdr a-list)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 503,
+    "expected": "(946 8 356 12 620)"
+  },
+  {
+    "code": "(car (cdr a-list))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 503,
+    "expected": "946"
+  },
+  {
+    "code": "(define another-list\n(cons 32 (cdr a-list)))\n\nanother-list",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 503,
+    "expected": "(32 946 8 356 12 620)"
+  },
+  {
+    "code": "(car (cdr another-list))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 503,
+    "expected": "946"
+  },
+  {
+    "code": "(define a-vector\n(vector 37 63 49 21 88 56))\n\na-vector",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 504,
+    "expected": "#(37 63 49 21 88 56)"
+  },
+  {
+    "code": "(vector-ref a-vector 3)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 504,
+    "expected": "21"
+  },
+  {
+    "code": "(vector-ref a-vector 0)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Compound data—lists and vectors",
+    "page": 504,
+    "expected": "37"
+  },
+  {
+    "code": "(define (sum? expression)\n  (and (pair? expression)\n       (eq? (car expression) '+)))\n\n(sum? '(+ 3 a))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Symbols",
+    "page": 505,
+    "expected": "#t"
+  },
+  {
+    "code": "(sum? '(* 3 a))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Symbols",
+    "page": 505,
+    "expected": "#f"
+  },
+  {
+    "code": "(define (factorial n)\n  (let factlp ((count 1) (answer 1))\n    (write-line (list count answer))\n    (if (> count n)\n      answer\n      (factlp (+ count 1) (* count answer)))))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Effects",
+    "page": 505
+  },
+  {
+    "code": "(factorial 6)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Appendix: Scheme",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "subheading": "Effects",
+    "page": 506,
+    "expected": "(1 1)\n(2 1)\n(3 2)\n(4 6)\n(5 24)\n(6 120)\n(7 720)\n720"
+  },
+  {
+    "code": "(define (make-counter)\n  (let ((count 0))\n    (lambda ()\n      (set! count (+ count 1))\n      count)))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506
+  },
+  {
+    "code": "(define c1 (make-counter))\n(define c2 (make-counter))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506
+  },
+  {
+    "code": "(c1)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "1"
+  },
+  {
+    "code": "(c1)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "2"
+  },
+  {
+    "code": "(c2)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "1"
+  },
+  {
+    "code": "(c1)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "3"
+  },
+  {
+    "code": "(c2)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "2"
+  },
+  {
+    "code": "(define (make-collector)\n  (let ((lst '()))\n    (cons (lambda (new)\n            (set! lst (cons new lst))\n            new)\n          (lambda () lst))))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506
+  },
+  {
+    "code": "(define c3 (make-collector))\n(define c4 (make-collector))\n\n((car c3) 42)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "42"
+  },
+  {
+    "code": "((car c4) 'jerry)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "jerry"
+  },
+  {
+    "code": "((car c3) 28)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "28"
+  },
+  {
+    "code": "((car c3) 14)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "14"
+  },
+  {
+    "code": "((car c4) 'jack)",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "jack"
+  },
+  {
+    "code": "((cdr c3))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "(14 28 42)"
+  },
+  {
+    "code": "((cdr c4))",
+    "chapter": "8",
+    "chapter_title": "Appendix: Scheme",
+    "section": "8",
+    "section_title": "Assignments",
+    "source": "https://tgvaughan.github.io/sicm/chapter008.html",
+    "page": 506,
+    "expected": "(jack jerry)"
+  },
+  {
+    "code": "(define (d x1 y1 x2 y2)\n  (sqrt (+ (square (- x2 x1)) (square (- y2 y1)))))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Functions",
+    "page": 510
+  },
+  {
+    "code": "(define h (compose cube sin))\n\n(h 2)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Functions",
+    "page": 510,
+    "expected": ".7518269446689928"
+  },
+  {
+    "code": "(cube (sin 2))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Functions",
+    "page": 510,
+    "expected": ".7518269446689928"
+  },
+  {
+    "code": "(define g (* cube sin))\n\n(g 2)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Functions",
+    "page": 511,
+    "expected": "7.274379414605454"
+  },
+  {
+    "code": "(* (cube 2) (sin 2))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Functions",
+    "page": 511,
+    "expected": "7.274379414605454"
+  },
+  {
+    "code": "((compose cube sin) 'a)\n(expt (sin a) 3)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Symbolic values",
+    "page": 511
+  },
+  {
+    "code": "((- (+ (square sin) (square cos)) 1) 'a)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Symbolic values",
+    "page": 511,
+    "expected": "0"
+  },
+  {
+    "code": "((literal-function 'f) 'x)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Symbolic values",
+    "page": 512,
+    "expected": "(f x)"
+  },
+  {
+    "code": "((compose (literal-function 'f) (literal-function 'g)) 'x)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Symbolic values",
+    "page": 512,
+    "expected": "(f (g x))"
+  },
+  {
+    "code": "(define g (literal-function 'g (-> (X Real Real) Real)))\n(g 'x 'y)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Symbolic values",
+    "page": 512,
+    "expected": "(g x y)"
+  },
+  {
+    "code": "(define v (up 'v^0 'v^1 'v^2))\n\nv",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Tuples",
+    "page": 513,
+    "expected": "(up v^0 v^1 v^2)"
+  },
+  {
+    "code": "(define p (down 'p_0 'p_1 'p_2))\n\np",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Tuples",
+    "page": 513,
+    "expected": "(down p_0 p_1 p_2)"
+  },
+  {
+    "code": "(define s (up 't (up 'x 'y) (down 'p_x 'p_y)))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Tuples",
+    "page": 513
+  },
+  {
+    "code": "((component 0 1) (up (up 'a 'b) (up 'c 'd)))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Tuples",
+    "page": 514,
+    "expected": "b"
+  },
+  {
+    "code": "(ref (up 'a 'b 'c) 1)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Tuples",
+    "page": 514,
+    "expected": "b"
+  },
+  {
+    "code": "(ref (up (up 'a 'b) (up 'c 'd)) 0 1)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Tuples",
+    "page": 514,
+    "expected": "b"
+  },
+  {
+    "code": "(* p v)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Tuples",
+    "page": 515,
+    "expected": "(+ (* p_0 v^0) (* p_1 v^1) (* p_2 v^2))"
+  },
+  {
+    "code": "(define derivative-of-sine (D sin))\n\n(derivative-of-sine 'x)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives",
+    "page": 516,
+    "expected": "(cos x)"
+  },
+  {
+    "code": "(((* 5 D) cos) 'x)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives",
+    "page": 517,
+    "expected": "(* -5 (sin x))"
+  },
+  {
+    "code": "(((* (+ D I) (- D I)) (literal-function 'f)) 'x)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives",
+    "page": 517,
+    "expected": "(+ (((expt D 2) f) x) (* -1 (f x)))"
+  },
+  {
+    "code": "((D g) 'x 'y)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives of functions of multiple arguments",
+    "page": 518,
+    "expected": "(down (((partial 0) g) x y) (((partial 1) g) x y))"
+  },
+  {
+    "code": "(define (h s)\n(g (ref s 0) (ref s 1)))\n\n(h (up 'x 'y))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives of functions of multiple arguments",
+    "page": 519,
+    "expected": "(g x y)"
+  },
+  {
+    "code": "((D g) 'x 'y)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives of functions of multiple arguments",
+    "page": 519,
+    "expected": "(down (((partial 0) g) x y) (((partial 1) g) x y))"
+  },
+  {
+    "code": "((D h) (up 'x 'y))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives of functions of multiple arguments",
+    "page": 519,
+    "expected": "(down (((partial 0) g) x y) (((partial 1) g) x y))"
+  },
+  {
+    "code": "(define H\n  (literal-function 'H\n                    (-> (UP Real (UP Real Real) (DOWN Real Real)) Real)))\n\n(H s)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives of functions of multiple arguments",
+    "page": 521,
+    "expected": "(H (up t (up x y) (down p_x p_y)))"
+  },
+  {
+    "code": "((D H) s)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Derivatives of functions of multiple arguments",
+    "page": 521,
+    "expected": "(down\n  (((partial 0) H) (up t (up x y) (down p_x p_y)))\n  (down (((partial 1 0) H) (up t (up x y) (down p_x p_y)))\n        (((partial 1 1) H) (up t (up x y) (down p_x p_y))))\n  (up (((partial 2 0) H) (up t (up x y) (down p_x p_y)))\n      (((partial 2 1) H) (up t (up x y) (down p_x p_y)))))"
+  },
+  {
+    "code": "(define (helix t)\n  (up (cos t) (sin t) t))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Structured results",
+    "page": 521
+  },
+  {
+    "code": "(define helix (up cos sin identity))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Structured results",
+    "page": 521
+  },
+  {
+    "code": "((D helix) 't)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Structured results",
+    "page": 522,
+    "expected": "(up (* -1 (sin t)) (cos t) 1)"
+  },
+  {
+    "code": "(define (g x y)\n(up (square (+ x y)) (cube (- y x)) (exp (+ x y))))\n\n((D g) 'x 'y)",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Structured results",
+    "page": 522,
+    "expected": "(down\n  (up\n    (+ (* 2 x) (* 2 y))\n    (+ (* -3 (expt x 2)) (* 6 x y) (* -3 (expt y 2)))\n    (* (exp y) (exp x)))\n  (\n    (+ (* 2 x) (* 2 y))\n    (+ (* 3 (expt x 2)) (* -6 x y) (* 3 (expt y 2)))\n    (* (exp y) (exp x))))"
+  },
+  {
+    "code": "(define (f x y)\n  (* (square x) (cube y)))\n\n(define (g x y)\n  (up (f x y) y))\n\n(define (h x y)\n  (f (f x y) y))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Structured results",
+    "page": 523
+  },
+  {
+    "code": "(define (f v)\n  (let ((x (ref v 0))\n        (y (ref v 1)))\n    (* (square x) (cube y))))\n\n(define (g v)\n  (let ((x (ref v 0))\n        (y (ref v 1)))\n    (up (f v) y)))\n\n(define h (compose f g))",
+    "chapter": "9",
+    "chapter_title": "Appendix: Our Notation",
+    "section": "9",
+    "section_title": "Appendix: Our Notation",
+    "source": "https://tgvaughan.github.io/sicm/chapter009.html",
+    "subheading": "Structured results",
+    "page": 523
+  }
+]

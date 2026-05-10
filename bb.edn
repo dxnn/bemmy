@@ -12,7 +12,7 @@
  {:requires ([scittle.build :as build])
 
   test    {:doc  "Run unit tests (sicm2emmy translator + auto-graph wrap)"
-           :task (do (shell "node --test test/sicm2emmy.test.js")
+           :task (do (shell "node --test test/sicm2emmy.test.js test/sicm2emmy.corpus.test.js")
                      (shell "bb test/auto_graph_test.clj"))}
 
   watch   {:doc  "Watch build (recompile on save)"
