@@ -126,10 +126,14 @@
     'list-ref':'nth', 'vector-ref':'nth',
     // scmutils matrix accessors → Emmy (live in emmy.matrix as row/column).
     'm:nth-row':'row', 'm:nth-col':'column',
+    'm:dimension':'dimension',
     // scmutils plural; Emmy exposes the singular state-tuple selectors.
     'coordinates':'coordinate', 'momenta':'momentum',
     // `time` is a Clojure macro (benchmarking); use Emmy's state-time selector.
     'time':'state->t',
+    // Clojure can't bind names starting with a digit; SICM uses `2n` to mean
+    // "twice n" inside symplectic-matrix?.
+    '2n':'two-n',
     'delete-duplicates':'distinct', 'remove-duplicates':'distinct',
     'every':'every?', 'any':'some',
     'fold-left':'reduce',
