@@ -388,6 +388,20 @@
       return L(A('fn'), args, ...liftInternalDefs(c.slice(2).map(tx)));
     }
 
+    // Scheme named let: (let name ((var init)...) body) defines a labeled
+    // function that can recurse on itself. Emit as letfn + initial call.
+    if (hs === 'let' && c[1] && c[1].t === 'atom' &&
+        c[2] && c[2].t === 'list') {
+      const name = c[1];
+      const pairs = c[2].c.filter(n => n.t === 'list');
+      const vars  = pairs.map(p => p.c[0]);
+      const inits = pairs.map(p => p.c[1]);
+      const body  = c.slice(3);
+      return L(A('letfn'),
+               V(L(name, V(vars.map(tx)), ...body.map(tx))),
+               L(name, ...inits.map(tx)));
+    }
+
     if ((hs === 'let' || hs === 'let*') && c[1] && c[1].t === 'list') {
       const bindingPairs = c[1].c.filter(n => n.t === 'list');
       const body = c.slice(2);

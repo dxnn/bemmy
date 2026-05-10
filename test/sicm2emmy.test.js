@@ -150,8 +150,14 @@ describe('let forms', () => {
                  '(let [x 1 y x] y)');
   });
 
-  test('named let → loop', () => {
-    assert.equal(tr('(let loop ((n 0)) n)'), '(loop [n 0] n)');
+  test('named let → letfn + initial call', () => {
+    // Named let binds a labeled function so the body can recurse on it.
+    // Translate to letfn rather than Clojure `loop`, which would require
+    // rewriting recursive calls to `recur`.
+    assert.equal(tr('(let loop ((n 0)) n)'),
+                 '(letfn [(loop [n] n)] (loop 0))');
+    assert.equal(tr('(let f ((c 1)) (if (> c 5) c (f (+ c 1))))'),
+                 '(letfn [(f [c] (if (> c 5) c (f (+ c 1))))] (f 1))');
   });
 
   test('letrec (all fns) → letfn', () => {
