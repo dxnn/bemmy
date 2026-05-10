@@ -12852,19 +12852,33 @@ p
 
 (defn- section-version
   "Parse 'SICM 1.5.2 …' → [1 5 2]. Returns [9999] for anything that
-  isn't a section page so it sorts last (and never throws on nil-vs-vec
-  comparisons in sort-by)."
+  isn't a section page so it sorts last."
   [name]
   (if-let [[_ section] (re-matches #"^SICM (\d[\d.]*).*" name)]
     (mapv js/parseInt (clojure.string/split section #"\."))
     [9999]))
+
+(defn- compare-versions
+  "Element-wise lexicographic compare of two integer vectors. CLJS's
+  default `compare` doesn't handle PersistentVector (unlike JVM), so we
+  walk pairwise with the scalar `compare` that does work."
+  [a b]
+  (loop [a (seq a) b (seq b)]
+    (cond
+      (and (nil? a) (nil? b)) 0
+      (nil? a) -1
+      (nil? b) 1
+      :else (let [c (compare (first a) (first b))]
+              (if (zero? c) (recur (next a) (next b)) c)))))
 
 (defn- ordered-system-page-names []
   (let [present (set (keys system-pages))
         intros  (filter present intro-page-names)
         rest    (->> (keys system-pages)
                      (remove (set intro-page-names))
-                     (sort-by section-version))]
+                     (sort (fn [a b]
+                             (compare-versions (section-version a)
+                                               (section-version b)))))]
     (concat intros rest)))
 
 (defn- system-dropdown []
@@ -13015,7 +13029,9 @@ p
         :title    "Copy a URL that loads this page's source for someone else"}
        "Share"]]]
     [:div.pane
-     [:div.label "Result"]
+     [:div.label
+      (let [[_ cur-name] (:current @!pages)]
+        (if cur-name (str "Result of " cur-name) "Result"))]
      [result-pane]]]
    (when-let [m @!toast]
      [:div.toast m])])
