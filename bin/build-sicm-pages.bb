@@ -145,19 +145,16 @@
        (when (and section-title (seq section-title))
          (str " " section-title))))
 
-(defn- ns-unmap-setup-form
-  "Render `(doseq [s '[…]] (ns-unmap *ns* s))` so re-evaluating this
-  page doesn't warn about redefining emmy.env-exported names. ns-unmap
-  is a no-op on names not present in the ns, so blanket-unmapping every
-  def in the page is safe."
+(defn- declare-setup-form
+  "Render `(declare X Y Z)` for every name the page defines. This
+  forward-declares them so cross-snippet references resolve regardless
+  of definition order (the SICM book defines e.g. qp->H-state-path
+  after its first use), and once each name is locally interned, the
+  subsequent (defn …) forms don't re-trigger the emmy.env shadow
+  warning per def — at most once at the declare line."
   [def-names]
   (when (seq def-names)
-    (str ";; --- Free names this page (re)defines so re-evaluating "
-         "doesn't warn about\n"
-         ";;     shadowing emmy.env-exported symbols. Safe no-op for "
-         "names not in scope. ---\n"
-         "(doseq [s '" (pr-str def-names) "]\n"
-         "  (ns-unmap *ns* s))")))
+    (str "(declare " (clojure.string/join " " (map name def-names)) ")")))
 
 (defn render-page
   [section]
@@ -179,7 +176,7 @@
                        "Self-contained: earlier-chapter prerequisites are\n"
                        "inlined below.")))
     (.append sb "\n\n")
-    (when-let [setup (ns-unmap-setup-form def-names)]
+    (when-let [setup (declare-setup-form def-names)]
       (.append sb setup)
       (.append sb "\n\n"))
     (when (seq prereqs)
