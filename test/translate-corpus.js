@@ -36,12 +36,20 @@ corpus.forEach((entry, idx) => {
   const translated = translate(entry.code, env);
   const fields = [
     `:chapter ${ednStr(entry.chapter)}`,
+    `:chapter-title ${ednStr(entry.chapter_title ?? '')}`,
     `:section ${ednStr(entry.section ?? '')}`,
+    `:section-title ${ednStr(entry.section_title ?? '')}`,
     `:page ${entry.page != null ? entry.page : 'nil'}`,
     `:idx ${idx}`,
     `:code ${ednStr(entry.code)}`,
     `:translated ${ednStr(translated)}`,
   ];
+  if (entry.subheading !== undefined) {
+    fields.push(`:subheading ${ednStr(entry.subheading)}`);
+  }
+  if (entry.source !== undefined) {
+    fields.push(`:source ${ednStr(entry.source)}`);
+  }
   if (entry.expected !== undefined) {
     fields.push(`:expected ${ednStr(entry.expected)}`);
   }
