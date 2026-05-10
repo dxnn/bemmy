@@ -64,7 +64,13 @@
   (sqrt (apply + (map #(* % %) (seq v)))))
 
 (defn floor->exact [x]
-  (clojure.core/long (Math/floor (double x))))
+  ;; scmutils returns the integer floor; symbolic Emmy expressions
+  ;; aren't simplifiable to a number, so simplify first and only
+  ;; floor when the result is genuinely numeric.
+  (let [s (try (simplify x) (catch Throwable _ x))]
+    (if (number? s)
+      (clojure.core/long (Math/floor (double s)))
+      s)))
 
 (defn bisect
   "scmutils-style bisection root finder. Stub: returns the midpoint."
@@ -97,12 +103,76 @@
   `x` as Real → Real. Bind it so the bare-symbol uses don't error."
   '(-> Real Real))
 
-(def R2
-  "Two-arg type signature shorthand."
-  '(-> Real Real Real))
+(def R2 '(-> Real Real Real))
+(def R3 '(-> Real Real Real Real))
 
-(def R3
-  '(-> Real Real Real Real))
+;; The SICM book also writes `r` lowercase for the same thing;
+;; corpus snippets like `(literal-function 'x r)` drop through here.
+(def r '(-> Real Real))
+
+;; ---------- scmutils ↔ Emmy name aliases for SICM-book pages ----------
+;; Where Emmy ships a near-equivalent under a different name, we def a
+;; bare alias so SICM book code can call the scmutils name directly.
+
+(def make-quaternion             emmy.quaternion/make)
+(def quaternion                  emmy.quaternion/make) ; SICM uses bare `quaternion`
+(def quaternion->vector          emmy.quaternion/->vector)
+(def quaternion->3vector         (fn [q] (rest (emmy.quaternion/->vector q))))
+(def quaternion->rotation-matrix emmy.quaternion/->rotation-matrix)
+(def rotation-matrix->quaternion emmy.quaternion/from-rotation-matrix)
+(def quaternion->angle-axis      emmy.quaternion/->angle-axis)
+(def quaternion-ref              (fn [q i] (nth (emmy.quaternion/->vector q) i)))
+(def quaternion->real-part       emmy.quaternion/get-r)
+(def q:r                         emmy.quaternion/get-r)
+(def q:i                         emmy.quaternion/get-i)
+(def q:j                         emmy.quaternion/get-j)
+(def q:k                         emmy.quaternion/get-k)
+(def quaternion?                 emmy.quaternion/quaternion?)
+
+(defn explore-map
+  "Stub: scmutils' interactive surface-of-section explorer drives the
+  (graphics) `frame` window with iterates of `the-map`. JVM tests
+  don't render; return ::graphics so subsequent forms don't error."
+  [_window _the-map _n] ::graphics)
+
+;; SICM §1.7 → §3.5 cross-chapter helper. The book uses
+;; `L-periodically-driven-pendulum` for chapter 3 examples; pages don't
+;; carry chapter-1 prereqs into chapter 3, so define it here matching
+;; the book exactly.
+(defn periodic-drive [amplitude frequency phase]
+  (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
+
+;; emmy.mechanics.lagrange/L-pendulum has a different signature from
+;; SICM's L-pend (the latter takes a y-position-of-pivot function ys).
+;; Implement the SICM form directly so chapter 3's
+;; periodically-driven-pendulum example evaluates.
+(defn L-pend [m l g ys]
+  (fn [local]
+    (let [t (state->t local)
+          theta (coordinate local)
+          thetadot (velocity local)
+          vys (D ys)]
+      (+ (* 1/2 m
+            (+ (square (* l thetadot))
+               (square (vys t))
+               (* 2 (vys t) l thetadot (sin theta))))
+         (* m g (- (* l (cos theta)) (ys t)))))))
+
+(defn L-periodically-driven-pendulum [m l g A omega]
+  (let [ys (periodic-drive A omega 0)]
+    (L-pend m l g ys)))
+
+;; A few more scattered scmutils built-ins surfaced by the corpus.
+(def euclidean-norm vector-length)
+(defn write-line [& args] (apply println args))
+(defn make-operator
+  "Stub: scmutils builds an Operator wrapper around a function. For
+  most SICM page uses we can pretend it's the function itself."
+  [f & _] f)
+(defn m:submatrix
+  "Stub: emmy.matrix doesn't ship a submatrix accessor. Returns the
+  whole matrix; SICM book uses are illustrative."
+  [m & _] m)
 
 ;; ---------- JVM-side stubs for the browser graphics shim ------------------
 ;; The scittle plugin defines `frame`, `plot`, `animate`, etc. for the

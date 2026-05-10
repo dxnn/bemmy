@@ -244,7 +244,9 @@
   (scittle/eval-string
    "(require '[emmy.generic :as g]
              '[emmy.matrix :as matrix]
-             '[emmy.mechanics.hamilton :as ham])
+             '[emmy.mechanics.hamilton :as ham]
+             '[emmy.mechanics.lagrange :as lag]
+             '[emmy.quaternion :as quat])
 
     ;; H-central-polar lives in emmy.mechanics.hamilton; expose it as a
     ;; bare name in user so SICM ch-3 pages don't have to qualify.
@@ -257,4 +259,52 @@
     (defmethod g/transpose [:emmy.structure/down :emmy.structure/up] [ms rs]
       (matrix/s:transpose ms rs))
     (defmethod g/transpose [:emmy.structure/up :emmy.structure/down] [ms rs]
-      (matrix/s:transpose ms rs))"))
+      (matrix/s:transpose ms rs))
+
+    ;; --- scmutils ↔ Emmy name aliases ---
+    ;; SICM book uses these names; Emmy ships them under different
+    ;; ones. Aliasing here keeps SICM page text running unmodified.
+
+    (def make-quaternion             quat/make)
+    (def quaternion->vector          quat/->vector)
+    (def quaternion->3vector         (fn [q] (rest (quat/->vector q))))
+    (def quaternion->rotation-matrix quat/->rotation-matrix)
+    (def rotation-matrix->quaternion quat/from-rotation-matrix)
+    (def quaternion-ref              (fn [q i] (nth (quat/->vector q) i)))
+    (def quaternion->real-part       quat/get-r)
+    (def q:r                         quat/get-r)
+    (def q:i                         quat/get-i)
+    (def q:j                         quat/get-j)
+    (def q:k                         quat/get-k)
+
+    ;; SICM-book mathematical built-ins not in emmy.env.
+    (defn vector-length [v]
+      (sqrt (apply + (map #(* % %) (seq v)))))
+    (def euclidean-norm vector-length)
+
+    ;; Type-signature shorthand (literal-function 'x R/R2/R3) and the
+    ;; lowercase form some corpus snippets carry.
+    (def R  '(-> Real Real))
+    (def R2 '(-> Real Real Real))
+    (def R3 '(-> Real Real Real Real))
+    (def r  '(-> Real Real))
+
+    ;; SICM's L-pend takes a y-position-of-pivot fn; emmy's L-pendulum
+    ;; doesn't. Implement the SICM form so chapter-3 derived examples
+    ;; (L-periodically-driven-pendulum) work.
+    (defn periodic-drive [amplitude frequency phase]
+      (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
+    (defn L-pend [m l g ys]
+      (fn [local]
+        (let [theta    (coordinate local)
+              thetadot (velocity local)
+              vys      (D ys)
+              t        (lag/state->t local)]
+          (+ (* 1/2 m
+                (+ (square (* l thetadot))
+                   (square (vys t))
+                   (* 2 (vys t) l thetadot (sin theta))))
+             (* m g (- (* l (cos theta)) (ys t)))))))
+    (defn L-periodically-driven-pendulum [m l g A omega]
+      (let [ys (periodic-drive A omega 0)]
+        (L-pend m l g ys)))"))
