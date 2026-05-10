@@ -52,6 +52,15 @@
   ;; reachable via the full `emmy.mafs/...` namespace.
   (scittle/eval-string
    "(require '[emmy.env :refer :all]
+             ;; SICM-book names not pre-referred into emmy.env (e.g.
+             ;; make-path used inside parametric-path-action). Pulling
+             ;; the entire mechanics.* surface keeps SICM-style code
+             ;; working without per-page qualification.
+             '[emmy.mechanics.lagrange :refer :all]
+             '[emmy.mechanics.hamilton :refer :all]
+             '[emmy.mechanics.rotation :refer :all]
+             '[emmy.mechanics.rigid :refer :all]
+             '[emmy.mechanics.noether :refer :all]
              '[mafs.core :as mafs]
              '[mafs.coordinates]
              '[mafs.plot]

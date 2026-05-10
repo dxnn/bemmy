@@ -4,11 +4,38 @@
   Emmy without per-snippet hand-edits.
 
   Add helpers here as the equivalence corpus surfaces missing names.
-  Each definition mirrors the canonical scmutils form."
+  Each definition mirrors the canonical scmutils form. Mirrors the
+  browser-side shims in src/scittle/emmy.cljs so the equivalence and
+  page-eval tests validate the same surface the playground exposes."
   (:refer-clojure :exclude [+ - * / partial ref])
   (:require [emmy.env :as e :refer :all]
             [emmy.generic :as g]
-            [emmy.matrix :as matrix]))
+            [emmy.matrix :as matrix]
+            ;; Pull in SICM-book names that aren't pre-referred into
+            ;; emmy.env (e.g. make-path). emmy.env's :refer :all wins on
+            ;; collisions; these submodules just fill the gaps.
+            [emmy.mechanics.lagrange]
+            [emmy.mechanics.hamilton]
+            [emmy.mechanics.rotation]
+            [emmy.mechanics.rigid]
+            [emmy.mechanics.noether]))
+
+(defn- intern-missing!
+  "For each public var in `from-ns`, intern it into *ns* unless a same-
+  named var is already mapped here. Mirrors the browser plugin's
+  `:refer :all` from these submodules without spamming refer warnings
+  for the (many) names emmy.env already exports."
+  [from-ns]
+  (let [present (ns-map *ns*)]
+    (doseq [[sym v] (ns-publics from-ns)]
+      (when-not (contains? present sym)
+        (intern *ns* sym @v)))))
+
+(intern-missing! 'emmy.mechanics.lagrange)
+(intern-missing! 'emmy.mechanics.hamilton)
+(intern-missing! 'emmy.mechanics.rotation)
+(intern-missing! 'emmy.mechanics.rigid)
+(intern-missing! 'emmy.mechanics.noether)
 
 ;; SICM's canonical-transform machinery (qp-submatrix, symplectic-transform?)
 ;; reaches g/transpose with two structure args — the Jacobian-like matrix
