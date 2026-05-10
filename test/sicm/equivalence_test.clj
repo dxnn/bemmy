@@ -237,25 +237,43 @@
         (range trials))
       (catch Throwable _ false))))
 
+(defn minimize-result-equiv?
+  "Emmy's `minimize` returns a map of {:result … :value … :iterations …};
+  scmutils prints a 3-tuple `(error optimum iterations)`. Only the optimum
+  is implementation-stable (and only to ~5 sig figs at convergence), so we
+  compare just that with a relaxed tolerance."
+  [actual exp-form]
+  (when (and (map? actual)
+             (every? #(contains? actual %) [:result :value :iterations])
+             (sequential? exp-form)
+             (= 3 (count exp-form))
+             (every? number? exp-form))
+    (let [a   (double (:value actual))
+          b   (double (nth exp-form 1))
+          rel (/ (Math/abs (- a b)) (max (Math/abs a) (Math/abs b) 1.0))]
+      (< rel 1e-5))))
+
 (defn semantic-equiv?
-  "Try both algebraic (literal-function bound) and numeric (random scalars)
-  equivalence. Returns true if either succeeds."
+  "Try multiple equivalence strategies in order of cost. Returns true if any
+  succeeds."
   [eval-ns actual expected-str]
   (when-let [exp-form (read-one expected-str)]
-    (when-let [exp-cls (classify-symbols exp-form known?)]
-      (or
-        ;; Algebraic path needs only the expected: build the let, eval it,
-        ;; compare directly to `actual`. Works even when `actual` doesn't
-        ;; round-trip through pr-str (matrices, opaque records, ...).
-        (algebraic-equiv? eval-ns actual exp-form exp-cls)
-        ;; Numeric probe additionally requires `actual` to be re-readable so
-        ;; we can substitute symbols in both forms and eval them in lockstep.
-        (when-let [act-form (act->form actual)]
-          (when-let [act-cls (classify-symbols act-form known?)]
-            (when (compatible-classifications? act-cls exp-cls)
-              (let [combined {:scalars (into (:scalars act-cls) (:scalars exp-cls))
-                              :funcs   (merge (:funcs act-cls) (:funcs exp-cls))}]
-                (numeric-probe-equiv? eval-ns act-form exp-form combined)))))))))
+    (or
+      (minimize-result-equiv? actual exp-form)
+      (when-let [exp-cls (classify-symbols exp-form known?)]
+        (or
+          ;; Algebraic path needs only the expected: build the let, eval it,
+          ;; compare directly to `actual`. Works even when `actual` doesn't
+          ;; round-trip through pr-str (matrices, opaque records, ...).
+          (algebraic-equiv? eval-ns actual exp-form exp-cls)
+          ;; Numeric probe additionally requires `actual` to be re-readable
+          ;; so we can substitute symbols in both forms in lockstep.
+          (when-let [act-form (act->form actual)]
+            (when-let [act-cls (classify-symbols act-form known?)]
+              (when (compatible-classifications? act-cls exp-cls)
+                (let [combined {:scalars (into (:scalars act-cls) (:scalars exp-cls))
+                                :funcs   (merge (:funcs act-cls) (:funcs exp-cls))}]
+                  (numeric-probe-equiv? eval-ns act-form exp-form combined))))))))))
 
 (defn equivalent? [ns actual expected]
   (let [simplified (try (emmy.env/simplify actual)
