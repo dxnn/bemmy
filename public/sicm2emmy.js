@@ -124,8 +124,8 @@
     'null?':'nil?', 'pair?':'seq?', 'list?':'seq?',
     'length':'count', 'append':'concat', 'last-pair':'last',
     'list-ref':'nth', 'vector-ref':'nth',
-    // scmutils matrix accessors → Emmy.
-    'm:nth-row':'nth-row', 'm:nth-col':'nth-col',
+    // scmutils matrix accessors → Emmy (live in emmy.matrix as row/column).
+    'm:nth-row':'row', 'm:nth-col':'column',
     // scmutils plural; Emmy exposes the singular state-tuple selector.
     'coordinates':'coordinate',
     'delete-duplicates':'distinct', 'remove-duplicates':'distinct',
@@ -494,6 +494,12 @@
     if (hs==='hash-table-keys')   return L(A('keys'), tx(c[1]));
     if (hs==='hash-table-values') return L(A('vals'), tx(c[1]));
     if (hs==='hash-table->alist') return L(A('seq'),  tx(c[1]));
+
+    // scmutils series printer:
+    //   (series:for-each f s n) → (run! f (take n s))
+    if (hs === 'series:for-each' && c.length === 4) {
+      return L(A('run!'), tx(c[1]), L(A('take'), tx(c[3]), tx(c[2])));
+    }
 
     if (hs === 'define-record-type') {
       const raw = (c[1] && c[1].v) || 'Record';

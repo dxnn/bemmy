@@ -26,11 +26,15 @@
 
 (defn fresh-eval-ns! [sym]
   (when (find-ns sym) (remove-ns sym))
+  (require 'emmy.matrix)
   (let [n (create-ns sym)
         emmy-syms (vec (keys (ns-publics 'emmy.env)))]
     (binding [*ns* n]
       (clojure.core/refer 'clojure.core :exclude emmy-syms)
-      (clojure.core/refer 'emmy.env))
+      (clojure.core/refer 'emmy.env)
+      ;; emmy.env doesn't re-export the row/column accessors; pull them in
+      ;; explicitly so translated `m:nth-row`/`m:nth-col` resolves.
+      (clojure.core/refer 'emmy.matrix :only '[row column]))
     n))
 
 (defn eval-forms-in-ns [ns forms]
@@ -315,7 +319,11 @@
           (swap! skip-counter inc)
 
           err
-          (is false (str "eval threw: " (.getMessage ^Throwable err)))
+          (let [cause (loop [t ^Throwable err] (if-let [c (.getCause t)] (recur c) t))]
+            (is false (format "eval threw: %s\n  cause: %s\n  translated: %s"
+                              (.getMessage ^Throwable err)
+                              (.getMessage ^Throwable cause)
+                              (pr-str translated))))
 
           :else
           (is (equivalent? n ok expected)
