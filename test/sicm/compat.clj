@@ -6,7 +6,19 @@
   Add helpers here as the equivalence corpus surfaces missing names.
   Each definition mirrors the canonical scmutils form."
   (:refer-clojure :exclude [+ - * / partial ref])
-  (:require [emmy.env :as e :refer :all]))
+  (:require [emmy.env :as e :refer :all]
+            [emmy.generic :as g]
+            [emmy.matrix :as matrix]))
+
+;; SICM's canonical-transform machinery (qp-submatrix, symplectic-transform?)
+;; reaches g/transpose with two structure args — the Jacobian-like matrix
+;; (down-of-up or up-of-down) and the state-tuple it was evaluated at —
+;; but Emmy only registers the 1-arg dispatch. Forward to emmy.matrix's
+;; `s:transpose`, which is the structure-aware 2-arg form.
+(defmethod g/transpose [:emmy.structure/down :emmy.structure/up] [ms rs]
+  (matrix/s:transpose ms rs))
+(defmethod g/transpose [:emmy.structure/up :emmy.structure/down] [ms rs]
+  (matrix/s:transpose ms rs))
 
 (defn H-central-polar
   "Hamiltonian for a particle of mass `m` in a central potential `V(r)`,
