@@ -189,6 +189,85 @@
     return SYM_MAP[v] != null ? SYM_MAP[v] : v;
   }
 
+  // Names bound by a list-form's binding spec (let/lambda/fn). Used to
+  // skip recursing into inner scopes that shadow a target name.
+  function getShadowedNames(node) {
+    if (!node || node.t !== 'list' || node.c.length < 2) return new Set();
+    const head = node.c[0] && node.c[0].v;
+    if (head === 'lambda' || head === 'fn') {
+      const args = node.c[1];
+      if (!args) return new Set();
+      if (args.t === 'atom') return new Set([args.v]);
+      if (args.t === 'list' || args.t === 'vec') {
+        return new Set((args.c || []).filter(n => n && n.t === 'atom').map(n => n.v));
+      }
+    }
+    if (head === 'let' || head === 'let*' || head === 'letrec') {
+      const bindings = node.c[1];
+      if (bindings && bindings.t === 'list') {
+        return new Set(
+          bindings.c.filter(p => p && p.t === 'list' && p.c[0]).map(p => p.c[0].v).filter(Boolean)
+        );
+      }
+    }
+    return new Set();
+  }
+
+  // Walk an AST collecting names mutated via (set! name ...). Skips inner
+  // binding forms that shadow the name.
+  function collectMutatedNames(node, into, excluded) {
+    excluded = excluded || new Set();
+    if (!node) return;
+    if (node.t === 'list' && node.c.length >= 2) {
+      const head = node.c[0] && node.c[0].v;
+      if (head === 'set!' && node.c[1] && node.c[1].t === 'atom' && !excluded.has(node.c[1].v)) {
+        into.add(node.c[1].v);
+      }
+      const shadowed = getShadowedNames(node);
+      if (shadowed.size > 0) {
+        const newExcluded = new Set(excluded);
+        for (const s of shadowed) newExcluded.add(s);
+        for (const child of node.c) collectMutatedNames(child, into, newExcluded);
+        return;
+      }
+    }
+    if (Array.isArray(node.c)) {
+      for (const child of node.c) collectMutatedNames(child, into, excluded);
+    } else if (node.c) {
+      collectMutatedNames(node.c, into, excluded);
+    }
+  }
+
+  // Rewrite atom references and (set! …) inside `node` for any name in
+  // `names`: atom → (deref name), (set! name e) → (vreset! name e).
+  // Skips inner scopes that shadow a name.
+  function rewriteRefsAndSets(node, names) {
+    if (!node) return node;
+    if (node.t === 'atom' && names.has(node.v)) {
+      return L(A('deref'), A(node.v));
+    }
+    if (node.t === 'list' && node.c[0] && node.c[0].v === 'set!' &&
+        node.c[1] && node.c[1].t === 'atom' && names.has(node.c[1].v)) {
+      return L(A('vreset!'), A(node.c[1].v),
+               rewriteRefsAndSets(node.c[2], names));
+    }
+    if (node.t === 'list') {
+      const shadowed = getShadowedNames(node);
+      if (shadowed.size > 0) {
+        const remaining = new Set();
+        for (const n of names) if (!shadowed.has(n)) remaining.add(n);
+        if (remaining.size === 0) return node;
+        return Object.assign({}, node, {c: node.c.map(child => rewriteRefsAndSets(child, remaining))});
+      }
+    }
+    if (Array.isArray(node.c)) {
+      return Object.assign({}, node, {c: node.c.map(child => rewriteRefsAndSets(child, names))});
+    } else if (node.c) {
+      return Object.assign({}, node, {c: rewriteRefsAndSets(node.c, names)});
+    }
+    return node;
+  }
+
   function liftInternalDefs(body) {
     if (body.length === 0) return body;
     const defs = [];
@@ -304,8 +383,33 @@
     }
 
     if ((hs === 'let' || hs === 'let*') && c[1] && c[1].t === 'list') {
-      const pairs = c[1].c.filter(n=>n.t==='list').flatMap(p => [tx(p.c[0]), tx(p.c[1])]);
-      return L(A('let'), B(pairs), ...c.slice(2).map(tx));
+      const bindingPairs = c[1].c.filter(n => n.t === 'list');
+      const body = c.slice(2);
+
+      // Detect Scheme's mutable-let pattern (e.g. make-counter): a let
+      // whose body uses (set! name ...) on a bound name. Rewrite that
+      // binding to a `volatile!` cell, references to (deref name), and
+      // (set! name v) to (vreset! name v).
+      const mutated = new Set();
+      for (const stmt of body) collectMutatedNames(stmt, mutated);
+      const mutatedHere = new Set(
+        bindingPairs.map(p => p.c[0] && p.c[0].v).filter(n => n && mutated.has(n))
+      );
+
+      if (mutatedHere.size > 0) {
+        const newBindings = bindingPairs.flatMap(p => {
+          const name = p.c[0];
+          const init = tx(p.c[1]);
+          return [tx(name),
+                  mutatedHere.has(name.v) ? L(A('volatile!'), init) : init];
+        });
+        const newBody = body.map(stmt =>
+          tx(rewriteRefsAndSets(stmt, mutatedHere)));
+        return L(A('let'), B(newBindings), ...newBody);
+      }
+
+      const pairs = bindingPairs.flatMap(p => [tx(p.c[0]), tx(p.c[1])]);
+      return L(A('let'), B(pairs), ...body.map(tx));
     }
 
     if (hs === 'let' && c[1] && c[1].t === 'atom' && c[2] && c[2].t === 'list') {
