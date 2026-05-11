@@ -19,16 +19,21 @@
              :task (do (shell "node test/translate-corpus.js")
                        (shell "bb bin/build-sicm-pages.bb"))}
 
-  test-eq {:doc  "Run SICM↔Emmy equivalence + section-page eval tests."
+  test-eq {:doc  "Run SICM↔Emmy equivalence + section-page eval + translator-oracle tests."
            :task (do
                    (shell "node test/translate-corpus.js")
                    (shell "bb bin/build-sicm-pages.bb")
-                   ;; Run both Clojure suites; collect exit codes so a
-                   ;; pre-existing failure in one doesn't mask the other.
-                   (let [eq-exit    (:exit (shell {:continue true} "clojure -M:test"))
-                         pages-exit (:exit (shell {:continue true} "clojure -M:test:pages"))]
-                     (when (or (pos? eq-exit) (pos? pages-exit))
-                       (System/exit (max eq-exit pages-exit)))))}
+                   ;; Run all three Clojure suites; collect exit codes
+                   ;; so a pre-existing failure in one doesn't mask the
+                   ;; others. equivalence-test exercises the scrape →
+                   ;; translate pipeline; page-eval-test runs the
+                   ;; actual generated section pages; oracle runs
+                   ;; Emmy's own chapter tests as a known-good target.
+                   (let [eq-exit     (:exit (shell {:continue true} "clojure -M:test"))
+                         pages-exit  (:exit (shell {:continue true} "clojure -M:test:pages"))
+                         oracle-exit (:exit (shell {:continue true} "clojure -M:test:oracle"))]
+                     (when (or (pos? eq-exit) (pos? pages-exit) (pos? oracle-exit))
+                       (System/exit (max eq-exit pages-exit oracle-exit)))))}
 
   watch   {:doc  "Watch build (recompile on save)"
            :task (build/build {:action "watch"})}
