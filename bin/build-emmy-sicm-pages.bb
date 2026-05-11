@@ -18,7 +18,12 @@
             [clojure.walk :as walk]
             [babashka.fs :as fs]))
 
-(def fixtures-dir "test/fixtures/emmy-sicm")
+(def fixtures-dir
+  "Vendored test files live at test/emmy/sicm so the JVM classpath
+  (via :test :extra-paths [\"test\"]) picks them up under the ns
+  `emmy.sicm.chN-test` and the translator-oracle test can run them
+  directly as clojure.test deftests."
+  "test/emmy/sicm")
 (def app-path     "public/app.cljs")
 (def begin-marker ";; --- BEGIN GENERATED SICM PAGES ---")
 (def end-marker   ";; --- END GENERATED SICM PAGES ---")
