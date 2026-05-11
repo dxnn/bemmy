@@ -7,7 +7,8 @@
 ;; stands alone in the editor.
 
 (ns build-sicm-pages
-  (:require [clojure.edn :as edn]
+  (:require [babashka.process :refer [shell]]
+            [clojure.edn :as edn]
             [clojure.string :as str]))
 
 (def corpus-path  "test/fixtures/sicm-snippets.translated.edn")
@@ -302,12 +303,52 @@
                                              end-marker)))]
       (spit app-path replaced))))
 
+;; Sections covered by Emmy's own SICM tests
+;; (test/fixtures/emmy-sicm/chN_test.cljc) — for these we ship the
+;; canonical Emmy port instead of the scrape-and-translate output, and
+;; the scrape sections drop out of the page list.
+(def emmy-covered-sections
+  ;; Each entry is the SICM section number as it appears in the scrape
+  ;; corpus's :section field. An Emmy `section-1-6` deftest covers
+  ;; §1.6 plus its sub-sections, so all four corresponding scrape
+  ;; sections drop.
+  #{;; ch1 — Lagrangian Mechanics
+    "1.4" "1.5.1" "1.5.2" "1.6" "1.6.1" "1.6.2" "1.6.3"
+    "1.7" "1.8.2" "1.8.3" "1.8.4" "1.8.5" "1.9"
+    ;; ch2 — Rigid Bodies / Rotation
+    "2.7" "2.10"
+    ;; ch3 — Hamiltonian Mechanics
+    "3.1" "3.2" "3.4" "3.5"
+    ;; ch5 — Canonical Transformations
+    "5.1" "5.2" "5.3"
+    ;; ch6 — Canonical Evolution
+    "6.2"
+    ;; ch7 — Canonical Perturbation Theory
+    "7.2"})
+
+(defn- read-emmy-pages
+  "Shell out to the sibling generator and read its EDN. Returns a vec
+  of {:name :source} maps; empty vec if the script fails."
+  []
+  (try
+    (let [{:keys [out exit]} (shell {:out :string :continue true}
+                                    "bb" "bin/build-emmy-sicm-pages.bb" "--edn")]
+      (if (zero? exit) (edn/read-string out) []))
+    (catch Throwable _ [])))
+
 (defn -main [& _]
-  (let [pages (mapv (fn [s] {:name (page-name s)
-                             :source (render-page s)}) sections)
-        body  (render-array-map pages)]
+  (let [emmy-pages    (read-emmy-pages)
+        scrape-pages  (->> sections
+                           (remove (comp emmy-covered-sections :section))
+                           (mapv (fn [s] {:name (page-name s)
+                                          :source (render-page s)})))
+        all-pages     (concat emmy-pages scrape-pages)
+        body          (render-array-map all-pages)]
     (splice-app-cljs! body)
-    (println (format "Wrote %d SICM section pages into %s"
-                     (count pages) app-path))))
+    (println (format "Wrote %d SICM section pages (%d Emmy + %d scrape) into %s"
+                     (count all-pages)
+                     (count emmy-pages)
+                     (count scrape-pages)
+                     app-path))))
 
 (-main)
