@@ -294,6 +294,62 @@
             [more-defs final-body] (unwrap-top-let inner)]
         (concat defs-from-wlf more-defs final-body)))))
 
+(defn- aliases-used
+  "Walk `forms` and return the set of namespace-prefix strings used by
+  any namespaced symbol. Used to prune require specs whose `:as` alias
+  this page never references."
+  [forms]
+  (let [acc (atom #{})]
+    (walk/postwalk
+      (fn [x]
+        (when (and (symbol? x) (namespace x))
+          (swap! acc conj (namespace x)))
+        x)
+      forms)
+    @acc))
+
+(defn- prune-require-by-aliases
+  "Given a `(require '[ns :as a :refer […]] …)` helper form and the set
+  of `:as` aliases this page actually references via `alias/sym`, drop
+  quoted specs whose `:as` alias isn't in `used` AND that have no
+  `:refer` list. Specs with `:refer` are conservatively retained — the
+  reffered names get used as bare symbols which the alias walker can't
+  track. When the result is empty, return nil so the caller can drop
+  the helper."
+  [require-form used]
+  (let [keep? (fn [quoted-spec]
+                (let [spec (second quoted-spec)
+                      pairs (when (and (vector? spec) (>= (count spec) 3))
+                              (apply hash-map (drop 1 spec)))
+                      as-alias (some-> pairs :as name)
+                      has-refer? (boolean (:refer pairs))]
+                  (or (nil? as-alias)
+                      (contains? used as-alias)
+                      has-refer?)))
+        kept (filter keep? (rest require-form))]
+    (when (seq kept)
+      (cons 'require kept))))
+
+(defn- is-require? [form]
+  (and (seq? form) (= 'require (first form))))
+
+(defn- filter-page-helpers
+  "Helpers may include a `(require …)` form (always first when
+  present, emitted by extract-ns-requires) plus any `(defn …)` /
+  `(def …)` helpers that lived between deftests. For each page we keep
+  only the require specs whose `:as` alias appears in the body or in a
+  defn helper; pages whose deftest body never references a particular
+  alias drop that require spec entirely, which matters for aliases the
+  scittle plugin can't satisfy (emmy.examples.*)."
+  [helpers body-forms]
+  (let [requires (filter is-require? helpers)
+        non-requires (filter (complement is-require?) helpers)
+        used (aliases-used (concat non-requires body-forms))
+        pruned (->> requires
+                    (map #(prune-require-by-aliases % used))
+                    (remove nil?))]
+    (concat pruned non-requires)))
+
 (defn render-page-source [page-name source-file deftest-form helpers]
   (let [slug   (deftest-slug deftest-form)
         body-forms (deftest-body deftest-form)
@@ -305,8 +361,9 @@
         ;; Helpers keep their namespace prefixes — the canonical case
         ;; is `(def simplify (comp e/freeze e/simplify))` which would
         ;; self-reference if we stripped `e/simplify`.
-        helper-text (when (seq helpers)
-                      (str/join "\n\n" (map pp-str helpers)))
+        page-helpers (filter-page-helpers helpers body-forms)
+        helper-text (when (seq page-helpers)
+                      (str/join "\n\n" (map pp-str page-helpers)))
         header (str ";; ============================================================\n"
                     ";; " page-name "\n"
                     ";; ============================================================\n"

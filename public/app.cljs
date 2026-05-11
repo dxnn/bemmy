@@ -755,8 +755,6 @@ gfx-win   ; auto-shows the accumulated curves
      Rx
      Ry
      Rz]]
-  '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.pendulum :as pendulum]
   '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
@@ -892,9 +890,6 @@ gfx-win   ; auto-shows the accumulated curves
      Rx
      Ry
      Rz]]
-  '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.pendulum :as pendulum]
-  '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
@@ -1005,7 +1000,6 @@ gfx-win   ; auto-shows the accumulated curves
      Rx
      Ry
      Rz]]
-  '[emmy.examples.driven-pendulum :as driven]
   '[emmy.examples.pendulum :as pendulum]
   '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
@@ -1164,8 +1158,6 @@ gfx-win   ; auto-shows the accumulated curves
      Rx
      Ry
      Rz]]
-  '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.pendulum :as pendulum]
   '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
@@ -1269,9 +1261,6 @@ gfx-win   ; auto-shows the accumulated curves
      Ry
      Rz]]
   '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.pendulum :as pendulum]
-  '[emmy.generic :as g]
-  '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
 (def simplify (comp e/freeze e/simplify))
@@ -1353,8 +1342,6 @@ gfx-win   ; auto-shows the accumulated curves
      Rx
      Ry
      Rz]]
-  '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.pendulum :as pendulum]
   '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
@@ -1478,9 +1465,6 @@ gfx-win   ; auto-shows the accumulated curves
      Rx
      Ry
      Rz]]
-  '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.pendulum :as pendulum]
-  '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
@@ -1529,12 +1513,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- helpers from ch2_test.cljc ---
 (require
   '[emmy.env :as e :refer [- / zero? ref partial simplify compose up]]
-  '[emmy.generic :as g]
   '[emmy.mechanics.rigid :as r]
-  '[emmy.mechanics.rotation :refer [Euler->M]]
-  '[emmy.polynomial.gcd :as pg]
-  '[emmy.util :as u]
-  '[emmy.value :as v])
+  '[emmy.mechanics.rotation :refer [Euler->M]])
 
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
@@ -1596,11 +1576,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- helpers from ch2_test.cljc ---
 (require
   '[emmy.env :as e :refer [- / zero? ref partial simplify compose up]]
-  '[emmy.generic :as g]
   '[emmy.mechanics.rigid :as r]
   '[emmy.mechanics.rotation :refer [Euler->M]]
-  '[emmy.polynomial.gcd :as pg]
-  '[emmy.util :as u]
   '[emmy.value :as v])
 
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
@@ -1643,12 +1620,10 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- helpers from ch2_test.cljc ---
 (require
   '[emmy.env :as e :refer [- / zero? ref partial simplify compose up]]
-  '[emmy.generic :as g]
   '[emmy.mechanics.rigid :as r]
   '[emmy.mechanics.rotation :refer [Euler->M]]
   '[emmy.polynomial.gcd :as pg]
-  '[emmy.util :as u]
-  '[emmy.value :as v])
+  '[emmy.util :as u])
 
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
@@ -1710,10 +1685,7 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.env :as e :refer [- / zero? ref partial simplify compose up]]
   '[emmy.generic :as g]
   '[emmy.mechanics.rigid :as r]
-  '[emmy.mechanics.rotation :refer [Euler->M]]
-  '[emmy.polynomial.gcd :as pg]
-  '[emmy.util :as u]
-  '[emmy.value :as v])
+  '[emmy.mechanics.rotation :refer [Euler->M]])
 
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
@@ -1737,13 +1709,8 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- helpers from ch3_test.cljc ---
 (require
   '[emmy.env :as e :refer [+ zero? up down literal-function]]
-  '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.top :as top]
-  '[emmy.expression.analyze :as a]
-  '[emmy.expression.compile :as c]
   '[emmy.mechanics.hamilton :as H]
-  '[emmy.mechanics.lagrange :as L]
-  '[emmy.polynomial.gcd :as pg])
+  '[emmy.mechanics.lagrange :as L])
 
 (def simplify (comp e/freeze e/simplify))
 
@@ -1791,13 +1758,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- helpers from ch3_test.cljc ---
 (require
   '[emmy.env :as e :refer [+ zero? up down literal-function]]
-  '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.top :as top]
-  '[emmy.expression.analyze :as a]
-  '[emmy.expression.compile :as c]
-  '[emmy.mechanics.hamilton :as H]
-  '[emmy.mechanics.lagrange :as L]
-  '[emmy.polynomial.gcd :as pg])
+  '[emmy.mechanics.hamilton :as H])
 
 (def simplify (comp e/freeze e/simplify))
 
@@ -1825,11 +1786,9 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- helpers from ch3_test.cljc ---
 (require
   '[emmy.env :as e :refer [+ zero? up down literal-function]]
-  '[emmy.examples.driven-pendulum :as driven]
   '[emmy.examples.top :as top]
   '[emmy.expression.analyze :as a]
   '[emmy.expression.compile :as c]
-  '[emmy.mechanics.hamilton :as H]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.polynomial.gcd :as pg])
 
@@ -2007,12 +1966,8 @@ gfx-win   ; auto-shows the accumulated curves
 (require
   '[emmy.env :as e :refer [+ zero? up down literal-function]]
   '[emmy.examples.driven-pendulum :as driven]
-  '[emmy.examples.top :as top]
   '[emmy.expression.analyze :as a]
-  '[emmy.expression.compile :as c]
-  '[emmy.mechanics.hamilton :as H]
-  '[emmy.mechanics.lagrange :as L]
-  '[emmy.polynomial.gcd :as pg])
+  '[emmy.expression.compile :as c])
 
 (def simplify (comp e/freeze e/simplify))
 
@@ -2306,8 +2261,7 @@ gfx-win   ; auto-shows the accumulated curves
      p->r
      s->m
      F->CT
-     literal-function]]
-  '[emmy.mechanics.hamilton :as H])
+     literal-function]])
 
 (def simplify (comp e/freeze e/simplify))
 
@@ -2358,8 +2312,7 @@ gfx-win   ; auto-shows the accumulated curves
      p->r
      s->m
      F->CT
-     literal-function]]
-  '[emmy.mechanics.hamilton :as H])
+     literal-function]])
 
 (def simplify (comp e/freeze e/simplify))
 
@@ -2846,10 +2799,12 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
 
+(ns-unmap *ns* 'L-free-particle)
 (defn L-free-particle [mass]
   (fn [local]
         (let [v (velocity local)] (* 1/2 mass (dot-product v v)))))
 
+(ns-unmap *ns* 'q)
 (def q
   (up
        (literal-function 'x) (literal-function 'y) (literal-function 'z)))
@@ -2864,15 +2819,19 @@ gfx-win   ; auto-shows the accumulated curves
 
 (simplify ((compose (L-free-particle 'm) (Gamma q)) 't))
 
+(ns-unmap *ns* 'Lagrangian-action)
 (defn Lagrangian-action [L q t1 t2]
   (definite-integral (compose L (Gamma q)) t1 t2))
 
+(ns-unmap *ns* 'test-path)
 (defn test-path [t] (up (+ (* 4 t) 7) (+ (* 3 t) 5) (+ (* 2 t) 1)))
 
 (Lagrangian-action (L-free-particle 3.0) test-path 0.0 10.0)
 
+(ns-unmap *ns* 'make-eta)
 (defn make-eta [nu t1 t2] (fn [t] (* (- t t1) (- t t2) (nu t))))
 
+(ns-unmap *ns* 'varied-free-particle-action)
 (defn varied-free-particle-action [mass q nu t1 t2]
   (fn [eps]
         (let [eta (make-eta nu t1 t2)]
@@ -2888,11 +2847,13 @@ gfx-win   ; auto-shows the accumulated curves
             3.0 test-path (up sin cos square) 0.0 10.0)
   -2.0 1.0)
 
+(ns-unmap *ns* 'parametric-path-action)
 (defn parametric-path-action [Lagrangian t0 q0 t1 q1]
   (fn [qs]
         (let [path (make-path t0 q0 t1 q1 qs)]
             (Lagrangian-action Lagrangian path t0 t1))))
 
+(ns-unmap *ns* 'find-path)
 (defn find-path [Lagrangian t0 q0 t1 q1 n]
   (let [initial-qs (linear-interpolants q0 q1 n)]
         (let [minimizing-qs (multidimensional-minimize
@@ -2902,16 +2863,19 @@ gfx-win   ; auto-shows the accumulated curves
                                  initial-qs)]
              (make-path t0 q0 t1 q1 minimizing-qs))))
 
+(ns-unmap *ns* 'L-harmonic)
 (defn L-harmonic [m k]
   (fn [local]
         (let [q (coordinate local) v (velocity local)]
             (- (* 1/2 m (square v)) (* 1/2 k (square q))))))
 
+(ns-unmap *ns* 'q)
 (def q (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 3))
 
+(ns-unmap *ns* 'win2)
 (def win2 (frame 0.0 (/ Math/PI 2) 0.0 1.2))
 
-
+(ns-unmap *ns* 'parametric-path-action)
 (defn parametric-path-action [Lagrangian t0 q0 t1 q1]
   (fn [intermediate-qs]
         (let [path (make-path t0 q0 t1 q1 intermediate-qs)]
@@ -2922,6 +2886,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
 
+(ns-unmap *ns* 'f)
 (defn f [q]
   (compose
         (literal-function
@@ -2930,12 +2895,14 @@ gfx-win   ; auto-shows the accumulated curves
                                     (UP Real (UP* Real) (UP* Real)) Real))
         (Gamma q)))
 
+(ns-unmap *ns* 'Lagrange-equations)
 (defn Lagrange-equations [Lagrangian]
   (fn [q]
         (-
             (D (compose ((partial 2) Lagrangian) (Gamma q)))
             (compose ((partial 1) Lagrangian) (Gamma q)))))
 
+(ns-unmap *ns* 'test-path)
 (defn test-path [t]
   (up (+ (* 'a t) 'a0) (+ (* 'b t) 'b0) (+ (* 'c t) 'c0)))
 
@@ -2948,6 +2915,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                         'x))
             't))
 
+(ns-unmap *ns* 'proposed-solution)
 (defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
 
 
@@ -2955,6 +2923,7 @@ gfx-win   ; auto-shows the accumulated curves
   (((Lagrange-equations (L-harmonic 'm 'k)) proposed-solution)
             't))
 
+(ns-unmap *ns* 'L-central-polar)
 (defn L-central-polar [m V]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -2966,8 +2935,10 @@ gfx-win   ; auto-shows the accumulated curves
                       (* 1/2 m (+ (square rdot) (square (* r phidot))))
                       (V r))))))
 
+(ns-unmap *ns* 'gravitational-energy)
 (defn gravitational-energy [G m1 m2] (fn [r] (- (/ (* G m1 m2) r))))
 
+(ns-unmap *ns* 'L-uniform-acceleration)
 (defn L-uniform-acceleration [m g]
   (fn [local]
         (let [q (coordinate local) v (velocity local)]
@@ -2983,6 +2954,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                       'y)))
             't))
 
+(ns-unmap *ns* 'L-central-rectangular)
 (defn L-central-rectangular [m U]
   (fn [local]
         (let [q (coordinate local) v (velocity local)]
@@ -3001,6 +2973,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                                                                                                                    'y)))
             't))
 
+(ns-unmap *ns* 'L-central-polar)
 (defn L-central-polar [m U]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -3023,6 +2996,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                   'phi)))
             't))
 
+(ns-unmap *ns* 'F->C)
 (defn F->C [F]
   (fn [local]
         (up
@@ -3031,6 +3005,7 @@ gfx-win   ; auto-shows the accumulated curves
                 (((partial 0) F) local)
                 (* (((partial 1) F) local) (velocity local))))))
 
+(ns-unmap *ns* 'p->r)
 (defn p->r [local]
   (let [polar-tuple (coordinate local)]
         (let [r (ref polar-tuple 0) phi (ref polar-tuple 1)]
@@ -3041,6 +3016,7 @@ gfx-win   ; auto-shows the accumulated curves
             ((F->C p->r)
                       (up 't (up 'r 'phi) (up 'rdot 'phidot)))))
 
+(ns-unmap *ns* 'L-central-polar)
 (defn L-central-polar [m U]
   (compose (L-central-rectangular m U) (F->C p->r)))
 
@@ -3053,14 +3029,17 @@ gfx-win   ; auto-shows the accumulated curves
                                                             'rdot
                                                             'phidot))))
 
+(ns-unmap *ns* 'L-free-rectangular)
 (defn L-free-rectangular [m]
   (fn [local]
         (let [vx (ref (velocities local) 0)
                 vy (ref (velocities local) 1)]
             (* 1/2 m (+ (square vx) (square vy))))))
 
+(ns-unmap *ns* 'L-free-polar)
 (defn L-free-polar [m] (compose (L-free-rectangular m) (F->C p->r)))
 
+(ns-unmap *ns* 'F)
 (defn F [Omega]
   (fn [local]
         (let [t (state->t local)
@@ -3068,10 +3047,11 @@ gfx-win   ; auto-shows the accumulated curves
                 theta (ref (coordinate local) 1)]
             (up r (+ theta (* Omega t))))))
 
-
+(ns-unmap *ns* 'L-rotating-polar)
 (defn L-rotating-polar [m Omega]
   (compose (L-free-polar m) (F->C (F Omega))))
 
+(ns-unmap *ns* 'L-rotating-rectangular)
 (defn L-rotating-rectangular [m Omega]
   (compose (L-rotating-polar m Omega) (F->C r->p)))
 
@@ -3088,6 +3068,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                 'y r)))
   't)
 
+(ns-unmap *ns* 'T-pend)
 (defn T-pend [m l g ys]
   (fn [local]
         (let [t (state->t local)
@@ -3100,13 +3081,13 @@ gfx-win   ; auto-shows the accumulated curves
                          (square (* l thetadot)) (square (vys t))
                          (* 2 l (vys t) thetadot (sin theta))))))))
 
-
+(ns-unmap *ns* 'V-pend)
 (defn V-pend [m l g ys]
   (fn [local]
         (let [t (state->t local) theta (coordinate local)]
             (* m g (- (ys t) (* l (cos theta)))))))
 
-
+(ns-unmap *ns* 'L-pend)
 (def L-pend (- T-pend V-pend))
 
 (simplify
@@ -3117,11 +3098,13 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                              'theta))
             't))
 
+(ns-unmap *ns* 'L-uniform-acceleration)
 (defn L-uniform-acceleration [m g]
   (fn [local]
         (let [q (coordinate local) v (velocity local)]
             (let [y (ref q 1)] (- (* 1/2 m (square v)) (* m g y))))))
 
+(ns-unmap *ns* 'dp-coordinates)
 (defn dp-coordinates [l y_s]
   (fn [local]
         (let [t (state->t local) theta (coordinate local)]
@@ -3129,6 +3112,7 @@ gfx-win   ; auto-shows the accumulated curves
                      y (- (y_s t) (* l (cos theta)))]
                  (up x y)))))
 
+(ns-unmap *ns* 'L-pend)
 (defn L-pend [m l g y_s]
   (compose
         (L-uniform-acceleration m g) (F->C (dp-coordinates l y_s))))
@@ -3141,6 +3125,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
 
+(ns-unmap *ns* 'Lagrangian->acceleration)
 (defn Lagrangian->acceleration [L]
   (let [P ((partial 2) L) F ((partial 1) L)]
         (solve-linear-left
@@ -3151,16 +3136,19 @@ gfx-win   ; auto-shows the accumulated curves
                                    ((partial 0) P)
                                    (* ((partial 1) P) velocity))))))
 
+(ns-unmap *ns* 'Lagrangian->state-derivative)
 (defn Lagrangian->state-derivative [L]
   (let [acceleration (Lagrangian->acceleration L)]
         (fn [state] (up 1 (velocity state) (acceleration state)))))
 
+(ns-unmap *ns* 'harmonic-state-derivative)
 (defn harmonic-state-derivative [m k]
   (Lagrangian->state-derivative (L-harmonic m k)))
 
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
 
+(ns-unmap *ns* 'Lagrange-equations-first-order)
 (defn Lagrange-equations-first-order [L]
   (fn [q v]
         (let [state-path (qv->state-path q v)]
@@ -3168,7 +3156,7 @@ gfx-win   ; auto-shows the accumulated curves
                  (D state-path)
                  (compose (Lagrangian->state-derivative L) state-path)))))
 
-
+(ns-unmap *ns* 'qv->state-path)
 (defn qv->state-path [q v] (fn [t] (up t (q t) (v t))))
 
 (simplify
@@ -3191,10 +3179,11 @@ gfx-win   ; auto-shows the accumulated curves
                                                       (up 3.0 4.0))
   10.0 1.0e-12)
 
+(ns-unmap *ns* 'periodic-drive)
 (defn periodic-drive [amplitude frequency phase]
   (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
 
-
+(ns-unmap *ns* 'L-periodically-driven-pendulum)
 (defn L-periodically-driven-pendulum [m l g A omega]
   (let [ys (periodic-drive A omega 0)] (L-pend m l g ys)))
 
@@ -3206,6 +3195,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                        'theta))
             't))
 
+(ns-unmap *ns* 'pend-state-derivative)
 (defn pend-state-derivative [m l g A omega]
   (Lagrangian->state-derivative
         (L-periodically-driven-pendulum
@@ -3218,12 +3208,13 @@ gfx-win   ; auto-shows the accumulated curves
                                                         't 'theta
                                                         'thetadot)))
 
+(ns-unmap *ns* 'monitor-theta)
 (defn monitor-theta [win]
   (fn [state]
         (let [theta ((principal-value Math/PI) (coordinate state))]
             (plot-point win (state->t state) theta))))
 
-
+(ns-unmap *ns* 'plot-win)
 (def plot-win (frame 0.0 100.0 (- Math/PI) Math/PI))
 
 
@@ -3237,9 +3228,11 @@ gfx-win   ; auto-shows the accumulated curves
   0.01 100.0 1.0e-13)
 ;local error tolerance
 
+(ns-unmap *ns* 'Lagrangian->energy)
 (defn Lagrangian->energy [L]
   (let [P ((partial 2) L)] (- (* P velocity) L)))
 
+(ns-unmap *ns* 'T3-spherical)
 (defn T3-spherical [m]
   (fn [state]
         (let [q (coordinate state) qdot (velocity state)]
@@ -3254,6 +3247,7 @@ gfx-win   ; auto-shows the accumulated curves
                          (square rdot) (square (* r thetadot))
                          (square (* r (sin theta) phidot))))))))
 
+(ns-unmap *ns* 'L3-central)
 (defn L3-central [m Vr]
   (letfn [(Vs [state] (let [r (ref (coordinate state) 0)] (Vr r)))]
         (- (T3-spherical m) Vs)))
@@ -3284,13 +3278,14 @@ gfx-win   ; auto-shows the accumulated curves
                                                                      'thetadot
                                                                      'phidot))))
 
+(ns-unmap *ns* 'ang-mom-z)
 (defn ang-mom-z [m]
   (fn [rectangular-state]
         (let [xyz (coordinate rectangular-state)
                 v (velocity rectangular-state)]
             (ref (cross-product xyz (* m v)) 2))))
 
-
+(ns-unmap *ns* 's->r)
 (defn s->r [spherical-state]
   (let [q (coordinate spherical-state)]
         (let [r (ref q 0) theta (ref q 1) phi (ref q 2)]
@@ -3320,6 +3315,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                             'thetadot
                                                                             'phidot))))
 
+(ns-unmap *ns* 'L0)
 (defn L0 [m V]
   (fn [local]
         (let [t (state->t local)
@@ -3327,6 +3323,7 @@ gfx-win   ; auto-shows the accumulated curves
                 v (velocities local)]
             (- (* 1/2 m (square v)) (V t q)))))
 
+(ns-unmap *ns* 'V)
 (defn V [a GM0 GM1 m]
   (fn [t xy]
         (let [Omega (sqrt (/ (+ GM0 GM1) (expt a 3)))
@@ -3346,6 +3343,7 @@ gfx-win   ; auto-shows the accumulated curves
                                      (square (- x x1)) (square (- y y1))))]
                       (- (+ (/ (* GM0 m) r0) (/ (* GM1 m) r1))))))))
 
+(ns-unmap *ns* 'LR3B)
 (defn LR3B [m a GM0 GM1]
   (fn [local]
         (let [q (coordinate local)
@@ -3365,6 +3363,7 @@ gfx-win   ; auto-shows the accumulated curves
                            (* m Omega (- (* x ydot) (* xdot y)))
                            (/ (* GM0 m) r0) (/ (* GM1 m) r1)))))))
 
+(ns-unmap *ns* 'LR3B1)
 (defn LR3B1 [m a0 a1 Omega GM0 GM1]
   (fn [local]
         (let [q (coordinate local) qdot (velocities local)]
@@ -3390,14 +3389,17 @@ gfx-win   ; auto-shows the accumulated curves
                                                                     'v_r↑x
                                                                     'v_r↑y)))
 
+(ns-unmap *ns* 'F-tilde)
 (defn F-tilde [angle-x angle-y angle-z]
   (compose (Rx angle-x) (Ry angle-y) (Rz angle-z) coordinate))
 
+(ns-unmap *ns* 'L-central-rectangular)
 (defn L-central-rectangular [m U]
   (fn [state]
         (let [q (coordinate state) v (velocity state)]
             (- (* 1/2 m (square v)) (U (sqrt (square q)))))))
 
+(ns-unmap *ns* 'the-Noether-integral)
 (def the-Noether-integral
   (let [L (L-central-rectangular 'm (literal-function 'U))]
        (* ((partial 2) L) ((D F-tilde) 0 0 0))))
@@ -3405,9 +3407,11 @@ gfx-win   ; auto-shows the accumulated curves
 
 (the-Noether-integral (up 't (up 'x 'y 'z) (up 'vx 'vy 'vz)))
 
+(ns-unmap *ns* 'Gamma-bar)
 (defn Gamma-bar [f-bar]
   (fn [local] ((f-bar (osculating-path local)) (state->t local))))
 
+(ns-unmap *ns* 'F->C)
 (defn F->C [F]
   (letfn [(C
                 [local]
@@ -3422,6 +3426,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 (simplify ((F->C p->r) (up 't (up 'r 'theta) (up 'rdot 'thetadot))))
 
+(ns-unmap *ns* 'Dt)
 (defn Dt [F]
   (letfn [(DtF
                 [state]
@@ -3436,6 +3441,7 @@ gfx-win   ; auto-shows the accumulated curves
                           ((Gamma-bar DF-on-path) state))))]
         DtF))
 
+(ns-unmap *ns* 'Euler-Lagrange-operator)
 (defn Euler-Lagrange-operator [L]
   (- (Dt ((partial 2) L)) ((partial 1) L)))
 .
@@ -3450,6 +3456,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §1.12 — Projects ---
 
 ;; (book p. 118)
+(ns-unmap *ns* 'make-path)
 (defn make-path [t0 q0 t1 q1 qs]
   (let [n (count qs)]
         (let [ts (linear-interpolants t0 t1 n)]
@@ -3462,6 +3469,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                    (list t1))))))
 
 ;; (book p. 118)
+(ns-unmap *ns* 'Rx)
 (defn Rx [angle]
   (fn [q]
         (let [ca (cos angle) sa (sin angle)]
@@ -3483,6 +3491,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Implementation of angular velocity functions ---
 
 ;; (book p. 126)
+(ns-unmap *ns* 'M-of-q->omega-of-t)
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3495,6 +3504,7 @@ gfx-win   ; auto-shows the accumulated curves
                      (antisymmetric->column-matrix (omega-cross t)))))))
 
 ;; (book p. 126)
+(ns-unmap *ns* 'M-of-q->omega-body-of-t)
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3503,9 +3513,10 @@ gfx-win   ; auto-shows the accumulated curves
                 (((M-of-q->omega-of-t M-of-q) q) t)))))
 
 ;; (book p. 126)
+(ns-unmap *ns* 'M->omega)
 (defn M->omega [M-of-q] (Gamma-bar (M-of-q->omega-of-t M-of-q)))
 
-
+(ns-unmap *ns* 'M->omega-body)
 (defn M->omega-body [M-of-q]
   (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))"
     "SICM 2.5 Principal Moments of Inertia"
@@ -3522,6 +3533,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
+(ns-unmap *ns* 'M-of-q->omega-of-t)
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3533,6 +3545,7 @@ gfx-win   ; auto-shows the accumulated curves
                                           (transpose (M-on-path t))))]
                      (antisymmetric->column-matrix (omega-cross t)))))))
 
+(ns-unmap *ns* 'M-of-q->omega-body-of-t)
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3540,15 +3553,17 @@ gfx-win   ; auto-shows the accumulated curves
                 (transpose (M-of-q (q t)))
                 (((M-of-q->omega-of-t M-of-q) q) t)))))
 
+(ns-unmap *ns* 'M->omega)
 (defn M->omega [M-of-q] (Gamma-bar (M-of-q->omega-of-t M-of-q)))
 
-
+(ns-unmap *ns* 'M->omega-body)
 (defn M->omega-body [M-of-q]
   (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))
 
 ;; --- §2.5 — Principal Moments of Inertia ---
 
 ;; (book p. 134)
+(ns-unmap *ns* 'T-body)
 (defn T-body [A B C]
   (fn [omega-body]
         (*
@@ -3571,6 +3586,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
+(ns-unmap *ns* 'M-of-q->omega-of-t)
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3582,6 +3598,7 @@ gfx-win   ; auto-shows the accumulated curves
                                           (transpose (M-on-path t))))]
                      (antisymmetric->column-matrix (omega-cross t)))))))
 
+(ns-unmap *ns* 'M-of-q->omega-body-of-t)
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3589,12 +3606,14 @@ gfx-win   ; auto-shows the accumulated curves
                 (transpose (M-of-q (q t)))
                 (((M-of-q->omega-of-t M-of-q) q) t)))))
 
+(ns-unmap *ns* 'M->omega)
 (defn M->omega [M-of-q] (Gamma-bar (M-of-q->omega-of-t M-of-q)))
 
-
+(ns-unmap *ns* 'M->omega-body)
 (defn M->omega-body [M-of-q]
   (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))
 
+(ns-unmap *ns* 'T-body)
 (defn T-body [A B C]
   (fn [omega-body]
         (*
@@ -3607,6 +3626,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §2.6 — Vector Angular Momentum ---
 
 ;; (book p. 137)
+(ns-unmap *ns* 'L-body)
 (defn L-body [A B C]
   (fn [omega-body]
         (down
@@ -3614,6 +3634,7 @@ gfx-win   ; auto-shows the accumulated curves
             (* C (ref omega-body 2)))))
 
 ;; (book p. 137)
+(ns-unmap *ns* 'L-space)
 (defn L-space [M]
   (fn [A B C]
         (fn [omega-body]
@@ -3632,6 +3653,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
+(ns-unmap *ns* 'M-of-q->omega-of-t)
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3643,6 +3665,7 @@ gfx-win   ; auto-shows the accumulated curves
                                           (transpose (M-on-path t))))]
                      (antisymmetric->column-matrix (omega-cross t)))))))
 
+(ns-unmap *ns* 'M-of-q->omega-body-of-t)
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3650,12 +3673,14 @@ gfx-win   ; auto-shows the accumulated curves
                 (transpose (M-of-q (q t)))
                 (((M-of-q->omega-of-t M-of-q) q) t)))))
 
+(ns-unmap *ns* 'M->omega)
 (defn M->omega [M-of-q] (Gamma-bar (M-of-q->omega-of-t M-of-q)))
 
-
+(ns-unmap *ns* 'M->omega-body)
 (defn M->omega-body [M-of-q]
   (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))
 
+(ns-unmap *ns* 'T-body)
 (defn T-body [A B C]
   (fn [omega-body]
         (*
@@ -3665,29 +3690,32 @@ gfx-win   ; auto-shows the accumulated curves
                (* B (square (ref omega-body 1)))
                (* C (square (ref omega-body 2)))))))
 
+(ns-unmap *ns* 'L-body)
 (defn L-body [A B C]
   (fn [omega-body]
         (down
             (* A (ref omega-body 0)) (* B (ref omega-body 1))
             (* C (ref omega-body 2)))))
 
+(ns-unmap *ns* 'L-space)
 (defn L-space [M]
   (fn [A B C]
         (fn [omega-body]
             (* ((L-body A B C) omega-body) (transpose M)))))
 
+(ns-unmap *ns* 'Rz-matrix)
 (defn Rz-matrix [angle]
   (matrix-by-rows
         (list (cos angle) (- (sin angle)) 0)
         (list (sin angle) (cos angle) 0) (list 0 0 1)))
 
-
+(ns-unmap *ns* 'Rx-matrix)
 (defn Rx-matrix [angle]
   (matrix-by-rows
         (list 1 0 0) (list 0 (cos angle) (- (sin angle)))
         (list 0 (sin angle) (cos angle))))
 
-
+(ns-unmap *ns* 'Euler->M)
 (defn Euler->M [angles]
   (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
         (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
@@ -3709,6 +3737,7 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'theta 'phi 'psi)
                                       (up 'thetadot 'phidot 'psidot))))
 
+(ns-unmap *ns* 'Euler-state->omega-body)
 (defn Euler-state->omega-body [local]
   (let [q (coordinate local) qdot (velocity local)]
         (let [theta (ref q 0)
@@ -3725,12 +3754,15 @@ gfx-win   ; auto-shows the accumulated curves
                       omega-c (+ (* phidot (cos theta)) psidot)]
                   (up omega-a omega-b omega-c)))))
 
+(ns-unmap *ns* 'T-body-Euler)
 (defn T-body-Euler [A B C]
   (fn [local] ((T-body A B C) (Euler-state->omega-body local))))
 
+(ns-unmap *ns* 'L-body-Euler)
 (defn L-body-Euler [A B C]
   (fn [local] ((L-body A B C) (Euler-state->omega-body local))))
 
+(ns-unmap *ns* 'L-space-Euler)
 (defn L-space-Euler [A B C]
   (fn [local]
         (let [angles (coordinate local)]
@@ -3744,6 +3776,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Conserved quantities ---
 
 ;; (book p. 142)
+(ns-unmap *ns* 'Euler-state)
 (def Euler-state
   (up 't (up 'theta 'phi 'psi) (up 'thetadot 'phidot 'psidot)))
 
@@ -3763,6 +3796,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
+(ns-unmap *ns* 'M-of-q->omega-of-t)
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3774,6 +3808,7 @@ gfx-win   ; auto-shows the accumulated curves
                                           (transpose (M-on-path t))))]
                      (antisymmetric->column-matrix (omega-cross t)))))))
 
+(ns-unmap *ns* 'M-of-q->omega-body-of-t)
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3781,12 +3816,14 @@ gfx-win   ; auto-shows the accumulated curves
                 (transpose (M-of-q (q t)))
                 (((M-of-q->omega-of-t M-of-q) q) t)))))
 
+(ns-unmap *ns* 'M->omega)
 (defn M->omega [M-of-q] (Gamma-bar (M-of-q->omega-of-t M-of-q)))
 
-
+(ns-unmap *ns* 'M->omega-body)
 (defn M->omega-body [M-of-q]
   (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))
 
+(ns-unmap *ns* 'T-body)
 (defn T-body [A B C]
   (fn [omega-body]
         (*
@@ -3796,29 +3833,32 @@ gfx-win   ; auto-shows the accumulated curves
                (* B (square (ref omega-body 1)))
                (* C (square (ref omega-body 2)))))))
 
+(ns-unmap *ns* 'L-body)
 (defn L-body [A B C]
   (fn [omega-body]
         (down
             (* A (ref omega-body 0)) (* B (ref omega-body 1))
             (* C (ref omega-body 2)))))
 
+(ns-unmap *ns* 'L-space)
 (defn L-space [M]
   (fn [A B C]
         (fn [omega-body]
             (* ((L-body A B C) omega-body) (transpose M)))))
 
+(ns-unmap *ns* 'Rz-matrix)
 (defn Rz-matrix [angle]
   (matrix-by-rows
         (list (cos angle) (- (sin angle)) 0)
         (list (sin angle) (cos angle) 0) (list 0 0 1)))
 
-
+(ns-unmap *ns* 'Rx-matrix)
 (defn Rx-matrix [angle]
   (matrix-by-rows
         (list 1 0 0) (list 0 (cos angle) (- (sin angle)))
         (list 0 (sin angle) (cos angle))))
 
-
+(ns-unmap *ns* 'Euler->M)
 (defn Euler->M [angles]
   (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
         (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
@@ -3840,6 +3880,7 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'theta 'phi 'psi)
                                       (up 'thetadot 'phidot 'psidot))))
 
+(ns-unmap *ns* 'Euler-state->omega-body)
 (defn Euler-state->omega-body [local]
   (let [q (coordinate local) qdot (velocity local)]
         (let [theta (ref q 0)
@@ -3856,12 +3897,15 @@ gfx-win   ; auto-shows the accumulated curves
                       omega-c (+ (* phidot (cos theta)) psidot)]
                   (up omega-a omega-b omega-c)))))
 
+(ns-unmap *ns* 'T-body-Euler)
 (defn T-body-Euler [A B C]
   (fn [local] ((T-body A B C) (Euler-state->omega-body local))))
 
+(ns-unmap *ns* 'L-body-Euler)
 (defn L-body-Euler [A B C]
   (fn [local] ((L-body A B C) (Euler-state->omega-body local))))
 
+(ns-unmap *ns* 'L-space-Euler)
 (defn L-space-Euler [A B C]
   (fn [local]
         (let [angles (coordinate local)]
@@ -3869,6 +3913,7 @@ gfx-win   ; auto-shows the accumulated curves
                  ((L-body-Euler A B C) local)
                  (transpose (Euler->M angles))))))
 
+(ns-unmap *ns* 'Euler-state)
 (def Euler-state
   (up 't (up 'theta 'phi 'psi) (up 'thetadot 'phidot 'psidot)))
 
@@ -3884,10 +3929,12 @@ gfx-win   ; auto-shows the accumulated curves
                          Euler-state)))
 
 ;; (book p. 143)
+(ns-unmap *ns* 'rigid-sysder)
 (defn rigid-sysder [A B C]
   (Lagrangian->state-derivative (T-body-Euler A B C)))
 
 ;; (book p. 143)
+(ns-unmap *ns* 'monitor-errors)
 (defn monitor-errors [win A B C L0 E0]
   (fn [state]
         (let [t (state->t state)
@@ -3898,13 +3945,14 @@ gfx-win   ; auto-shows the accumulated curves
             (plot-point win t (relative-error (ref L 2) (ref L0 2)))
             (plot-point win t (relative-error E E0)))))
 
-
+(ns-unmap *ns* 'relative-error)
 (defn relative-error [value reference-value]
   (if (zero? reference-value)
         (throw (ex-info \"Zero reference value -- RELATIVE-ERROR\" {}))
         (/ (- value reference-value) reference-value)))
 
 ;; (book p. 143)
+(ns-unmap *ns* 'win)
 (def win (frame 0.0 100.0 -1.0e-12 1.0e-12))
 
 ;; (book p. 143)
@@ -3923,6 +3971,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
+(ns-unmap *ns* 'M-of-q->omega-of-t)
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3934,6 +3983,7 @@ gfx-win   ; auto-shows the accumulated curves
                                           (transpose (M-on-path t))))]
                      (antisymmetric->column-matrix (omega-cross t)))))))
 
+(ns-unmap *ns* 'M-of-q->omega-body-of-t)
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -3941,12 +3991,14 @@ gfx-win   ; auto-shows the accumulated curves
                 (transpose (M-of-q (q t)))
                 (((M-of-q->omega-of-t M-of-q) q) t)))))
 
+(ns-unmap *ns* 'M->omega)
 (defn M->omega [M-of-q] (Gamma-bar (M-of-q->omega-of-t M-of-q)))
 
-
+(ns-unmap *ns* 'M->omega-body)
 (defn M->omega-body [M-of-q]
   (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))
 
+(ns-unmap *ns* 'T-body)
 (defn T-body [A B C]
   (fn [omega-body]
         (*
@@ -3956,29 +4008,32 @@ gfx-win   ; auto-shows the accumulated curves
                (* B (square (ref omega-body 1)))
                (* C (square (ref omega-body 2)))))))
 
+(ns-unmap *ns* 'L-body)
 (defn L-body [A B C]
   (fn [omega-body]
         (down
             (* A (ref omega-body 0)) (* B (ref omega-body 1))
             (* C (ref omega-body 2)))))
 
+(ns-unmap *ns* 'L-space)
 (defn L-space [M]
   (fn [A B C]
         (fn [omega-body]
             (* ((L-body A B C) omega-body) (transpose M)))))
 
+(ns-unmap *ns* 'Rz-matrix)
 (defn Rz-matrix [angle]
   (matrix-by-rows
         (list (cos angle) (- (sin angle)) 0)
         (list (sin angle) (cos angle) 0) (list 0 0 1)))
 
-
+(ns-unmap *ns* 'Rx-matrix)
 (defn Rx-matrix [angle]
   (matrix-by-rows
         (list 1 0 0) (list 0 (cos angle) (- (sin angle)))
         (list 0 (sin angle) (cos angle))))
 
-
+(ns-unmap *ns* 'Euler->M)
 (defn Euler->M [angles]
   (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
         (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
@@ -4000,6 +4055,7 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'theta 'phi 'psi)
                                       (up 'thetadot 'phidot 'psidot))))
 
+(ns-unmap *ns* 'Euler-state->omega-body)
 (defn Euler-state->omega-body [local]
   (let [q (coordinate local) qdot (velocity local)]
         (let [theta (ref q 0)
@@ -4016,12 +4072,15 @@ gfx-win   ; auto-shows the accumulated curves
                       omega-c (+ (* phidot (cos theta)) psidot)]
                   (up omega-a omega-b omega-c)))))
 
+(ns-unmap *ns* 'T-body-Euler)
 (defn T-body-Euler [A B C]
   (fn [local] ((T-body A B C) (Euler-state->omega-body local))))
 
+(ns-unmap *ns* 'L-body-Euler)
 (defn L-body-Euler [A B C]
   (fn [local] ((L-body A B C) (Euler-state->omega-body local))))
 
+(ns-unmap *ns* 'L-space-Euler)
 (defn L-space-Euler [A B C]
   (fn [local]
         (let [angles (coordinate local)]
@@ -4029,6 +4088,7 @@ gfx-win   ; auto-shows the accumulated curves
                  ((L-body-Euler A B C) local)
                  (transpose (Euler->M angles))))))
 
+(ns-unmap *ns* 'Euler-state)
 (def Euler-state
   (up 't (up 'theta 'phi 'psi) (up 'thetadot 'phidot 'psidot)))
 
@@ -4040,9 +4100,11 @@ gfx-win   ; auto-shows the accumulated curves
             (((square (partial 2)) (T-body-Euler 'A 'B 'C))
                          Euler-state)))
 
+(ns-unmap *ns* 'rigid-sysder)
 (defn rigid-sysder [A B C]
   (Lagrangian->state-derivative (T-body-Euler A B C)))
 
+(ns-unmap *ns* 'monitor-errors)
 (defn monitor-errors [win A B C L0 E0]
   (fn [state]
         (let [t (state->t state)
@@ -4053,12 +4115,13 @@ gfx-win   ; auto-shows the accumulated curves
             (plot-point win t (relative-error (ref L 2) (ref L0 2)))
             (plot-point win t (relative-error E E0)))))
 
-
+(ns-unmap *ns* 'relative-error)
 (defn relative-error [value reference-value]
   (if (zero? reference-value)
         (throw (ex-info \"Zero reference value -- RELATIVE-ERROR\" {}))
         (/ (- value reference-value) reference-value)))
 
+(ns-unmap *ns* 'win)
 (def win (frame 0.0 100.0 -1.0e-12 1.0e-12))
 
 (set-ode-integration-method! 'qcrk4)
@@ -4072,6 +4135,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §2.12 — Nonsingular Coordinates and Quaternions ---
 
 ;; (book p. 184)
+(ns-unmap *ns* 'angle-axis->rotation-matrix)
 (defn angle-axis->rotation-matrix [theta n]
   (let [nx (ref n 0) ny (ref n 1) nz (ref n 2)]
         (let [colatitude (acos nz) longitude (atan ny nx)]
@@ -4081,6 +4145,7 @@ gfx-win   ; auto-shows the accumulated curves
                   (transpose (Rz-matrix longitude))))))
 
 ;; (book p. 184)
+(ns-unmap *ns* 'quaternion->angle-axis)
 (defn quaternion->angle-axis [q]
   (let [v (quaternion->3vector q)
             theta (*
@@ -4090,6 +4155,7 @@ gfx-win   ; auto-shows the accumulated curves
         (list theta axis)))
 
 ;; (book p. 184)
+(ns-unmap *ns* 'quaternion->RM)
 (defn quaternion->RM [q]
   (let [aa (quaternion->angle-axis q)]
         (let [theta (ref aa 0) n (ref aa 1)]
@@ -4102,6 +4168,7 @@ gfx-win   ; auto-shows the accumulated curves
                  (* m↑2 (quaternion->RM (make-quaternion v))))))
 
 ;; (book p. 185)
+(ns-unmap *ns* 'quaternion->rotation-matrix)
 (defn quaternion->rotation-matrix [q]
   (let [q0 (quaternion-ref q 0)
             q1 (quaternion-ref q 1)
@@ -4149,6 +4216,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                 'qdot_3))))
 
 ;; (book p. 186)
+(ns-unmap *ns* 'quaternion-state->omega-body)
 (defn quaternion-state->omega-body [s]
   (let [q (coordinate s) qdot (velocities s)]
         (let [m↑2 (dot-product q q)]
@@ -4180,6 +4248,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 2 ---
 
+(ns-unmap *ns* 'M-of-q->omega-of-t)
 (defn M-of-q->omega-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -4191,6 +4260,7 @@ gfx-win   ; auto-shows the accumulated curves
                                           (transpose (M-on-path t))))]
                      (antisymmetric->column-matrix (omega-cross t)))))))
 
+(ns-unmap *ns* 'M-of-q->omega-body-of-t)
 (defn M-of-q->omega-body-of-t [M-of-q]
   (fn [q]
         (fn [t]
@@ -4198,12 +4268,14 @@ gfx-win   ; auto-shows the accumulated curves
                 (transpose (M-of-q (q t)))
                 (((M-of-q->omega-of-t M-of-q) q) t)))))
 
+(ns-unmap *ns* 'M->omega)
 (defn M->omega [M-of-q] (Gamma-bar (M-of-q->omega-of-t M-of-q)))
 
-
+(ns-unmap *ns* 'M->omega-body)
 (defn M->omega-body [M-of-q]
   (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))
 
+(ns-unmap *ns* 'T-body)
 (defn T-body [A B C]
   (fn [omega-body]
         (*
@@ -4213,29 +4285,32 @@ gfx-win   ; auto-shows the accumulated curves
                (* B (square (ref omega-body 1)))
                (* C (square (ref omega-body 2)))))))
 
+(ns-unmap *ns* 'L-body)
 (defn L-body [A B C]
   (fn [omega-body]
         (down
             (* A (ref omega-body 0)) (* B (ref omega-body 1))
             (* C (ref omega-body 2)))))
 
+(ns-unmap *ns* 'L-space)
 (defn L-space [M]
   (fn [A B C]
         (fn [omega-body]
             (* ((L-body A B C) omega-body) (transpose M)))))
 
+(ns-unmap *ns* 'Rz-matrix)
 (defn Rz-matrix [angle]
   (matrix-by-rows
         (list (cos angle) (- (sin angle)) 0)
         (list (sin angle) (cos angle) 0) (list 0 0 1)))
 
-
+(ns-unmap *ns* 'Rx-matrix)
 (defn Rx-matrix [angle]
   (matrix-by-rows
         (list 1 0 0) (list 0 (cos angle) (- (sin angle)))
         (list 0 (sin angle) (cos angle))))
 
-
+(ns-unmap *ns* 'Euler->M)
 (defn Euler->M [angles]
   (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
         (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
@@ -4257,6 +4332,7 @@ gfx-win   ; auto-shows the accumulated curves
                                       't (up 'theta 'phi 'psi)
                                       (up 'thetadot 'phidot 'psidot))))
 
+(ns-unmap *ns* 'Euler-state->omega-body)
 (defn Euler-state->omega-body [local]
   (let [q (coordinate local) qdot (velocity local)]
         (let [theta (ref q 0)
@@ -4273,12 +4349,15 @@ gfx-win   ; auto-shows the accumulated curves
                       omega-c (+ (* phidot (cos theta)) psidot)]
                   (up omega-a omega-b omega-c)))))
 
+(ns-unmap *ns* 'T-body-Euler)
 (defn T-body-Euler [A B C]
   (fn [local] ((T-body A B C) (Euler-state->omega-body local))))
 
+(ns-unmap *ns* 'L-body-Euler)
 (defn L-body-Euler [A B C]
   (fn [local] ((L-body A B C) (Euler-state->omega-body local))))
 
+(ns-unmap *ns* 'L-space-Euler)
 (defn L-space-Euler [A B C]
   (fn [local]
         (let [angles (coordinate local)]
@@ -4286,6 +4365,7 @@ gfx-win   ; auto-shows the accumulated curves
                  ((L-body-Euler A B C) local)
                  (transpose (Euler->M angles))))))
 
+(ns-unmap *ns* 'Euler-state)
 (def Euler-state
   (up 't (up 'theta 'phi 'psi) (up 'thetadot 'phidot 'psidot)))
 
@@ -4297,9 +4377,11 @@ gfx-win   ; auto-shows the accumulated curves
             (((square (partial 2)) (T-body-Euler 'A 'B 'C))
                          Euler-state)))
 
+(ns-unmap *ns* 'rigid-sysder)
 (defn rigid-sysder [A B C]
   (Lagrangian->state-derivative (T-body-Euler A B C)))
 
+(ns-unmap *ns* 'monitor-errors)
 (defn monitor-errors [win A B C L0 E0]
   (fn [state]
         (let [t (state->t state)
@@ -4310,12 +4392,13 @@ gfx-win   ; auto-shows the accumulated curves
             (plot-point win t (relative-error (ref L 2) (ref L0 2)))
             (plot-point win t (relative-error E E0)))))
 
-
+(ns-unmap *ns* 'relative-error)
 (defn relative-error [value reference-value]
   (if (zero? reference-value)
         (throw (ex-info \"Zero reference value -- RELATIVE-ERROR\" {}))
         (/ (- value reference-value) reference-value)))
 
+(ns-unmap *ns* 'win)
 (def win (frame 0.0 100.0 -1.0e-12 1.0e-12))
 
 (set-ode-integration-method! 'qcrk4)
@@ -4326,6 +4409,7 @@ gfx-win   ; auto-shows the accumulated curves
                                      't (up 'theta 'phi 'psi)
                                      (up 'thetadot 'phidot 'psidot))))
 
+(ns-unmap *ns* 'angle-axis->rotation-matrix)
 (defn angle-axis->rotation-matrix [theta n]
   (let [nx (ref n 0) ny (ref n 1) nz (ref n 2)]
         (let [colatitude (acos nz) longitude (atan ny nx)]
@@ -4334,6 +4418,7 @@ gfx-win   ; auto-shows the accumulated curves
                   (Rz-matrix theta) (transpose (Ry-matrix colatitude))
                   (transpose (Rz-matrix longitude))))))
 
+(ns-unmap *ns* 'quaternion->angle-axis)
 (defn quaternion->angle-axis [q]
   (let [v (quaternion->3vector q)
             theta (*
@@ -4342,6 +4427,7 @@ gfx-win   ; auto-shows the accumulated curves
             axis (/ v (euclidean-norm v))]
         (list theta axis)))
 
+(ns-unmap *ns* 'quaternion->RM)
 (defn quaternion->RM [q]
   (let [aa (quaternion->angle-axis q)]
         (let [theta (ref aa 0) n (ref aa 1)]
@@ -4352,6 +4438,7 @@ gfx-win   ; auto-shows the accumulated curves
             (let [m↑2 (dot-product v v)]
                  (* m↑2 (quaternion->RM (make-quaternion v))))))
 
+(ns-unmap *ns* 'quaternion->rotation-matrix)
 (defn quaternion->rotation-matrix [q]
   (let [q0 (quaternion-ref q 0)
             q1 (quaternion-ref q 1)
@@ -4397,6 +4484,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                 'qdot_2
                                                                                                                                 'qdot_3))))
 
+(ns-unmap *ns* 'quaternion-state->omega-body)
 (defn quaternion-state->omega-body [s]
   (let [q (coordinate s) qdot (velocities s)]
         (let [m↑2 (dot-product q q)]
@@ -4414,6 +4502,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §2.12.1 — Motion in Terms of Quaternions ---
 
 ;; (book p. 189)
+(ns-unmap *ns* 'qw-sysder)
 (defn qw-sysder [A B C]
   (let [B-C∕A (/ (- B C) A) C-A∕B (/ (- C A) B) A-B∕C (/ (- A B) C)]
         (letfn [(the-deriv
@@ -4449,6 +4538,7 @@ gfx-win   ; auto-shows the accumulated curves
              the-deriv)))
 
 ;; (book p. 190)
+(ns-unmap *ns* 'qw-state->L-space)
 (defn qw-state->L-space [A B C]
   (fn [qw-state]
         (let [q (coordinate qw-state)]
@@ -4457,6 +4547,7 @@ gfx-win   ; auto-shows the accumulated curves
                  (* Lbody (transpose M))))))
 
 ;; (book p. 190)
+(ns-unmap *ns* 'monitor-errors)
 (defn monitor-errors [win A B C L0 E0]
   (fn [qw-state]
         (let [t (state->t qw-state)
@@ -4469,6 +4560,7 @@ gfx-win   ; auto-shows the accumulated curves
             qw-state)))
 
 ;; (book p. 190)
+(ns-unmap *ns* 'win)
 (def win (frame 0.0 100.0 -1.0e-13 1.0e-13))
 
 
@@ -4499,6 +4591,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
+(ns-unmap *ns* 'Hamilton-equations)
 (defn Hamilton-equations [Hamiltonian]
   (fn [q p]
         (let [state-path (qp->H-state-path q p)]
@@ -4508,14 +4601,17 @@ gfx-win   ; auto-shows the accumulated curves
                     (Hamiltonian->state-derivative Hamiltonian)
                     state-path)))))
 
+(ns-unmap *ns* 'Hamiltonian->state-derivative)
 (defn Hamiltonian->state-derivative [Hamiltonian]
   (fn [H-state]
         (up
             1 (((partial 2) Hamiltonian) H-state)
             (- (((partial 1) Hamiltonian) H-state)))))
 
+(ns-unmap *ns* 'qp->H-state-path)
 (defn qp->H-state-path [q p] (fn [t] (up t (q t) (p t))))
 
+(ns-unmap *ns* 'H-rectangular)
 (defn H-rectangular [m V]
   (fn [state]
         (let [q (coordinate state) p (momentum state)]
@@ -4533,6 +4629,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Computing Hamiltonians ---
 
 ;; (book p. 212)
+(ns-unmap *ns* 'Legendre-transform)
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
         (letfn [(G
@@ -4544,6 +4641,7 @@ gfx-win   ; auto-shows the accumulated curves
              G)))
 
 ;; (book p. 212)
+(ns-unmap *ns* 'Lagrangian->Hamiltonian)
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
@@ -4553,6 +4651,7 @@ gfx-win   ; auto-shows the accumulated curves
                  ((Legendre-transform L) p)))))
 
 ;; (book p. 212)
+(ns-unmap *ns* 'Hamiltonian->Lagrangian)
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
@@ -4562,6 +4661,7 @@ gfx-win   ; auto-shows the accumulated curves
                  ((Legendre-transform H) qdot)))))
 
 ;; (book p. 212)
+(ns-unmap *ns* 'L-rectangular)
 (defn L-rectangular [m V]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -4601,6 +4701,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
+(ns-unmap *ns* 'Hamilton-equations)
 (defn Hamilton-equations [Hamiltonian]
   (fn [q p]
         (let [state-path (qp->H-state-path q p)]
@@ -4610,14 +4711,17 @@ gfx-win   ; auto-shows the accumulated curves
                     (Hamiltonian->state-derivative Hamiltonian)
                     state-path)))))
 
+(ns-unmap *ns* 'Hamiltonian->state-derivative)
 (defn Hamiltonian->state-derivative [Hamiltonian]
   (fn [H-state]
         (up
             1 (((partial 2) Hamiltonian) H-state)
             (- (((partial 1) Hamiltonian) H-state)))))
 
+(ns-unmap *ns* 'qp->H-state-path)
 (defn qp->H-state-path [q p] (fn [t] (up t (q t) (p t))))
 
+(ns-unmap *ns* 'H-rectangular)
 (defn H-rectangular [m V]
   (fn [state]
         (let [q (coordinate state) p (momentum state)]
@@ -4629,6 +4733,7 @@ gfx-win   ; auto-shows the accumulated curves
                 p (down (literal-function 'p_x) (literal-function 'p_y))]
             (((Hamilton-equations (H-rectangular 'm V)) q p) 't)))
 
+(ns-unmap *ns* 'Legendre-transform)
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
         (letfn [(G
@@ -4639,6 +4744,7 @@ gfx-win   ; auto-shows the accumulated curves
                                   (- (* w v) (F v))))))]
              G)))
 
+(ns-unmap *ns* 'Lagrangian->Hamiltonian)
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
@@ -4647,6 +4753,7 @@ gfx-win   ; auto-shows the accumulated curves
             (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
                  ((Legendre-transform L) p)))))
 
+(ns-unmap *ns* 'Hamiltonian->Lagrangian)
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
@@ -4655,6 +4762,7 @@ gfx-win   ; auto-shows the accumulated curves
             (letfn [(H [p] (Hamiltonian (up t q p)))]
                  ((Legendre-transform H) qdot)))))
 
+(ns-unmap *ns* 'L-rectangular)
 (defn L-rectangular [m V]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -4680,20 +4788,21 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         'p_x
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         'p_y))))
 
+(ns-unmap *ns* 'F)
 (def F
   (literal-function
        'F
        '(->
                           (UP Real (UP Real Real) (DOWN Real Real)) Real)))
 
-
+(ns-unmap *ns* 'G)
 (def G
   (literal-function
        'G
        '(->
                           (UP Real (UP Real Real) (DOWN Real Real)) Real)))
 
-
+(ns-unmap *ns* 'H)
 (def H
   (literal-function
        'H
@@ -4747,6 +4856,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                                                                                                                                                                                                                                                 'p_phi)))
             't))
 
+(ns-unmap *ns* 'L-axisymmetric-top)
 (defn L-axisymmetric-top [A C gMR]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -4787,6 +4897,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                               'theta
                                                                                                                                               'p_theta)))
 
+(ns-unmap *ns* 'H-pend-sysder)
 (defn H-pend-sysder [m l g a omega]
   (Hamiltonian->state-derivative
         (Lagrangian->Hamiltonian
@@ -4794,9 +4905,10 @@ gfx-win   ; auto-shows the accumulated curves
                                                                 m l g a
                                                                 omega))))
 
+(ns-unmap *ns* 'window)
 (def window (frame (- Math/PI) Math/PI -10.0 10.0))
 
-
+(ns-unmap *ns* 'monitor-p-theta)
 (defn monitor-p-theta [win]
   (fn [state]
         (let [q ((principal-value Math/PI) (coordinate state))
@@ -4813,6 +4925,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §3.6.2 — Computing Stroboscopic Surfaces of Section ---
 
 ;; (book p. 247)
+(ns-unmap *ns* 'driven-pendulum-map)
 (defn driven-pendulum-map [m l g A omega]
   (let [advance (state-advancer H-pend-sysder m l g A omega)
             map-period (/ (* 2 Math/PI) omega)]
@@ -4823,6 +4936,7 @@ gfx-win   ; auto-shows the accumulated curves
                       (momentum ns))))))
 
 ;; (book p. 248)
+(ns-unmap *ns* 'win)
 (def win (frame (- Math/PI) Math/PI -20 20))
 
 (let [m 1.0 l 1.0 g 9.8 A 0.05]
@@ -4845,6 +4959,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
+(ns-unmap *ns* 'Hamilton-equations)
 (defn Hamilton-equations [Hamiltonian]
   (fn [q p]
         (let [state-path (qp->H-state-path q p)]
@@ -4854,14 +4969,17 @@ gfx-win   ; auto-shows the accumulated curves
                     (Hamiltonian->state-derivative Hamiltonian)
                     state-path)))))
 
+(ns-unmap *ns* 'Hamiltonian->state-derivative)
 (defn Hamiltonian->state-derivative [Hamiltonian]
   (fn [H-state]
         (up
             1 (((partial 2) Hamiltonian) H-state)
             (- (((partial 1) Hamiltonian) H-state)))))
 
+(ns-unmap *ns* 'qp->H-state-path)
 (defn qp->H-state-path [q p] (fn [t] (up t (q t) (p t))))
 
+(ns-unmap *ns* 'H-rectangular)
 (defn H-rectangular [m V]
   (fn [state]
         (let [q (coordinate state) p (momentum state)]
@@ -4873,6 +4991,7 @@ gfx-win   ; auto-shows the accumulated curves
                 p (down (literal-function 'p_x) (literal-function 'p_y))]
             (((Hamilton-equations (H-rectangular 'm V)) q p) 't)))
 
+(ns-unmap *ns* 'Legendre-transform)
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
         (letfn [(G
@@ -4883,6 +5002,7 @@ gfx-win   ; auto-shows the accumulated curves
                                   (- (* w v) (F v))))))]
              G)))
 
+(ns-unmap *ns* 'Lagrangian->Hamiltonian)
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
@@ -4891,6 +5011,7 @@ gfx-win   ; auto-shows the accumulated curves
             (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
                  ((Legendre-transform L) p)))))
 
+(ns-unmap *ns* 'Hamiltonian->Lagrangian)
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
@@ -4899,6 +5020,7 @@ gfx-win   ; auto-shows the accumulated curves
             (letfn [(H [p] (Hamiltonian (up t q p)))]
                  ((Legendre-transform H) qdot)))))
 
+(ns-unmap *ns* 'L-rectangular)
 (defn L-rectangular [m V]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -4924,20 +5046,21 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         'p_x
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         'p_y))))
 
+(ns-unmap *ns* 'F)
 (def F
   (literal-function
        'F
        '(->
                           (UP Real (UP Real Real) (DOWN Real Real)) Real)))
 
-
+(ns-unmap *ns* 'G)
 (def G
   (literal-function
        'G
        '(->
                           (UP Real (UP Real Real) (DOWN Real Real)) Real)))
 
-
+(ns-unmap *ns* 'H)
 (def H
   (literal-function
        'H
@@ -4991,6 +5114,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                                                                                                                                                                                                                                                 'p_phi)))
             't))
 
+(ns-unmap *ns* 'L-axisymmetric-top)
 (defn L-axisymmetric-top [A C gMR]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -5031,6 +5155,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                               'theta
                                                                                                                                               'p_theta)))
 
+(ns-unmap *ns* 'H-pend-sysder)
 (defn H-pend-sysder [m l g a omega]
   (Hamiltonian->state-derivative
         (Lagrangian->Hamiltonian
@@ -5038,9 +5163,10 @@ gfx-win   ; auto-shows the accumulated curves
                                                                 m l g a
                                                                 omega))))
 
+(ns-unmap *ns* 'window)
 (def window (frame (- Math/PI) Math/PI -10.0 10.0))
 
-
+(ns-unmap *ns* 'monitor-p-theta)
 (defn monitor-p-theta [win]
   (fn [state]
         (let [q ((principal-value Math/PI) (coordinate state))
@@ -5054,6 +5180,7 @@ gfx-win   ; auto-shows the accumulated curves
       omega (* 2 (sqrt 9.8))
       (evolve H-pend-sysder m l g A omega) (up 0.0 1.0 0.0)])
 
+(ns-unmap *ns* 'driven-pendulum-map)
 (defn driven-pendulum-map [m l g A omega]
   (let [advance (state-advancer H-pend-sysder m l g A omega)
             map-period (/ (* 2 Math/PI) omega)]
@@ -5063,6 +5190,7 @@ gfx-win   ; auto-shows the accumulated curves
                       ((principal-value Math/PI) (coordinate ns))
                       (momentum ns))))))
 
+(ns-unmap *ns* 'win)
 (def win (frame (- Math/PI) Math/PI -20 20))
 
 (let [m 1.0 l 1.0 g 9.8 A 0.05]
@@ -5075,6 +5203,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §3.6.4 — Computing Hénon–Heiles Surfaces of Section ---
 
 ;; (book p. 261)
+(ns-unmap *ns* 'HHmap)
 (defn HHmap [E dt sec-eps int-eps]
   (letfn [(make-advance
                 [advancer eps] (fn [s dt] (advancer s dt eps)))]
@@ -5098,6 +5227,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                1))))))))))
 
 ;; (book p. 261)
+(ns-unmap *ns* 'section->state)
 (defn section->state [E y py]
   (let [d (-
                 E (+ (HHpotential (up 0 (up 0 y))) (* 1/2 (square py))))]
@@ -5106,9 +5236,11 @@ gfx-win   ; auto-shows the accumulated curves
              false)))
 
 ;; (book p. 261)
+(ns-unmap *ns* 'HHHam)
 (defn HHHam [s] (+ (* 1/2 (square (momentum s))) (HHpotential s)))
 
 ;; (book p. 261)
+(ns-unmap *ns* 'HHpotential)
 (defn HHpotential [s]
   (let [x (ref (coordinate s) 0) y (ref (coordinate s) 1)]
         (+
@@ -5116,9 +5248,11 @@ gfx-win   ; auto-shows the accumulated curves
              (- (* (square x) y) (* 1/3 (cube y))))))
 
 ;; (book p. 261)
+(ns-unmap *ns* 'HHsysder)
 (defn HHsysder [] (Hamiltonian->state-derivative HHHam))
 
 ;; (book p. 261)
+(ns-unmap *ns* 'find-next-crossing)
 (defn find-next-crossing [state advance dt sec-eps cont]
   (letfn [(lp
                 [s]
@@ -5133,6 +5267,7 @@ gfx-win   ; auto-shows the accumulated curves
         (lp state)))
 
 ;; (book p. 261)
+(ns-unmap *ns* 'refine-crossing)
 (defn refine-crossing [sec-eps advance state]
   (letfn [(lp
                 [state]
@@ -5147,6 +5282,7 @@ gfx-win   ; auto-shows the accumulated curves
         (lp state)))
 
 ;; (book p. 261)
+(ns-unmap *ns* 'win)
 (def win (frame -0.5 0.7 -0.6 0.6))
 
 (explore-map win (HHmap 0.125 0.1 1.0e-10 1.0e-12) 500)"
@@ -5164,6 +5300,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
+(ns-unmap *ns* 'Hamilton-equations)
 (defn Hamilton-equations [Hamiltonian]
   (fn [q p]
         (let [state-path (qp->H-state-path q p)]
@@ -5173,14 +5310,17 @@ gfx-win   ; auto-shows the accumulated curves
                     (Hamiltonian->state-derivative Hamiltonian)
                     state-path)))))
 
+(ns-unmap *ns* 'Hamiltonian->state-derivative)
 (defn Hamiltonian->state-derivative [Hamiltonian]
   (fn [H-state]
         (up
             1 (((partial 2) Hamiltonian) H-state)
             (- (((partial 1) Hamiltonian) H-state)))))
 
+(ns-unmap *ns* 'qp->H-state-path)
 (defn qp->H-state-path [q p] (fn [t] (up t (q t) (p t))))
 
+(ns-unmap *ns* 'H-rectangular)
 (defn H-rectangular [m V]
   (fn [state]
         (let [q (coordinate state) p (momentum state)]
@@ -5192,6 +5332,7 @@ gfx-win   ; auto-shows the accumulated curves
                 p (down (literal-function 'p_x) (literal-function 'p_y))]
             (((Hamilton-equations (H-rectangular 'm V)) q p) 't)))
 
+(ns-unmap *ns* 'Legendre-transform)
 (defn Legendre-transform [F]
   (let [w-of-v (D F)]
         (letfn [(G
@@ -5202,6 +5343,7 @@ gfx-win   ; auto-shows the accumulated curves
                                   (- (* w v) (F v))))))]
              G)))
 
+(ns-unmap *ns* 'Lagrangian->Hamiltonian)
 (defn Lagrangian->Hamiltonian [Lagrangian]
   (fn [H-state]
         (let [t (state->t H-state)
@@ -5210,6 +5352,7 @@ gfx-win   ; auto-shows the accumulated curves
             (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
                  ((Legendre-transform L) p)))))
 
+(ns-unmap *ns* 'Hamiltonian->Lagrangian)
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
         (let [t (state->t L-state)
@@ -5218,6 +5361,7 @@ gfx-win   ; auto-shows the accumulated curves
             (letfn [(H [p] (Hamiltonian (up t q p)))]
                  ((Legendre-transform H) qdot)))))
 
+(ns-unmap *ns* 'L-rectangular)
 (defn L-rectangular [m V]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -5243,20 +5387,21 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         'p_x
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         'p_y))))
 
+(ns-unmap *ns* 'F)
 (def F
   (literal-function
        'F
        '(->
                           (UP Real (UP Real Real) (DOWN Real Real)) Real)))
 
-
+(ns-unmap *ns* 'G)
 (def G
   (literal-function
        'G
        '(->
                           (UP Real (UP Real Real) (DOWN Real Real)) Real)))
 
-
+(ns-unmap *ns* 'H)
 (def H
   (literal-function
        'H
@@ -5310,6 +5455,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                                                                                                                                                                                                                                                 'p_phi)))
             't))
 
+(ns-unmap *ns* 'L-axisymmetric-top)
 (defn L-axisymmetric-top [A C gMR]
   (fn [local]
         (let [q (coordinate local) qdot (velocity local)]
@@ -5350,6 +5496,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                               'theta
                                                                                                                                               'p_theta)))
 
+(ns-unmap *ns* 'H-pend-sysder)
 (defn H-pend-sysder [m l g a omega]
   (Hamiltonian->state-derivative
         (Lagrangian->Hamiltonian
@@ -5357,9 +5504,10 @@ gfx-win   ; auto-shows the accumulated curves
                                                                 m l g a
                                                                 omega))))
 
+(ns-unmap *ns* 'window)
 (def window (frame (- Math/PI) Math/PI -10.0 10.0))
 
-
+(ns-unmap *ns* 'monitor-p-theta)
 (defn monitor-p-theta [win]
   (fn [state]
         (let [q ((principal-value Math/PI) (coordinate state))
@@ -5373,6 +5521,7 @@ gfx-win   ; auto-shows the accumulated curves
       omega (* 2 (sqrt 9.8))
       (evolve H-pend-sysder m l g A omega) (up 0.0 1.0 0.0)])
 
+(ns-unmap *ns* 'driven-pendulum-map)
 (defn driven-pendulum-map [m l g A omega]
   (let [advance (state-advancer H-pend-sysder m l g A omega)
             map-period (/ (* 2 Math/PI) omega)]
@@ -5382,6 +5531,7 @@ gfx-win   ; auto-shows the accumulated curves
                       ((principal-value Math/PI) (coordinate ns))
                       (momentum ns))))))
 
+(ns-unmap *ns* 'win)
 (def win (frame (- Math/PI) Math/PI -20 20))
 
 (let [m 1.0 l 1.0 g 9.8 A 0.05]
@@ -5391,6 +5541,7 @@ gfx-win   ; auto-shows the accumulated curves
                  win (driven-pendulum-map m l g A omega) 1000))))
 ;1000 points for each initial condition
 
+(ns-unmap *ns* 'HHmap)
 (defn HHmap [E dt sec-eps int-eps]
   (letfn [(make-advance
                 [advancer eps] (fn [s dt] (advancer s dt eps)))]
@@ -5413,6 +5564,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                     crossing-state)
                                                                1))))))))))
 
+(ns-unmap *ns* 'section->state)
 (defn section->state [E y py]
   (let [d (-
                 E (+ (HHpotential (up 0 (up 0 y))) (* 1/2 (square py))))]
@@ -5420,16 +5572,20 @@ gfx-win   ; auto-shows the accumulated curves
              (let [px (sqrt (* 2 d))] (up 0 (up 0 y) (down px py)))
              false)))
 
+(ns-unmap *ns* 'HHHam)
 (defn HHHam [s] (+ (* 1/2 (square (momentum s))) (HHpotential s)))
 
+(ns-unmap *ns* 'HHpotential)
 (defn HHpotential [s]
   (let [x (ref (coordinate s) 0) y (ref (coordinate s) 1)]
         (+
              (* 1/2 (+ (square x) (square y)))
              (- (* (square x) y) (* 1/3 (cube y))))))
 
+(ns-unmap *ns* 'HHsysder)
 (defn HHsysder [] (Hamiltonian->state-derivative HHHam))
 
+(ns-unmap *ns* 'find-next-crossing)
 (defn find-next-crossing [state advance dt sec-eps cont]
   (letfn [(lp
                 [s]
@@ -5443,6 +5599,7 @@ gfx-win   ; auto-shows the accumulated curves
                          (lp next-state))))]
         (lp state)))
 
+(ns-unmap *ns* 'refine-crossing)
 (defn refine-crossing [sec-eps advance state]
   (letfn [(lp
                 [state]
@@ -5456,6 +5613,7 @@ gfx-win   ; auto-shows the accumulated curves
                               (lp zstate)))))]
         (lp state)))
 
+(ns-unmap *ns* 'win)
 (def win (frame -0.5 0.7 -0.6 0.6))
 
 (explore-map win (HHmap 0.125 0.1 1.0e-10 1.0e-12) 500)
@@ -5463,6 +5621,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §3.9 — Standard Map ---
 
 ;; (book p. 278)
+(ns-unmap *ns* 'standard-map)
 (defn standard-map [K]
   (fn [theta I return failure]
         (let [nI (+ I (* K (sin theta)))]
@@ -5471,6 +5630,7 @@ gfx-win   ; auto-shows the accumulated curves
                  ((principal-value (* 2 Math/PI)) nI)))))
 
 ;; (book p. 279)
+(ns-unmap *ns* 'window)
 (def window (frame 0.0 (* 2 Math/PI) 0.0 (* 2 Math/PI)))
 
 (explore-map window (standard-map 0.6) 2000)"
@@ -5487,6 +5647,7 @@ gfx-win   ; auto-shows the accumulated curves
   (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; (book p. 308)
+(ns-unmap *ns* 'unstable-manifold)
 (defn unstable-manifold [T xe ye dx dy rho eps]
   (fn [param]
         (let [n (floor->exact (/ (log (/ param eps)) (log rho)))]
@@ -5496,6 +5657,7 @@ gfx-win   ; auto-shows the accumulated curves
                  (fn [] (throw (ex-info \"Failed\" {})))))))
 
 ;; (book p. 308)
+(ns-unmap *ns* 'plot-parametric-fill)
 (defn plot-parametric-fill [win f a b near?]
   (letfn [(loop [a xa b xb]
                 (when (not
@@ -5512,6 +5674,7 @@ gfx-win   ; auto-shows the accumulated curves
         (loop a (f a) b (f b))))
 
 ;; (book p. 309)
+(ns-unmap *ns* 'cylinder-near?)
 (defn cylinder-near? [eps]
   (let [eps2 (square eps)]
         (fn [point1 point2]
@@ -5538,6 +5701,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 4 ---
 
+(ns-unmap *ns* 'unstable-manifold)
 (defn unstable-manifold [T xe ye dx dy rho eps]
   (fn [param]
         (let [n (floor->exact (/ (log (/ param eps)) (log rho)))]
@@ -5546,6 +5710,7 @@ gfx-win   ; auto-shows the accumulated curves
                  (+ ye (* dy (/ param (expt rho n)))) make-point
                  (fn [] (throw (ex-info \"Failed\" {})))))))
 
+(ns-unmap *ns* 'plot-parametric-fill)
 (defn plot-parametric-fill [win f a b near?]
   (letfn [(loop [a xa b xb]
                 (when (not
@@ -5561,6 +5726,7 @@ gfx-win   ; auto-shows the accumulated curves
                                       (loop m xm b xb))))))]
         (loop a (f a) b (f b))))
 
+(ns-unmap *ns* 'cylinder-near?)
 (defn cylinder-near? [eps]
   (let [eps2 (square eps)]
         (fn [point1 point2]
@@ -5577,6 +5743,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §4.5.1 — Computing the Poincaré–Birkhoff Construction ---
 
 ;; (book p. 321)
+(ns-unmap *ns* 'radially-mapping-points)
 (defn radially-mapping-points [Tmap Jmin Jmax phi eps]
   (bisect
         (fn [J]
@@ -5605,6 +5772,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 4 ---
 
+(ns-unmap *ns* 'unstable-manifold)
 (defn unstable-manifold [T xe ye dx dy rho eps]
   (fn [param]
         (let [n (floor->exact (/ (log (/ param eps)) (log rho)))]
@@ -5613,6 +5781,7 @@ gfx-win   ; auto-shows the accumulated curves
                  (+ ye (* dy (/ param (expt rho n)))) make-point
                  (fn [] (throw (ex-info \"Failed\" {})))))))
 
+(ns-unmap *ns* 'plot-parametric-fill)
 (defn plot-parametric-fill [win f a b near?]
   (letfn [(loop [a xa b xb]
                 (when (not
@@ -5628,6 +5797,7 @@ gfx-win   ; auto-shows the accumulated curves
                                       (loop m xm b xb))))))]
         (loop a (f a) b (f b))))
 
+(ns-unmap *ns* 'cylinder-near?)
 (defn cylinder-near? [eps]
   (let [eps2 (square eps)]
         (fn [point1 point2]
@@ -5641,6 +5811,7 @@ gfx-win   ; auto-shows the accumulated curves
                     (square (- (ordinate point1) (ordinate point2))))
                  eps2))))
 
+(ns-unmap *ns* 'radially-mapping-points)
 (defn radially-mapping-points [Tmap Jmin Jmax phi eps]
   (bisect
         (fn [J]
@@ -5659,10 +5830,12 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §4.6.1 — Finding Invariant Curves ---
 
 ;; (book p. 326)
+(ns-unmap *ns* 'find-invariant-curve)
 (defn find-invariant-curve [the-map rn theta0 Jmin Jmax eps]
   (bisect (fn [J] (which-way? rn theta0 J the-map)) Jmin Jmax eps))
 
 ;; (book p. 327)
+(ns-unmap *ns* 'which-way?)
 (defn which-way? [rotation-number x0 y0 the-map]
   (let [pv (principal-value (x0 pi))]
         (letfn [(lp
@@ -5717,6 +5890,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
+(ns-unmap *ns* 'F->CH)
 (defn F->CH [F]
   (fn [state]
         (up
@@ -5724,6 +5898,7 @@ gfx-win   ; auto-shows the accumulated curves
             (solve-linear-right
                 (momentum state) (((partial 1) F) state)))))
 
+(ns-unmap *ns* 'H-central)
 (defn H-central [m V]
   (fn [state]
         (let [x (coordinate state) p (momentum state)]
@@ -5740,6 +5915,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                              'p_r
                                                                              'p_phi))))
 
+(ns-unmap *ns* 'F->K)
 (defn F->K [F]
   (fn [state]
         (-
@@ -5748,6 +5924,7 @@ gfx-win   ; auto-shows the accumulated curves
                   (momentum state) (((partial 1) F) state))
                (((partial 0) F) state)))))
 
+(ns-unmap *ns* 'translating)
 (defn translating [v]
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
@@ -5756,8 +5933,10 @@ gfx-win   ; auto-shows the accumulated curves
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
 
+(ns-unmap *ns* 'H-free)
 (defn H-free [m] (fn [s] (/ (square (momentum s)) (* 2 m))))
 
+(ns-unmap *ns* 'H-prime)
 (def H-prime
   (+
        (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
@@ -5768,11 +5947,13 @@ gfx-win   ; auto-shows the accumulated curves
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
 
+(ns-unmap *ns* 'canonical?)
 (defn canonical? [C H Hprime]
   (-
         (compose (Hamiltonian->state-derivative H) C)
         (* (D C) (Hamiltonian->state-derivative Hprime))))
 
+(ns-unmap *ns* 'polar-canonical)
 (defn polar-canonical [alpha]
   (fn [state]
         (let [t (state->t state)
@@ -5782,6 +5963,7 @@ gfx-win   ; auto-shows the accumulated curves
                      p_x (* (sqrt (* 2 alpha I)) (cos theta))]
                  (up t x p_x)))))
 
+(ns-unmap *ns* 'H-harmonic)
 (defn H-harmonic [m k]
   (fn [s]
         (+
@@ -5800,20 +5982,22 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §5.2.1 — Time-Dependent Transformations ---
 
 ;; (book p. 347)
+(ns-unmap *ns* 'T-func)
 (defn T-func [s]
   (up 1 (zero-like (coordinate s)) (zero-like (momentum s))))
 
-
+(ns-unmap *ns* 'D-phase-space)
 (defn D-phase-space [H]
   (fn [s] (up 0 (((partial 2) H) s) (- (((partial 1) H) s)))))
 
 ;; (book p. 348)
+(ns-unmap *ns* 'canonical-H?)
 (defn canonical-H? [C H]
   (-
         (compose (D-phase-space H) C)
         (* (D C) (D-phase-space (compose H C)))))
 
-
+(ns-unmap *ns* 'canonical-K?)
 (defn canonical-K? [C K]
   (- (compose T-func C) (* (D C) (+ T-func (D-phase-space K)))))
 
@@ -5821,6 +6005,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Rotating coordinates ---
 
 ;; (book p. 348)
+(ns-unmap *ns* 'rotating)
 (defn rotating [Omega]
   (fn [state]
         (let [t (state->t state) qp (coordinate state)]
@@ -5835,9 +6020,11 @@ gfx-win   ; auto-shows the accumulated curves
                       zp)))))
 
 ;; (book p. 348)
+(ns-unmap *ns* 'C-rotating)
 (defn C-rotating [Omega] (F->CH (rotating Omega)))
 
 ;; (book p. 348)
+(ns-unmap *ns* 'H-arbitrary)
 (def H-arbitrary
   (literal-function
        'H
@@ -5862,6 +6049,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;;=> (+ (* Omega pp_x yp) (* -1 Omega pp_y xp))
 
 ;; (book p. 348)
+(ns-unmap *ns* 'K)
 (defn K [Omega]
   (fn [s]
         (let [qp (coordinate s) pprint (momentum s)]
@@ -5892,6 +6080,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
+(ns-unmap *ns* 'F->CH)
 (defn F->CH [F]
   (fn [state]
         (up
@@ -5899,6 +6088,7 @@ gfx-win   ; auto-shows the accumulated curves
             (solve-linear-right
                 (momentum state) (((partial 1) F) state)))))
 
+(ns-unmap *ns* 'H-central)
 (defn H-central [m V]
   (fn [state]
         (let [x (coordinate state) p (momentum state)]
@@ -5915,6 +6105,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                              'p_r
                                                                              'p_phi))))
 
+(ns-unmap *ns* 'F->K)
 (defn F->K [F]
   (fn [state]
         (-
@@ -5923,6 +6114,7 @@ gfx-win   ; auto-shows the accumulated curves
                   (momentum state) (((partial 1) F) state))
                (((partial 0) F) state)))))
 
+(ns-unmap *ns* 'translating)
 (defn translating [v]
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
@@ -5931,8 +6123,10 @@ gfx-win   ; auto-shows the accumulated curves
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
 
+(ns-unmap *ns* 'H-free)
 (defn H-free [m] (fn [s] (/ (square (momentum s)) (* 2 m))))
 
+(ns-unmap *ns* 'H-prime)
 (def H-prime
   (+
        (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
@@ -5943,11 +6137,13 @@ gfx-win   ; auto-shows the accumulated curves
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
 
+(ns-unmap *ns* 'canonical?)
 (defn canonical? [C H Hprime]
   (-
         (compose (Hamiltonian->state-derivative H) C)
         (* (D C) (Hamiltonian->state-derivative Hprime))))
 
+(ns-unmap *ns* 'polar-canonical)
 (defn polar-canonical [alpha]
   (fn [state]
         (let [t (state->t state)
@@ -5957,6 +6153,7 @@ gfx-win   ; auto-shows the accumulated curves
                      p_x (* (sqrt (* 2 alpha I)) (cos theta))]
                  (up t x p_x)))))
 
+(ns-unmap *ns* 'H-harmonic)
 (defn H-harmonic [m k]
   (fn [s]
         (+
@@ -5972,22 +6169,25 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                         'theta
                                                                                                                         'I))
 
+(ns-unmap *ns* 'T-func)
 (defn T-func [s]
   (up 1 (zero-like (coordinate s)) (zero-like (momentum s))))
 
-
+(ns-unmap *ns* 'D-phase-space)
 (defn D-phase-space [H]
   (fn [s] (up 0 (((partial 2) H) s) (- (((partial 1) H) s)))))
 
+(ns-unmap *ns* 'canonical-H?)
 (defn canonical-H? [C H]
   (-
         (compose (D-phase-space H) C)
         (* (D C) (D-phase-space (compose H C)))))
 
-
+(ns-unmap *ns* 'canonical-K?)
 (defn canonical-K? [C K]
   (- (compose T-func C) (* (D C) (+ T-func (D-phase-space K)))))
 
+(ns-unmap *ns* 'rotating)
 (defn rotating [Omega]
   (fn [state]
         (let [t (state->t state) qp (coordinate state)]
@@ -6001,8 +6201,10 @@ gfx-win   ; auto-shows the accumulated curves
                           (* (cos (* Omega t)) yp))
                       zp)))))
 
+(ns-unmap *ns* 'C-rotating)
 (defn C-rotating [Omega] (F->CH (rotating Omega)))
 
+(ns-unmap *ns* 'H-arbitrary)
 (def H-arbitrary
   (literal-function
        'H
@@ -6023,6 +6225,7 @@ gfx-win   ; auto-shows the accumulated curves
   (up
                             't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))
 
+(ns-unmap *ns* 'K)
 (defn K [Omega]
   (fn [s]
         (let [qp (coordinate s) pprint (momentum s)]
@@ -6041,9 +6244,10 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §5.2.2 — Abstracting the Canonical Condition ---
 
 ;; (book p. 351)
+(ns-unmap *ns* 'J-func)
 (defn J-func [DHs] (up 0 (ref DHs 2) (- (ref DHs 1))))
 
-
+(ns-unmap *ns* 'canonical-transform?)
 (defn canonical-transform? [C]
   (fn [s]
         (let [J ((D J-func) (compatible-shape s)) DCs ((D C) s)]
@@ -6057,6 +6261,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;;=> (up (up 0 0 0) (up 0 0 0) (up 0 0 0))
 
 ;; (book p. 352)
+(ns-unmap *ns* 'a-non-canonical-transform)
 (defn a-non-canonical-transform [state]
   (let [t (state->t state)
             theta (coordinate state)
@@ -6084,6 +6289,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;;     (list 0 0 -1 0 0))
 
 ;; (book p. 354)
+(ns-unmap *ns* 'C-general)
 (def C-general
   (literal-function
        'C
@@ -6092,6 +6298,7 @@ gfx-win   ; auto-shows the accumulated curves
                           (UP Real (UP Real Real) (DOWN Real Real)))))
 
 ;; (book p. 354)
+(ns-unmap *ns* 'C-simple-time)
 (defn C-simple-time [s]
   (let [cs (C-general s)]
         (up
@@ -6109,16 +6316,19 @@ gfx-win   ; auto-shows the accumulated curves
 ;;=> (up 0 0 0 0 0)
 
 ;; (book p. 355)
+(ns-unmap *ns* 'symplectic-matrix?)
 (defn symplectic-matrix? [M]
   (let [two-n (dimension M)]
         (let [J (symplectic-unit (quot two-n 2))]
              (- J (* M J (transpose M))))))
 
 ;; (book p. 355)
+(ns-unmap *ns* 'symplectic-transform?)
 (defn symplectic-transform? [C]
   (fn [s] (symplectic-matrix? (qp-submatrix ((D-as-matrix C) s)))))
 
 ;; (book p. 356)
+(ns-unmap *ns* 'F)
 (defn F [s]
   ((literal-function
          'F '(-> (X Real (UP Real Real)) (UP Real Real)))
@@ -6159,6 +6369,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 5 ---
 
+(ns-unmap *ns* 'F->CH)
 (defn F->CH [F]
   (fn [state]
         (up
@@ -6166,6 +6377,7 @@ gfx-win   ; auto-shows the accumulated curves
             (solve-linear-right
                 (momentum state) (((partial 1) F) state)))))
 
+(ns-unmap *ns* 'H-central)
 (defn H-central [m V]
   (fn [state]
         (let [x (coordinate state) p (momentum state)]
@@ -6182,6 +6394,7 @@ gfx-win   ; auto-shows the accumulated curves
                                                                              'p_r
                                                                              'p_phi))))
 
+(ns-unmap *ns* 'F->K)
 (defn F->K [F]
   (fn [state]
         (-
@@ -6190,6 +6403,7 @@ gfx-win   ; auto-shows the accumulated curves
                   (momentum state) (((partial 1) F) state))
                (((partial 0) F) state)))))
 
+(ns-unmap *ns* 'translating)
 (defn translating [v]
   (fn [state] (+ (coordinate state) (* v (state->t state)))))
 
@@ -6198,8 +6412,10 @@ gfx-win   ; auto-shows the accumulated curves
                                             't (up 'x 'y 'z)
                                             (down 'p_x 'p_y 'p_z)))
 
+(ns-unmap *ns* 'H-free)
 (defn H-free [m] (fn [s] (/ (square (momentum s)) (* 2 m))))
 
+(ns-unmap *ns* 'H-prime)
 (def H-prime
   (+
        (compose (H-free 'm) (F->CH (translating (up 'v↑x 'v↑y 'v↑z))))
@@ -6210,11 +6426,13 @@ gfx-win   ; auto-shows the accumulated curves
            't (up 'xprime 'yprime 'zprime)
            (down 'pprime_x 'pprime_y 'pprime_z)))
 
+(ns-unmap *ns* 'canonical?)
 (defn canonical? [C H Hprime]
   (-
         (compose (Hamiltonian->state-derivative H) C)
         (* (D C) (Hamiltonian->state-derivative Hprime))))
 
+(ns-unmap *ns* 'polar-canonical)
 (defn polar-canonical [alpha]
   (fn [state]
         (let [t (state->t state)
@@ -6224,6 +6442,7 @@ gfx-win   ; auto-shows the accumulated curves
                      p_x (* (sqrt (* 2 alpha I)) (cos theta))]
                  (up t x p_x)))))
 
+(ns-unmap *ns* 'H-harmonic)
 (defn H-harmonic [m k]
   (fn [s]
         (+
@@ -6239,22 +6458,25 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                         'theta
                                                                                                                         'I))
 
+(ns-unmap *ns* 'T-func)
 (defn T-func [s]
   (up 1 (zero-like (coordinate s)) (zero-like (momentum s))))
 
-
+(ns-unmap *ns* 'D-phase-space)
 (defn D-phase-space [H]
   (fn [s] (up 0 (((partial 2) H) s) (- (((partial 1) H) s)))))
 
+(ns-unmap *ns* 'canonical-H?)
 (defn canonical-H? [C H]
   (-
         (compose (D-phase-space H) C)
         (* (D C) (D-phase-space (compose H C)))))
 
-
+(ns-unmap *ns* 'canonical-K?)
 (defn canonical-K? [C K]
   (- (compose T-func C) (* (D C) (+ T-func (D-phase-space K)))))
 
+(ns-unmap *ns* 'rotating)
 (defn rotating [Omega]
   (fn [state]
         (let [t (state->t state) qp (coordinate state)]
@@ -6268,8 +6490,10 @@ gfx-win   ; auto-shows the accumulated curves
                           (* (cos (* Omega t)) yp))
                       zp)))))
 
+(ns-unmap *ns* 'C-rotating)
 (defn C-rotating [Omega] (F->CH (rotating Omega)))
 
+(ns-unmap *ns* 'H-arbitrary)
 (def H-arbitrary
   (literal-function
        'H
@@ -6290,6 +6514,7 @@ gfx-win   ; auto-shows the accumulated curves
   (up
                             't (up 'xp 'yp 'zp) (down 'pp_x 'pp_y 'pp_z)))
 
+(ns-unmap *ns* 'K)
 (defn K [Omega]
   (fn [s]
         (let [qp (coordinate s) pprint (momentum s)]
@@ -6305,9 +6530,10 @@ gfx-win   ; auto-shows the accumulated curves
                                                  (down
                                                      'pp_x 'pp_y 'pp_z)))
 
+(ns-unmap *ns* 'J-func)
 (defn J-func [DHs] (up 0 (ref DHs 2) (- (ref DHs 1))))
 
-
+(ns-unmap *ns* 'canonical-transform?)
 (defn canonical-transform? [C]
   (fn [s]
         (let [J ((D J-func) (compatible-shape s)) DCs ((D C) s)]
@@ -6315,6 +6541,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((canonical-transform? (polar-canonical 'alpha)) (up 't 'theta 'I))
 
+(ns-unmap *ns* 'a-non-canonical-transform)
 (defn a-non-canonical-transform [state]
   (let [t (state->t state)
             theta (coordinate state)
@@ -6330,6 +6557,7 @@ gfx-win   ; auto-shows the accumulated curves
       J ((D J-func) s*)]
   (s->m s* J s*))
 
+(ns-unmap *ns* 'C-general)
 (def C-general
   (literal-function
        'C
@@ -6337,6 +6565,7 @@ gfx-win   ; auto-shows the accumulated curves
                           (UP Real (UP Real Real) (DOWN Real Real))
                           (UP Real (UP Real Real) (DOWN Real Real)))))
 
+(ns-unmap *ns* 'C-simple-time)
 (defn C-simple-time [s]
   (let [cs (C-general s)]
         (up
@@ -6349,14 +6578,17 @@ gfx-win   ; auto-shows the accumulated curves
 (let [s (up 't (up 'x 'y) (down 'p_x 'p_y)) s* (compatible-shape s)]
   (column (s->m s* ((canonical-transform? C-simple-time) s) s*) 0))
 
+(ns-unmap *ns* 'symplectic-matrix?)
 (defn symplectic-matrix? [M]
   (let [two-n (dimension M)]
         (let [J (symplectic-unit (quot two-n 2))]
              (- J (* M J (transpose M))))))
 
+(ns-unmap *ns* 'symplectic-transform?)
 (defn symplectic-transform? [C]
   (fn [s] (symplectic-matrix? (qp-submatrix ((D-as-matrix C) s)))))
 
+(ns-unmap *ns* 'F)
 (defn F [s]
   ((literal-function
          'F '(-> (X Real (UP Real Real)) (UP Real Real)))
@@ -6373,11 +6605,13 @@ gfx-win   ; auto-shows the accumulated curves
        (qp-submatrix (s->m s* ((canonical-transform? C-general) s) s*))
        ((symplectic-transform? C-general) s)))
 
+(ns-unmap *ns* 'omega)
 (defn omega [zeta1 zeta2]
   (-
         (* (momentum zeta2) (coordinate zeta1))
         (* (momentum zeta1) (coordinate zeta2))))
 
+(ns-unmap *ns* 'F)
 (defn F [s]
   ((literal-function
          'F '(-> (X Real (UP Real Real)) (UP Real Real)))
@@ -6398,10 +6632,12 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §5.8 — Projects ---
 
 ;; (book p. 410)
+(ns-unmap *ns* 'qp-submatrix)
 (defn qp-submatrix [m]
   (m:submatrix m 1 (m:num-rows m) 1 (m:num-cols m)))
 
 ;; (book p. 410)
+(ns-unmap *ns* 'D-as-matrix)
 (defn D-as-matrix [F]
   (fn [s] (s->m (compatible-shape (F s)) ((D F) s) s)))"
     "SICM 6.4 Lie Series"
@@ -6418,17 +6654,21 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 6 ---
 
+(ns-unmap *ns* 'C->Cp)
 (defn C->Cp [C]
   (fn [delta-t] (compose (C delta-t) (shift-t (- delta-t)))))
 
+(ns-unmap *ns* 'shift-t)
 (defn shift-t [delta-t]
   (fn [state]
         (up
             (+ (state->t state) delta-t) (coordinate state)
             (momentum state))))
 
+(ns-unmap *ns* 'H->Hp)
 (defn H->Hp [delta-t] (fn [H] (compose H (shift-t (- delta-t)))))
 
+(ns-unmap *ns* 'solution)
 (defn solution [alpha omega omega0]
   (fn [state0]
         (fn [t]
@@ -6476,12 +6716,15 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Computing Lie series ---
 
 ;; (book p. 448)
+(ns-unmap *ns* 'Lie-derivative)
 (defn Lie-derivative [H] (fn [F] (Poisson-bracket F H)))
 
 ;; (book p. 448)
+(ns-unmap *ns* 'Lie-transform)
 (defn Lie-transform [H t] (exp (* t (Lie-derivative H))))
 
 ;; (book p. 448)
+(ns-unmap *ns* 'H-harmonic)
 (defn H-harmonic [m k]
   (fn [state]
         (+
@@ -6591,17 +6834,21 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 6 ---
 
+(ns-unmap *ns* 'C->Cp)
 (defn C->Cp [C]
   (fn [delta-t] (compose (C delta-t) (shift-t (- delta-t)))))
 
+(ns-unmap *ns* 'shift-t)
 (defn shift-t [delta-t]
   (fn [state]
         (up
             (+ (state->t state) delta-t) (coordinate state)
             (momentum state))))
 
+(ns-unmap *ns* 'H->Hp)
 (defn H->Hp [delta-t] (fn [H] (compose H (shift-t (- delta-t)))))
 
+(ns-unmap *ns* 'solution)
 (defn solution [alpha omega omega0]
   (fn [state0]
         (fn [t]
@@ -6619,10 +6866,13 @@ gfx-win   ; auto-shows the accumulated curves
   (fn [x] (println (simplify x)))
   (take 6 (((exp (* 'epsilon D)) (fn [x] (sqrt (+ x 1)))) 0)))
 
+(ns-unmap *ns* 'Lie-derivative)
 (defn Lie-derivative [H] (fn [F] (Poisson-bracket F H)))
 
+(ns-unmap *ns* 'Lie-transform)
 (defn Lie-transform [H t] (exp (* t (Lie-derivative H))))
 
+(ns-unmap *ns* 'H-harmonic)
 (defn H-harmonic [m k]
   (fn [state]
         (+
@@ -6676,6 +6926,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §6.7 — Projects ---
 
 ;; (book p. 455)
+(ns-unmap *ns* 'HH-collector)
 (defn HH-collector [win advance E dt sec-eps n]
   (fn [x y done fail]
         (let [collector (default-collector monitor pmap n)]
@@ -6714,8 +6965,10 @@ gfx-win   ; auto-shows the accumulated curves
   win (HH-collector win 1st-order-map 0.125 0.1 1.e-10 1000) false)
 
 ;; (book p. 455)
+(ns-unmap *ns* 'Lie-derivative-procedure)
 (defn Lie-derivative-procedure [H] (fn [F] (Poisson-bracket F H)))
 
+(ns-unmap *ns* 'Lie-derivative)
 (def Lie-derivative
   (make-operator Lie-derivative-procedure 'Lie-derivative))"
     "SICM 8 Appendix: Scheme"
@@ -6744,15 +6997,18 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Definitions ---
 
 ;; (book p. 499)
+(ns-unmap *ns* 'pi)
 (def pi 3.141592653589793)
 
-
+(ns-unmap *ns* 'square)
 (defn square [x] (* x x))
 
 ;; (book p. 499)
+(ns-unmap *ns* 'square)
 (defn square [x] (* x x))
 
 ;; (book p. 499)
+(ns-unmap *ns* 'compose)
 (defn compose [f g] (fn [x] (f (g x))))
 
 
@@ -6764,27 +7020,31 @@ gfx-win   ; auto-shows the accumulated curves
 ;;=> .826821810431806
 
 ;; (book p. 499)
+(ns-unmap *ns* 'compose)
 (defn compose [f g] (fn [x] (f (g x))))
 
-
+(ns-unmap *ns* 'compose)
 (defn compose [f g] (fn [x] (f (g x))))
 
 
 ;; --- Conditionals ---
 
 ;; (book p. 499)
+(ns-unmap *ns* 'abs)
 (defn abs [x] (cond (< x 0) (- x) (= x 0) x (> x 0) x))
 
 ;; (book p. 499)
 (cond predicate-1 consequent-1  nil predicate-n consequent-n)
 
 ;; (book p. 501)
+(ns-unmap *ns* 'abs)
 (defn abs [x] (if (< x 0) (- x) x))
 
 
 ;; --- Recursive procedures ---
 
 ;; (book p. 501)
+(ns-unmap *ns* 'factorial)
 (defn factorial [n] (if (= n 0) 1 (* n (factorial (- n 1)))))
 
 
@@ -6799,6 +7059,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Local names ---
 
 ;; (book p. 501)
+(ns-unmap *ns* 'f)
 (defn f [radius]
   (let [area (* 4 pi (square radius))
             volume (* 4/3 pi (cube radius))]
@@ -6812,6 +7073,7 @@ gfx-win   ; auto-shows the accumulated curves
 (let [variable-1 expression-1 variable-n expression-n] body)
 
 ;; (book p. 502)
+(ns-unmap *ns* 'factorial)
 (defn factorial [n]
   (letfn [(factlp
                 [count answer]
@@ -6828,6 +7090,7 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Compound data—lists and vectors ---
 
 ;; (book p. 503)
+(ns-unmap *ns* 'a-list)
 (def a-list (list 6 946 8 356 12 620))
 
 
@@ -6855,6 +7118,7 @@ a-list
 ;;=> 946
 
 ;; (book p. 503)
+(ns-unmap *ns* 'another-list)
 (def another-list (cons 32 (rest a-list)))
 
 
@@ -6866,6 +7130,7 @@ another-list
 ;;=> 946
 
 ;; (book p. 504)
+(ns-unmap *ns* 'a-vector)
 (def a-vector (vector 37 63 49 21 88 56))
 
 
@@ -6884,6 +7149,7 @@ a-vector
 ;; --- Symbols ---
 
 ;; (book p. 505)
+(ns-unmap *ns* 'sum?)
 (defn sum? [expression]
   (and (seq? expression) (identical? (first expression) '+)))
 
@@ -6897,6 +7163,7 @@ a-vector
 ;; --- Effects ---
 
 ;; (book p. 505)
+(ns-unmap *ns* 'factorial)
 (defn factorial [n]
   (letfn [(factlp
                 [count answer] (write-line (list count answer))
@@ -6917,13 +7184,16 @@ a-vector
 ;;   720
 
 ;; (book p. 506)
+(ns-unmap *ns* 'make-counter)
 (defn make-counter []
   (let [count (volatile! 0)]
         (fn [] (vreset! count (+ (deref count) 1)) (deref count))))
 
 ;; (book p. 506)
+(ns-unmap *ns* 'c1)
 (def c1 (make-counter))
 
+(ns-unmap *ns* 'c2)
 (def c2 (make-counter))
 
 ;; (book p. 506)
@@ -6947,14 +7217,17 @@ a-vector
 ;;=> 2
 
 ;; (book p. 506)
+(ns-unmap *ns* 'make-collector)
 (defn make-collector []
   (let [lst (volatile! '())]
         [(fn [new] (vreset! lst (cons new (deref lst))) new)
             (fn [] (deref lst))]))
 
 ;; (book p. 506)
+(ns-unmap *ns* 'c3)
 (def c3 (make-collector))
 
+(ns-unmap *ns* 'c4)
 (def c4 (make-collector))
 
 
@@ -7000,9 +7273,11 @@ a-vector
 ;; --- Functions ---
 
 ;; (book p. 510)
+(ns-unmap *ns* 'd)
 (defn d [x1 y1 x2 y2] (sqrt (+ (square (- x2 x1)) (square (- y2 y1)))))
 
 ;; (book p. 510)
+(ns-unmap *ns* 'h)
 (def h (compose cube sin))
 
 
@@ -7014,6 +7289,7 @@ a-vector
 ;;=> .7518269446689928
 
 ;; (book p. 511)
+(ns-unmap *ns* 'g)
 (def g (* cube sin))
 
 
@@ -7040,6 +7316,7 @@ a-vector
 ;;=> (f (g x))
 
 ;; (book p. 512)
+(ns-unmap *ns* 'g)
 (def g (literal-function 'g '(-> (X Real Real) Real)))
 
 (g 'x 'y)
@@ -7049,6 +7326,7 @@ a-vector
 ;; --- Tuples ---
 
 ;; (book p. 513)
+(ns-unmap *ns* 'v)
 (def v (up 'v↑0 'v↑1 'v↑2))
 
 
@@ -7056,6 +7334,7 @@ v
 ;;=> (up v↑0 v↑1 v↑2)
 
 ;; (book p. 513)
+(ns-unmap *ns* 'p)
 (def p (down 'p_0 'p_1 'p_2))
 
 
@@ -7063,6 +7342,7 @@ p
 ;;=> (down p_0 p_1 p_2)
 
 ;; (book p. 513)
+(ns-unmap *ns* 's)
 (def s (up 't (up 'x 'y) (down 'p_x 'p_y)))
 
 ;; (book p. 514)
@@ -7081,6 +7361,7 @@ p
 ;; --- Derivatives ---
 
 ;; (book p. 516)
+(ns-unmap *ns* 'derivative-of-sine)
 (def derivative-of-sine (D sin))
 
 
@@ -7103,6 +7384,7 @@ p
 ;;=> (down (((partial 0) g) x y) (((partial 1) g) x y))
 
 ;; (book p. 519)
+(ns-unmap *ns* 'h)
 (defn h [s] (g (ref s 0) (ref s 1)))
 
 
@@ -7118,6 +7400,7 @@ p
 ;;=> (down (((partial 0) g) x y) (((partial 1) g) x y))
 
 ;; (book p. 521)
+(ns-unmap *ns* 'H)
 (def H
   (literal-function
        'H
@@ -7141,9 +7424,11 @@ p
 ;; --- Structured results ---
 
 ;; (book p. 521)
+(ns-unmap *ns* 'helix)
 (defn helix [t] (up (cos t) (sin t) t))
 
 ;; (book p. 521)
+(ns-unmap *ns* 'helix)
 (def helix (up cos sin identity))
 
 ;; (book p. 522)
@@ -7151,6 +7436,7 @@ p
 ;;=> (up (* -1 (sin t)) (cos t) 1)
 
 ;; (book p. 522)
+(ns-unmap *ns* 'g)
 (defn g [x y] (up (square (+ x y)) (cube (- y x)) (exp (+ x y))))
 
 
@@ -7166,21 +7452,23 @@ p
 ;;       (* (exp y) (exp x))))
 
 ;; (book p. 523)
+(ns-unmap *ns* 'f)
 (defn f [x y] (* (square x) (cube y)))
 
-
+(ns-unmap *ns* 'g)
 (defn g [x y] (up (f x y) y))
 
-
+(ns-unmap *ns* 'h)
 (defn h [x y] (f (f x y) y))
 
 ;; (book p. 523)
+(ns-unmap *ns* 'f)
 (defn f [v] (let [x (ref v 0) y (ref v 1)] (* (square x) (cube y))))
 
-
+(ns-unmap *ns* 'g)
 (defn g [v] (let [x (ref v 0) y (ref v 1)] (up (f v) y)))
 
-
+(ns-unmap *ns* 'h)
 (def h (compose f g))"))
 ;; --- END GENERATED SICM PAGES ---
 
