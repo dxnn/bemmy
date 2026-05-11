@@ -226,12 +226,45 @@
                           (pr-str (:result m))
                           (pr-str expected))))))))))
 
+(defn- emmy-sourced?
+  "Emmy-sourced pages (from test/fixtures/emmy-sicm/chN_test.cljc) end
+  with ' (Emmy)' in their dropdown name. They are tested by Emmy's
+  own CI; the scrape corpus's :expected/:translated doesn't apply
+  there since the page content comes from a different source."
+  [page-name]
+  (str/ends-with? page-name " (Emmy)"))
+
+(defn- check-emmy-page
+  "For Emmy-sourced pages, just eval the page text in a fresh ns and
+  hard-fail on any non-graphics error. The page text already has
+  Emmy's own `(is …)` assertions embedded as `;;=>` comments — the
+  ground truth is Emmy's CI."
+  [page-name page-source]
+  (let [ns         (eq/fresh-eval-ns! (ns-sym page-name))
+        page-forms (read-all-forms page-source)
+        eval-log   (silence-warnings
+                     (fn [] (mapv #(try-eval-form ns %) page-forms)))]
+    (testing page-name
+      (doseq [[i log-entry] (map-indexed vector eval-log)]
+        (when-let [t (:error log-entry)]
+          (is false
+              (format "page form #%d eval threw: %s\n  form: %s\n  cause: %s"
+                      i
+                      (.getMessage ^Throwable t)
+                      (pr-str (:form log-entry))
+                      (root-cause-msg t))))))))
+
 (deftest sicm-pages-end-to-end
   (doseq [[page-name page-source] section-pages]
-    (if-let [k (page-name->section-key page-name)]
-      (check-section-page k page-name page-source)
-      (testing page-name
-        (is false (str "couldn't map page-name to section-key: " page-name))))))
+    (cond
+      (emmy-sourced? page-name)
+      (check-emmy-page page-name page-source)
+
+      :else
+      (if-let [k (page-name->section-key page-name)]
+        (check-section-page k page-name page-source)
+        (testing page-name
+          (is false (str "couldn't map page-name to section-key: " page-name)))))))
 
 (defn -main [& _]
   (let [{:keys [fail error]} (t/run-tests 'sicm.page-eval-test)]
