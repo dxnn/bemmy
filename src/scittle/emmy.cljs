@@ -264,6 +264,22 @@
              '[emmy.mechanics.lagrange :as lag]
              '[emmy.quaternion :as quat])
 
+    ;; Several names below shadow `:refer`'d bindings from emmy.env
+    ;; (R / R2 / R3 type-signature shorthands, evolve / state-advancer
+    ;; SICM-shape wrappers, etc.). SCI's analyzer hard-throws on
+    ;; `(def X …)` when X is currently referred from another ns, so
+    ;; clear the slate first. ns-unmap is idempotent on names that
+    ;; aren't currently mapped, so the unconditional sweep is safe.
+    (doseq [s '[H-central-polar
+                make-quaternion quaternion->vector quaternion->3vector
+                quaternion->rotation-matrix rotation-matrix->quaternion
+                quaternion-ref quaternion->real-part q:r q:i q:j q:k
+                vector-length euclidean-norm
+                R R2 R3 r
+                periodic-drive L-pend L-periodically-driven-pendulum
+                evolve state-advancer]]
+      (ns-unmap *ns* s))
+
     ;; H-central-polar lives in emmy.mechanics.hamilton; expose it as a
     ;; bare name in user so SICM ch-3 pages don't have to qualify.
     (def H-central-polar ham/H-central-polar)
