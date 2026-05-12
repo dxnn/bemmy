@@ -308,14 +308,49 @@
       forms)
     @acc))
 
+(def reserved-names
+  "Names referred into the BEmmy user ns at startup (emmy.env :refer
+  :all + clojure.core's full refer set). A page-local `(def X …)` for
+  any of these triggers SCI's hard 'X already refers to …' throw in
+  the browser. We pre-compute the set on the JVM (see the one-shot
+  command that wrote test/fixtures/reserved-names.edn) and bake it
+  into the generator so colliding defs are emitted as comments
+  rather than runnable code."
+  (-> "test/fixtures/reserved-names.edn"
+      slurp
+      edn/read-string
+      set))
+
+(defn- prune-spec-refers
+  "Given a `[ns :as a :refer [Y Z …]]` require spec, drop entries from
+  the `:refer` list whose names are in reserved-names — re-`:refer`ing
+  a name already in user via emmy.env triggers the same SCI
+  refer-collision throw as a colliding `def`. Returns the spec with
+  `:refer` filtered (and the key dropped entirely if the list goes
+  empty); also drops `:as` aliases of `e` for emmy.env since the
+  alias-walker can't see that no body uses it."
+  [spec]
+  (if (and (vector? spec) (>= (count spec) 3))
+    (let [head (first spec)
+          pairs (apply hash-map (rest spec))
+          refer (:refer pairs)
+          refer' (when (vector? refer)
+                   (filterv #(not (contains? reserved-names (name %))) refer))
+          new-pairs (cond
+                      (nil? refer) pairs
+                      (seq refer') (assoc pairs :refer refer')
+                      :else (dissoc pairs :refer))]
+      (apply vector head (mapcat identity new-pairs)))
+    spec))
+
 (defn- prune-require-by-aliases
   "Given a `(require '[ns :as a :refer […]] …)` helper form and the set
-  of `:as` aliases this page actually references via `alias/sym`, drop
-  quoted specs whose `:as` alias isn't in `used` AND that have no
-  `:refer` list. Specs with `:refer` are conservatively retained — the
-  reffered names get used as bare symbols which the alias walker can't
-  track. When the result is empty, return nil so the caller can drop
-  the helper."
+  of `:as` aliases this page actually references via `alias/sym`, first
+  prune each spec's `:refer` list to drop names already referred from
+  emmy.env (re-:referring them would refer-collide in SCI), then drop
+  whole specs whose `:as` alias isn't in `used` AND that no longer
+  have a `:refer` list. When the result is empty, return nil so the
+  caller can drop the helper."
   [require-form used]
   (let [keep? (fn [quoted-spec]
                 (let [spec (second quoted-spec)
@@ -326,12 +361,54 @@
                   (or (nil? as-alias)
                       (contains? used as-alias)
                       has-refer?)))
-        kept (filter keep? (rest require-form))]
+        pruned (map (fn [quoted-spec]
+                      (list 'quote (prune-spec-refers (second quoted-spec))))
+                    (rest require-form))
+        kept (filter keep? pruned)]
     (when (seq kept)
       (cons 'require kept))))
 
 (defn- is-require? [form]
   (and (seq? form) (= 'require (first form))))
+
+(defn- read-form-or-nil [s]
+  (try
+    (with-open [rdr (java.io.PushbackReader. (java.io.StringReader. s))]
+      (let [f (read reader-opts rdr)]
+        (when-not (= f ::eof) f)))
+    (catch Throwable _ nil)))
+
+(defn- comment-out-if-reserved-def
+  "If `chunk`'s first top-level form is a `(def X …)` / `(defn X …)` /
+  `(defn- X …)` where X collides with the BEmmy user-ns refer set,
+  convert the whole chunk to `;;`-prefixed line comments and prepend
+  a brief header explaining why. Otherwise pass through unchanged.
+  The pedagogical text stays visible (and readable) but the runtime
+  doesn't try to evaluate the colliding def."
+  [chunk]
+  (let [trimmed (str/triml chunk)
+        f (read-form-or-nil trimmed)
+        n (when (and (seq? f)
+                     (contains? '#{def defn defn-} (first f))
+                     (symbol? (second f)))
+            (name (second f)))]
+    (if (and n (contains? reserved-names n))
+      (str ";; (Pedagogical redef of `" n "` — kept as a comment so the page\n"
+           ";;  doesn't collide with the same name `:refer`'d in from emmy.env\n"
+           ";;  or clojure.core. Calls below resolve to that referred binding.)\n"
+           (->> (str/split-lines trimmed)
+                (map #(if (str/blank? %) % (str ";; " %)))
+                (str/join "\n")))
+      chunk)))
+
+(defn- comment-out-reserved-defs
+  "Walk top-level chunks (separated by blank lines) and convert any
+  `(def X …)` whose X collides with the user-ns refer set into
+  commented-out text."
+  [text]
+  (->> (str/split text #"\n[\t ]*\n")
+       (map comment-out-if-reserved-def)
+       (str/join "\n\n")))
 
 (defn- filter-page-helpers
   "Helpers may include a `(require …)` form (always first when
@@ -379,6 +456,7 @@
          (remove nil?)
          (str/join "\n\n")
          render-markers
+         comment-out-reserved-defs
          str/trimr)))
 
 (defn extract-ns-requires

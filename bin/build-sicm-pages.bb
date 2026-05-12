@@ -137,6 +137,44 @@
        (map #(str ";; " %))
        (str/join "\n")))
 
+(def reserved-names
+  "Names referred into the BEmmy user ns at startup (emmy.env :refer
+  :all + clojure.core's full refer set). A page-local `(def X …)` for
+  any of these triggers SCI's hard 'X already refers to …' throw in
+  the browser. Pre-computed on the JVM into the EDN fixture."
+  (-> "test/fixtures/reserved-names.edn"
+      slurp
+      edn/read-string
+      set))
+
+(defn- comment-out-if-reserved-def
+  "If `chunk`'s first top-level form is a `(def X …)` / `(defn X …)` /
+  `(defn- X …)` where X collides with the user-ns refer set, convert
+  the whole chunk to `;;` line comments with a brief header; the
+  pedagogical text stays readable but isn't evaluated. Mirrors the
+  same helper in build-emmy-sicm-pages.bb."
+  [chunk]
+  (let [trimmed (str/triml chunk)
+        f (read-form-or-nil trimmed)
+        n (when (and (seq? f)
+                     (contains? '#{def defn defn-} (first f))
+                     (symbol? (second f)))
+            (name (second f)))]
+    (if (and n (contains? reserved-names n))
+      (str ";; (Pedagogical redef of `" n "` — kept as a comment so the page\n"
+           ";;  doesn't collide with the same name `:refer`'d in from emmy.env\n"
+           ";;  or clojure.core. Calls below resolve to that referred binding.)\n"
+           (->> (str/split-lines trimmed)
+                (map #(if (str/blank? %) % (str ";; " %)))
+                (str/join "\n")))
+      chunk)))
+
+(defn- comment-out-reserved-defs
+  [text]
+  (->> (str/split text #"\n[\t ]*\n")
+       (map comment-out-if-reserved-def)
+       (str/join "\n\n")))
+
 (defn render-entry
   "Render one corpus entry as either prereq or main content. For prereq
   use, we just dump the runnable form(s); for main use, we add a
@@ -157,7 +195,7 @@
       (.append sb (str "\n;; --- " subheading " ---\n\n")))
     (when (and (not prereq?) page)
       (.append sb (str ";; (book p. " page ")\n")))
-    (.append sb (str/trim runnable-text))
+    (.append sb (-> runnable-text str/trim comment-out-reserved-defs))
     (when (and (not prereq?) effective-expected
                (readable-expected? effective-expected))
       (.append sb (str "\n;;=> "

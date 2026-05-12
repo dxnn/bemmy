@@ -727,39 +727,15 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch1_test.cljc ---
 (require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     partial
-     compose
-     up
-     down
-     abs
-     sin
-     cos
-     square
-     expt
-     Lagrange-equations
-     F->C
-     p->r
-     s->r
-     ->local
-     coordinate
-     velocity
-     Rx
-     Ry
-     Rz]]
+  '[emmy.env :as e]
   '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def near (within 1.0E-6))
 
@@ -862,38 +838,14 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch1_test.cljc ---
 (require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     partial
-     compose
-     up
-     down
-     abs
-     sin
-     cos
-     square
-     expt
-     Lagrange-equations
-     F->C
-     p->r
-     s->r
-     ->local
-     coordinate
-     velocity
-     Rx
-     Ry
-     Rz]]
+  '[emmy.env :as e]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def near (within 1.0E-6))
 
@@ -972,40 +924,16 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch1_test.cljc ---
 (require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     partial
-     compose
-     up
-     down
-     abs
-     sin
-     cos
-     square
-     expt
-     Lagrange-equations
-     F->C
-     p->r
-     s->r
-     ->local
-     coordinate
-     velocity
-     Rx
-     Ry
-     Rz]]
+  '[emmy.env :as e]
   '[emmy.examples.pendulum :as pendulum]
   '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def near (within 1.0E-6))
 
@@ -1130,39 +1058,15 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch1_test.cljc ---
 (require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     partial
-     compose
-     up
-     down
-     abs
-     sin
-     cos
-     square
-     expt
-     Lagrange-equations
-     F->C
-     p->r
-     s->r
-     ->local
-     coordinate
-     velocity
-     Rx
-     Ry
-     Rz]]
+  '[emmy.env :as e]
   '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def near (within 1.0E-6))
 
@@ -1232,38 +1136,14 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch1_test.cljc ---
 (require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     partial
-     compose
-     up
-     down
-     abs
-     sin
-     cos
-     square
-     expt
-     Lagrange-equations
-     F->C
-     p->r
-     s->r
-     ->local
-     coordinate
-     velocity
-     Rx
-     Ry
-     Rz]]
+  '[emmy.env :as e]
   '[emmy.examples.driven-pendulum :as driven]
   '[emmy.value :as v :refer [within]])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def near (within 1.0E-6))
 
@@ -1314,39 +1194,15 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch1_test.cljc ---
 (require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     partial
-     compose
-     up
-     down
-     abs
-     sin
-     cos
-     square
-     expt
-     Lagrange-equations
-     F->C
-     p->r
-     s->r
-     ->local
-     coordinate
-     velocity
-     Rx
-     Ry
-     Rz]]
+  '[emmy.env :as e]
   '[emmy.generic :as g]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def near (within 1.0E-6))
 
@@ -1437,38 +1293,14 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch1_test.cljc ---
 (require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     partial
-     compose
-     up
-     down
-     abs
-     sin
-     cos
-     square
-     expt
-     Lagrange-equations
-     F->C
-     p->r
-     s->r
-     ->local
-     coordinate
-     velocity
-     Rx
-     Ry
-     Rz]]
+  '[emmy.env :as e]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def near (within 1.0E-6))
 
@@ -1477,9 +1309,12 @@ gfx-win   ; auto-shows the accumulated curves
   [η]
   (fn [f] (fn [q] (let [g (fn [ε] (f (+ q (* ε η))))] ((D g) 0)))))
 
-(def F->C
- (fn [F]
-   (let [f-bar #(->> % Gamma (compose F) Gamma)] (Gamma-bar f-bar))))
+;; (Pedagogical redef of `F->C` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def F->C
+;;  (fn [F]
+;;    (let [f-bar #(->> % Gamma (compose F) Gamma)] (Gamma-bar f-bar))))
 
 (simplify ((F->C p->r) (->local 't (up 'r 'θ) (up 'rdot 'θdot))))
 ;;=> '(up
@@ -1512,9 +1347,9 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch2_test.cljc ---
 (require
-  '[emmy.env :as e :refer [- / zero? ref partial simplify compose up]]
+  '[emmy.env :as e]
   '[emmy.mechanics.rigid :as r]
-  '[emmy.mechanics.rotation :refer [Euler->M]])
+  '[emmy.mechanics.rotation])
 
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
@@ -1575,9 +1410,9 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch2_test.cljc ---
 (require
-  '[emmy.env :as e :refer [- / zero? ref partial simplify compose up]]
+  '[emmy.env :as e]
   '[emmy.mechanics.rigid :as r]
-  '[emmy.mechanics.rotation :refer [Euler->M]]
+  '[emmy.mechanics.rotation]
   '[emmy.value :as v])
 
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
@@ -1619,9 +1454,9 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch2_test.cljc ---
 (require
-  '[emmy.env :as e :refer [- / zero? ref partial simplify compose up]]
+  '[emmy.env :as e]
   '[emmy.mechanics.rigid :as r]
-  '[emmy.mechanics.rotation :refer [Euler->M]]
+  '[emmy.mechanics.rotation]
   '[emmy.polynomial.gcd :as pg]
   '[emmy.util :as u])
 
@@ -1682,10 +1517,9 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch2_test.cljc ---
 (require
-  '[emmy.env :as e :refer [- / zero? ref partial simplify compose up]]
   '[emmy.generic :as g]
   '[emmy.mechanics.rigid :as r]
-  '[emmy.mechanics.rotation :refer [Euler->M]])
+  '[emmy.mechanics.rotation])
 
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
@@ -1708,11 +1542,14 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch3_test.cljc ---
 (require
-  '[emmy.env :as e :refer [+ zero? up down literal-function]]
+  '[emmy.env :as e]
   '[emmy.mechanics.hamilton :as H]
   '[emmy.mechanics.lagrange :as L])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (do
   (simplify
@@ -1756,11 +1593,12 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch3_test.cljc ---
-(require
-  '[emmy.env :as e :refer [+ zero? up down literal-function]]
-  '[emmy.mechanics.hamilton :as H])
+(require '[emmy.env :as e] '[emmy.mechanics.hamilton :as H])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (do
   (let [F (literal-function 'F (Hamiltonian 2))
@@ -1785,14 +1623,17 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch3_test.cljc ---
 (require
-  '[emmy.env :as e :refer [+ zero? up down literal-function]]
+  '[emmy.env :as e]
   '[emmy.examples.top :as top]
   '[emmy.expression.analyze :as a]
   '[emmy.expression.compile :as c]
   '[emmy.mechanics.lagrange :as L]
   '[emmy.polynomial.gcd :as pg])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (do
   (simplify
@@ -1964,12 +1805,15 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- helpers from ch3_test.cljc ---
 (require
-  '[emmy.env :as e :refer [+ zero? up down literal-function]]
+  '[emmy.env :as e]
   '[emmy.examples.driven-pendulum :as driven]
   '[emmy.expression.analyze :as a]
   '[emmy.expression.compile :as c])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (do
   (let [H ((Lagrangian->Hamiltonian (driven/L 'm 'l 'g 'a 'omega))
@@ -2078,30 +1922,12 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch5_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     ref
-     compose
-     up
-     down
-     sin
-     cos
-     square
-     p->r
-     s->m
-     F->CT
-     literal-function]]
-  '[emmy.mechanics.hamilton :as H])
+(require '[emmy.env :as e] '[emmy.mechanics.hamilton :as H])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (do
   (simplify
@@ -2124,30 +1950,12 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch5_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     ref
-     compose
-     up
-     down
-     sin
-     cos
-     square
-     p->r
-     s->m
-     F->CT
-     literal-function]]
-  '[emmy.mechanics.hamilton :as H])
+(require '[emmy.env :as e] '[emmy.mechanics.hamilton :as H])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def J-func (fn [[_ dh1 dh2]] (up 0 dh2 (- dh1))))
 
@@ -2241,29 +2049,12 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch5_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     ref
-     compose
-     up
-     down
-     sin
-     cos
-     square
-     p->r
-     s->m
-     F->CT
-     literal-function]])
+(require '[emmy.env :as e])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def omega
  (fn [zeta1 zeta2]
@@ -2292,29 +2083,12 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch5_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     ref
-     compose
-     up
-     down
-     sin
-     cos
-     square
-     p->r
-     s->m
-     F->CT
-     literal-function]])
+(require '[emmy.env :as e])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (def C
  (fn [alpha omega omega0]
@@ -2364,30 +2138,12 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch5_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     /
-     D
-     ref
-     compose
-     up
-     down
-     sin
-     cos
-     square
-     p->r
-     s->m
-     F->CT
-     literal-function]]
-  '[emmy.mechanics.hamilton :as H])
+(require '[emmy.env :as e] '[emmy.mechanics.hamilton :as H])
 
-(def simplify (comp e/freeze e/simplify))
+;; (Pedagogical redef of `simplify` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def simplify (comp e/freeze e/simplify))
 
 (letfn
   [(H-harmonic
@@ -2494,8 +2250,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch6_test.cljc ---
-(require
-  '[emmy.env :as e :refer [+ * / simplify up sin cos square exp]])
+(require '[emmy.env :as e])
 
 (def H0
  (fn [alpha] (fn [[_ _ ptheta]] (/ (square ptheta) (* 2 alpha)))))
@@ -2583,28 +2338,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch7_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     =
-     D
-     I
-     simplify
-     compose
-     literal-function
-     up
-     down
-     sin
-     cos
-     square
-     cube
-     exp]]
-  '[emmy.value :refer [within]])
+(require '[emmy.value :refer [within]])
 
 (def near (within 1.0E-6))
 
@@ -2644,28 +2378,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch7_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     =
-     D
-     I
-     simplify
-     compose
-     literal-function
-     up
-     down
-     sin
-     cos
-     square
-     cube
-     exp]]
-  '[emmy.value :refer [within]])
+(require '[emmy.env :as e] '[emmy.value :refer [within]])
 
 (def near (within 1.0E-6))
 
@@ -2705,28 +2418,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch7_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     =
-     D
-     I
-     simplify
-     compose
-     literal-function
-     up
-     down
-     sin
-     cos
-     square
-     cube
-     exp]]
-  '[emmy.value :refer [within]])
+(require '[emmy.value :refer [within]])
 
 (def near (within 1.0E-6))
 
@@ -2748,28 +2440,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 ;; --- helpers from ch7_test.cljc ---
-(require
-  '[emmy.env
-    :as
-    e
-    :refer
-    [+
-     -
-     *
-     =
-     D
-     I
-     simplify
-     compose
-     literal-function
-     up
-     down
-     sin
-     cos
-     square
-     cube
-     exp]]
-  '[emmy.value :refer [within]])
+(require '[emmy.env :as e] '[emmy.value :refer [within]])
 
 (def near (within 1.0E-6))
 
@@ -2817,8 +2488,11 @@ gfx-win   ; auto-shows the accumulated curves
 
 (simplify ((compose (L-free-particle 'm) (Gamma q)) 't))
 
-(defn Lagrangian-action [L q t1 t2]
-  (definite-integral (compose L (Gamma q)) t1 t2))
+;; (Pedagogical redef of `Lagrangian-action` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian-action [L q t1 t2]
+;;   (definite-integral (compose L (Gamma q)) t1 t2))
 
 (defn test-path [t] (up (+ (* 4 t) 7) (+ (* 3 t) 5) (+ (* 2 t) 1)))
 
@@ -2846,14 +2520,17 @@ gfx-win   ; auto-shows the accumulated curves
         (let [path (make-path t0 q0 t1 q1 qs)]
             (Lagrangian-action Lagrangian path t0 t1))))
 
-(defn find-path [Lagrangian t0 q0 t1 q1 n]
-  (let [initial-qs (linear-interpolants q0 q1 n)]
-        (let [minimizing-qs (multidimensional-minimize
-                                 (parametric-path-action
-                                                            Lagrangian
-                                                            t0 q0 t1 q1)
-                                 initial-qs)]
-             (make-path t0 q0 t1 q1 minimizing-qs))))
+;; (Pedagogical redef of `find-path` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn find-path [Lagrangian t0 q0 t1 q1 n]
+;;   (let [initial-qs (linear-interpolants q0 q1 n)]
+;;         (let [minimizing-qs (multidimensional-minimize
+;;                                  (parametric-path-action
+;;                                                             Lagrangian
+;;                                                             t0 q0 t1 q1)
+;;                                  initial-qs)]
+;;              (make-path t0 q0 t1 q1 minimizing-qs))))
 
 (defn L-harmonic [m k]
   (fn [local]
@@ -2883,11 +2560,14 @@ gfx-win   ; auto-shows the accumulated curves
                                     (UP Real (UP* Real) (UP* Real)) Real))
         (Gamma q)))
 
-(defn Lagrange-equations [Lagrangian]
-  (fn [q]
-        (-
-            (D (compose ((partial 2) Lagrangian) (Gamma q)))
-            (compose ((partial 1) Lagrangian) (Gamma q)))))
+;; (Pedagogical redef of `Lagrange-equations` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrange-equations [Lagrangian]
+;;   (fn [q]
+;;         (-
+;;             (D (compose ((partial 2) Lagrangian) (Gamma q)))
+;;             (compose ((partial 1) Lagrangian) (Gamma q)))))
 
 (defn test-path [t]
   (up (+ (* 'a t) 'a0) (+ (* 'b t) 'b0) (+ (* 'c t) 'c0)))
@@ -2976,18 +2656,24 @@ gfx-win   ; auto-shows the accumulated curves
                                                                                                                                   'phi)))
             't))
 
-(defn F->C [F]
-  (fn [local]
-        (up
-            (state->t local) (F local)
-            (+
-                (((partial 0) F) local)
-                (* (((partial 1) F) local) (velocity local))))))
+;; (Pedagogical redef of `F->C` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn F->C [F]
+;;   (fn [local]
+;;         (up
+;;             (state->t local) (F local)
+;;             (+
+;;                 (((partial 0) F) local)
+;;                 (* (((partial 1) F) local) (velocity local))))))
 
-(defn p->r [local]
-  (let [polar-tuple (coordinate local)]
-        (let [r (ref polar-tuple 0) phi (ref polar-tuple 1)]
-             (let [x (* r (cos phi)) y (* r (sin phi))] (up x y)))))
+;; (Pedagogical redef of `p->r` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn p->r [local]
+;;   (let [polar-tuple (coordinate local)]
+;;         (let [r (ref polar-tuple 0) phi (ref polar-tuple 1)]
+;;              (let [x (* r (cos phi)) y (* r (sin phi))] (up x y)))))
 
 (simplify
   (velocity
@@ -3104,9 +2790,12 @@ gfx-win   ; auto-shows the accumulated curves
                                    ((partial 0) P)
                                    (* ((partial 1) P) velocity))))))
 
-(defn Lagrangian->state-derivative [L]
-  (let [acceleration (Lagrangian->acceleration L)]
-        (fn [state] (up 1 (velocity state) (acceleration state)))))
+;; (Pedagogical redef of `Lagrangian->state-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian->state-derivative [L]
+;;   (let [acceleration (Lagrangian->acceleration L)]
+;;         (fn [state] (up 1 (velocity state) (acceleration state)))))
 
 (defn harmonic-state-derivative [m k]
   (Lagrangian->state-derivative (L-harmonic m k)))
@@ -3114,12 +2803,15 @@ gfx-win   ; auto-shows the accumulated curves
 
 ((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
 
-(defn Lagrange-equations-first-order [L]
-  (fn [q v]
-        (let [state-path (qv->state-path q v)]
-            (-
-                 (D state-path)
-                 (compose (Lagrangian->state-derivative L) state-path)))))
+;; (Pedagogical redef of `Lagrange-equations-first-order` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrange-equations-first-order [L]
+;;   (fn [q v]
+;;         (let [state-path (qv->state-path q v)]
+;;             (-
+;;                  (D state-path)
+;;                  (compose (Lagrangian->state-derivative L) state-path)))))
 
 
 (defn qv->state-path [q v] (fn [t] (up t (q t) (v t))))
@@ -3190,8 +2882,11 @@ gfx-win   ; auto-shows the accumulated curves
   0.01 100.0 1.0e-13)
 ;local error tolerance
 
-(defn Lagrangian->energy [L]
-  (let [P ((partial 2) L)] (- (* P velocity) L)))
+;; (Pedagogical redef of `Lagrangian->energy` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian->energy [L]
+;;   (let [P ((partial 2) L)] (- (* P velocity) L)))
 
 (defn T3-spherical [m]
   (fn [state]
@@ -3243,14 +2938,16 @@ gfx-win   ; auto-shows the accumulated curves
                 v (velocity rectangular-state)]
             (ref (cross-product xyz (* m v)) 2))))
 
-
-(defn s->r [spherical-state]
-  (let [q (coordinate spherical-state)]
-        (let [r (ref q 0) theta (ref q 1) phi (ref q 2)]
-             (let [x (* r (sin theta) (cos phi))
-                      y (* r (sin theta) (sin phi))
-                      z (* r (cos theta))]
-                  (up x y z)))))
+;; (Pedagogical redef of `s->r` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn s->r [spherical-state]
+;;   (let [q (coordinate spherical-state)]
+;;         (let [r (ref q 0) theta (ref q 1) phi (ref q 2)]
+;;              (let [x (* r (sin theta) (cos phi))
+;;                       y (* r (sin theta) (sin phi))
+;;                       z (* r (cos theta))]
+;;                   (up x y z)))))
 
 (simplify
   ((compose (ang-mom-z 'm) (F->C s->r))
@@ -3358,40 +3055,52 @@ gfx-win   ; auto-shows the accumulated curves
 
 (the-Noether-integral (up 't (up 'x 'y 'z) (up 'vx 'vy 'vz)))
 
-(defn Gamma-bar [f-bar]
-  (fn [local] ((f-bar (osculating-path local)) (state->t local))))
+;; (Pedagogical redef of `Gamma-bar` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Gamma-bar [f-bar]
+;;   (fn [local] ((f-bar (osculating-path local)) (state->t local))))
 
-(defn F->C [F]
-  (letfn [(C
-                [local]
-                (let [n (vector-length local)]
-                   (letfn [(f-bar
-                                [q-prime]
-                                (let [q (compose F (Gamma q-prime))]
-                                       (Gamma q n)))]
-                        ((Gamma-bar f-bar) local))))]
-        C))
+;; (Pedagogical redef of `F->C` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn F->C [F]
+;;   (letfn [(C
+;;                 [local]
+;;                 (let [n (vector-length local)]
+;;                    (letfn [(f-bar
+;;                                 [q-prime]
+;;                                 (let [q (compose F (Gamma q-prime))]
+;;                                        (Gamma q n)))]
+;;                         ((Gamma-bar f-bar) local))))]
+;;         C))
 
 
 (simplify ((F->C p->r) (up 't (up 'r 'theta) (up 'rdot 'thetadot))))
 
-(defn Dt [F]
-  (letfn [(DtF
-                [state]
-                (let [n (vector-length state)]
-                     (letfn [(DF-on-path
-                                  [q]
-                                  (D
-                                              (compose
-                                                 F
-                                                 (Gamma
-                                                          q (- n 1)))))]
-                          ((Gamma-bar DF-on-path) state))))]
-        DtF))
+;; (Pedagogical redef of `Dt` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Dt [F]
+;;   (letfn [(DtF
+;;                 [state]
+;;                 (let [n (vector-length state)]
+;;                      (letfn [(DF-on-path
+;;                                   [q]
+;;                                   (D
+;;                                               (compose
+;;                                                  F
+;;                                                  (Gamma
+;;                                                           q (- n 1)))))]
+;;                           ((Gamma-bar DF-on-path) state))))]
+;;         DtF))
 
-(defn Euler-Lagrange-operator [L]
-  (- (Dt ((partial 2) L)) ((partial 1) L)))
-.
+;; (Pedagogical redef of `Euler-Lagrange-operator` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Euler-Lagrange-operator [L]
+;;   (- (Dt ((partial 2) L)) ((partial 1) L)))
+;; .
 
 ((Euler-Lagrange-operator (L-harmonic 'm 'k)) (up 't 'x 'v 'a))
 
@@ -3415,11 +3124,14 @@ gfx-win   ; auto-shows the accumulated curves
                                                    (list t1))))))
 
 ;; (book p. 118)
-(defn Rx [angle]
-  (fn [q]
-        (let [ca (cos angle) sa (sin angle)]
-            (let [x (ref q 0) y (ref q 1) z (ref q 2)]
-                 (up x (- (* ca y) (* sa z)) (+ (* sa y) (* ca z)))))))"
+;; (Pedagogical redef of `Rx` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Rx [angle]
+;;   (fn [q]
+;;         (let [ca (cos angle) sa (sin angle)]
+;;             (let [x (ref q 0) y (ref q 1) z (ref q 2)]
+;;                  (up x (- (* ca y) (* sa z)) (+ (* sa y) (* ca z)))))))"
     "SICM 2.2 Kinematics of Rotation"
     ";; ===========================================
 ;; SICM §2.2 — Kinematics of Rotation
@@ -3640,10 +3352,12 @@ gfx-win   ; auto-shows the accumulated curves
         (list 1 0 0) (list 0 (cos angle) (- (sin angle)))
         (list 0 (sin angle) (cos angle))))
 
-
-(defn Euler->M [angles]
-  (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
-        (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
+;; (Pedagogical redef of `Euler->M` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Euler->M [angles]
+;;   (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
+;;         (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
 
 (simplify
   (((M-of-q->omega-body-of-t Euler->M)
@@ -3771,10 +3485,12 @@ gfx-win   ; auto-shows the accumulated curves
         (list 1 0 0) (list 0 (cos angle) (- (sin angle)))
         (list 0 (sin angle) (cos angle))))
 
-
-(defn Euler->M [angles]
-  (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
-        (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
+;; (Pedagogical redef of `Euler->M` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Euler->M [angles]
+;;   (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
+;;         (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
 
 (simplify
   (((M-of-q->omega-body-of-t Euler->M)
@@ -3931,10 +3647,12 @@ gfx-win   ; auto-shows the accumulated curves
         (list 1 0 0) (list 0 (cos angle) (- (sin angle)))
         (list 0 (sin angle) (cos angle))))
 
-
-(defn Euler->M [angles]
-  (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
-        (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
+;; (Pedagogical redef of `Euler->M` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Euler->M [angles]
+;;   (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
+;;         (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
 
 (simplify
   (((M-of-q->omega-body-of-t Euler->M)
@@ -4025,13 +3743,16 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §2.12 — Nonsingular Coordinates and Quaternions ---
 
 ;; (book p. 184)
-(defn angle-axis->rotation-matrix [theta n]
-  (let [nx (ref n 0) ny (ref n 1) nz (ref n 2)]
-        (let [colatitude (acos nz) longitude (atan ny nx)]
-             (*
-                  (Rz-matrix longitude) (Ry-matrix colatitude)
-                  (Rz-matrix theta) (transpose (Ry-matrix colatitude))
-                  (transpose (Rz-matrix longitude))))))
+;; (Pedagogical redef of `angle-axis->rotation-matrix` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn angle-axis->rotation-matrix [theta n]
+;;   (let [nx (ref n 0) ny (ref n 1) nz (ref n 2)]
+;;         (let [colatitude (acos nz) longitude (atan ny nx)]
+;;              (*
+;;                   (Rz-matrix longitude) (Ry-matrix colatitude)
+;;                   (Rz-matrix theta) (transpose (Ry-matrix colatitude))
+;;                   (transpose (Rz-matrix longitude))))))
 
 ;; (book p. 184)
 (defn quaternion->angle-axis [q]
@@ -4188,10 +3909,12 @@ gfx-win   ; auto-shows the accumulated curves
         (list 1 0 0) (list 0 (cos angle) (- (sin angle)))
         (list 0 (sin angle) (cos angle))))
 
-
-(defn Euler->M [angles]
-  (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
-        (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
+;; (Pedagogical redef of `Euler->M` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Euler->M [angles]
+;;   (let [theta (ref angles 0) phi (ref angles 1) psi (ref angles 2)]
+;;         (* (Rz-matrix phi) (Rx-matrix theta) (Rz-matrix psi))))
 
 (simplify
   (((M-of-q->omega-body-of-t Euler->M)
@@ -4279,13 +4002,16 @@ gfx-win   ; auto-shows the accumulated curves
                                      't (up 'theta 'phi 'psi)
                                      (up 'thetadot 'phidot 'psidot))))
 
-(defn angle-axis->rotation-matrix [theta n]
-  (let [nx (ref n 0) ny (ref n 1) nz (ref n 2)]
-        (let [colatitude (acos nz) longitude (atan ny nx)]
-             (*
-                  (Rz-matrix longitude) (Ry-matrix colatitude)
-                  (Rz-matrix theta) (transpose (Ry-matrix colatitude))
-                  (transpose (Rz-matrix longitude))))))
+;; (Pedagogical redef of `angle-axis->rotation-matrix` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn angle-axis->rotation-matrix [theta n]
+;;   (let [nx (ref n 0) ny (ref n 1) nz (ref n 2)]
+;;         (let [colatitude (acos nz) longitude (atan ny nx)]
+;;              (*
+;;                   (Rz-matrix longitude) (Ry-matrix colatitude)
+;;                   (Rz-matrix theta) (transpose (Ry-matrix colatitude))
+;;                   (transpose (Rz-matrix longitude))))))
 
 (defn quaternion->angle-axis [q]
   (let [v (quaternion->3vector q)
@@ -4452,20 +4178,26 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
-(defn Hamilton-equations [Hamiltonian]
-  (fn [q p]
-        (let [state-path (qp->H-state-path q p)]
-            (-
-                 (D state-path)
-                 (compose
-                    (Hamiltonian->state-derivative Hamiltonian)
-                    state-path)))))
+;; (Pedagogical redef of `Hamilton-equations` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Hamilton-equations [Hamiltonian]
+;;   (fn [q p]
+;;         (let [state-path (qp->H-state-path q p)]
+;;             (-
+;;                  (D state-path)
+;;                  (compose
+;;                     (Hamiltonian->state-derivative Hamiltonian)
+;;                     state-path)))))
 
-(defn Hamiltonian->state-derivative [Hamiltonian]
-  (fn [H-state]
-        (up
-            1 (((partial 2) Hamiltonian) H-state)
-            (- (((partial 1) Hamiltonian) H-state)))))
+;; (Pedagogical redef of `Hamiltonian->state-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Hamiltonian->state-derivative [Hamiltonian]
+;;   (fn [H-state]
+;;         (up
+;;             1 (((partial 2) Hamiltonian) H-state)
+;;             (- (((partial 1) Hamiltonian) H-state)))))
 
 (defn qp->H-state-path [q p] (fn [t] (up t (q t) (p t))))
 
@@ -4486,24 +4218,30 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Computing Hamiltonians ---
 
 ;; (book p. 212)
-(defn Legendre-transform [F]
-  (let [w-of-v (D F)]
-        (letfn [(G
-                     [w]
-                     (let [zero (compatible-zero w)]
-                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                             (let [v (solve-linear-left M (- w b))]
-                                  (- (* w v) (F v))))))]
-             G)))
+;; (Pedagogical redef of `Legendre-transform` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Legendre-transform [F]
+;;   (let [w-of-v (D F)]
+;;         (letfn [(G
+;;                      [w]
+;;                      (let [zero (compatible-zero w)]
+;;                         (let [M ((D w-of-v) zero) b (w-of-v zero)]
+;;                              (let [v (solve-linear-left M (- w b))]
+;;                                   (- (* w v) (F v))))))]
+;;              G)))
 
 ;; (book p. 212)
-(defn Lagrangian->Hamiltonian [Lagrangian]
-  (fn [H-state]
-        (let [t (state->t H-state)
-                q (coordinate H-state)
-                p (momentum H-state)]
-            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
-                 ((Legendre-transform L) p)))))
+;; (Pedagogical redef of `Lagrangian->Hamiltonian` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian->Hamiltonian [Lagrangian]
+;;   (fn [H-state]
+;;         (let [t (state->t H-state)
+;;                 q (coordinate H-state)
+;;                 p (momentum H-state)]
+;;             (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+;;                  ((Legendre-transform L) p)))))
 
 ;; (book p. 212)
 (defn Hamiltonian->Lagrangian [Hamiltonian]
@@ -4554,20 +4292,26 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
-(defn Hamilton-equations [Hamiltonian]
-  (fn [q p]
-        (let [state-path (qp->H-state-path q p)]
-            (-
-                 (D state-path)
-                 (compose
-                    (Hamiltonian->state-derivative Hamiltonian)
-                    state-path)))))
+;; (Pedagogical redef of `Hamilton-equations` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Hamilton-equations [Hamiltonian]
+;;   (fn [q p]
+;;         (let [state-path (qp->H-state-path q p)]
+;;             (-
+;;                  (D state-path)
+;;                  (compose
+;;                     (Hamiltonian->state-derivative Hamiltonian)
+;;                     state-path)))))
 
-(defn Hamiltonian->state-derivative [Hamiltonian]
-  (fn [H-state]
-        (up
-            1 (((partial 2) Hamiltonian) H-state)
-            (- (((partial 1) Hamiltonian) H-state)))))
+;; (Pedagogical redef of `Hamiltonian->state-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Hamiltonian->state-derivative [Hamiltonian]
+;;   (fn [H-state]
+;;         (up
+;;             1 (((partial 2) Hamiltonian) H-state)
+;;             (- (((partial 1) Hamiltonian) H-state)))))
 
 (defn qp->H-state-path [q p] (fn [t] (up t (q t) (p t))))
 
@@ -4582,23 +4326,29 @@ gfx-win   ; auto-shows the accumulated curves
                 p (down (literal-function 'p_x) (literal-function 'p_y))]
             (((Hamilton-equations (H-rectangular 'm V)) q p) 't)))
 
-(defn Legendre-transform [F]
-  (let [w-of-v (D F)]
-        (letfn [(G
-                     [w]
-                     (let [zero (compatible-zero w)]
-                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                             (let [v (solve-linear-left M (- w b))]
-                                  (- (* w v) (F v))))))]
-             G)))
+;; (Pedagogical redef of `Legendre-transform` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Legendre-transform [F]
+;;   (let [w-of-v (D F)]
+;;         (letfn [(G
+;;                      [w]
+;;                      (let [zero (compatible-zero w)]
+;;                         (let [M ((D w-of-v) zero) b (w-of-v zero)]
+;;                              (let [v (solve-linear-left M (- w b))]
+;;                                   (- (* w v) (F v))))))]
+;;              G)))
 
-(defn Lagrangian->Hamiltonian [Lagrangian]
-  (fn [H-state]
-        (let [t (state->t H-state)
-                q (coordinate H-state)
-                p (momentum H-state)]
-            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
-                 ((Legendre-transform L) p)))))
+;; (Pedagogical redef of `Lagrangian->Hamiltonian` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian->Hamiltonian [Lagrangian]
+;;   (fn [H-state]
+;;         (let [t (state->t H-state)
+;;                 q (coordinate H-state)
+;;                 p (momentum H-state)]
+;;             (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+;;                  ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
@@ -4798,20 +4548,26 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
-(defn Hamilton-equations [Hamiltonian]
-  (fn [q p]
-        (let [state-path (qp->H-state-path q p)]
-            (-
-                 (D state-path)
-                 (compose
-                    (Hamiltonian->state-derivative Hamiltonian)
-                    state-path)))))
+;; (Pedagogical redef of `Hamilton-equations` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Hamilton-equations [Hamiltonian]
+;;   (fn [q p]
+;;         (let [state-path (qp->H-state-path q p)]
+;;             (-
+;;                  (D state-path)
+;;                  (compose
+;;                     (Hamiltonian->state-derivative Hamiltonian)
+;;                     state-path)))))
 
-(defn Hamiltonian->state-derivative [Hamiltonian]
-  (fn [H-state]
-        (up
-            1 (((partial 2) Hamiltonian) H-state)
-            (- (((partial 1) Hamiltonian) H-state)))))
+;; (Pedagogical redef of `Hamiltonian->state-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Hamiltonian->state-derivative [Hamiltonian]
+;;   (fn [H-state]
+;;         (up
+;;             1 (((partial 2) Hamiltonian) H-state)
+;;             (- (((partial 1) Hamiltonian) H-state)))))
 
 (defn qp->H-state-path [q p] (fn [t] (up t (q t) (p t))))
 
@@ -4826,23 +4582,29 @@ gfx-win   ; auto-shows the accumulated curves
                 p (down (literal-function 'p_x) (literal-function 'p_y))]
             (((Hamilton-equations (H-rectangular 'm V)) q p) 't)))
 
-(defn Legendre-transform [F]
-  (let [w-of-v (D F)]
-        (letfn [(G
-                     [w]
-                     (let [zero (compatible-zero w)]
-                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                             (let [v (solve-linear-left M (- w b))]
-                                  (- (* w v) (F v))))))]
-             G)))
+;; (Pedagogical redef of `Legendre-transform` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Legendre-transform [F]
+;;   (let [w-of-v (D F)]
+;;         (letfn [(G
+;;                      [w]
+;;                      (let [zero (compatible-zero w)]
+;;                         (let [M ((D w-of-v) zero) b (w-of-v zero)]
+;;                              (let [v (solve-linear-left M (- w b))]
+;;                                   (- (* w v) (F v))))))]
+;;              G)))
 
-(defn Lagrangian->Hamiltonian [Lagrangian]
-  (fn [H-state]
-        (let [t (state->t H-state)
-                q (coordinate H-state)
-                p (momentum H-state)]
-            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
-                 ((Legendre-transform L) p)))))
+;; (Pedagogical redef of `Lagrangian->Hamiltonian` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian->Hamiltonian [Lagrangian]
+;;   (fn [H-state]
+;;         (let [t (state->t H-state)
+;;                 q (coordinate H-state)
+;;                 p (momentum H-state)]
+;;             (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+;;                  ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
@@ -5117,20 +4879,26 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; --- Prerequisites from earlier sections of Chapter 3 ---
 
-(defn Hamilton-equations [Hamiltonian]
-  (fn [q p]
-        (let [state-path (qp->H-state-path q p)]
-            (-
-                 (D state-path)
-                 (compose
-                    (Hamiltonian->state-derivative Hamiltonian)
-                    state-path)))))
+;; (Pedagogical redef of `Hamilton-equations` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Hamilton-equations [Hamiltonian]
+;;   (fn [q p]
+;;         (let [state-path (qp->H-state-path q p)]
+;;             (-
+;;                  (D state-path)
+;;                  (compose
+;;                     (Hamiltonian->state-derivative Hamiltonian)
+;;                     state-path)))))
 
-(defn Hamiltonian->state-derivative [Hamiltonian]
-  (fn [H-state]
-        (up
-            1 (((partial 2) Hamiltonian) H-state)
-            (- (((partial 1) Hamiltonian) H-state)))))
+;; (Pedagogical redef of `Hamiltonian->state-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Hamiltonian->state-derivative [Hamiltonian]
+;;   (fn [H-state]
+;;         (up
+;;             1 (((partial 2) Hamiltonian) H-state)
+;;             (- (((partial 1) Hamiltonian) H-state)))))
 
 (defn qp->H-state-path [q p] (fn [t] (up t (q t) (p t))))
 
@@ -5145,23 +4913,29 @@ gfx-win   ; auto-shows the accumulated curves
                 p (down (literal-function 'p_x) (literal-function 'p_y))]
             (((Hamilton-equations (H-rectangular 'm V)) q p) 't)))
 
-(defn Legendre-transform [F]
-  (let [w-of-v (D F)]
-        (letfn [(G
-                     [w]
-                     (let [zero (compatible-zero w)]
-                        (let [M ((D w-of-v) zero) b (w-of-v zero)]
-                             (let [v (solve-linear-left M (- w b))]
-                                  (- (* w v) (F v))))))]
-             G)))
+;; (Pedagogical redef of `Legendre-transform` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Legendre-transform [F]
+;;   (let [w-of-v (D F)]
+;;         (letfn [(G
+;;                      [w]
+;;                      (let [zero (compatible-zero w)]
+;;                         (let [M ((D w-of-v) zero) b (w-of-v zero)]
+;;                              (let [v (solve-linear-left M (- w b))]
+;;                                   (- (* w v) (F v))))))]
+;;              G)))
 
-(defn Lagrangian->Hamiltonian [Lagrangian]
-  (fn [H-state]
-        (let [t (state->t H-state)
-                q (coordinate H-state)
-                p (momentum H-state)]
-            (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
-                 ((Legendre-transform L) p)))))
+;; (Pedagogical redef of `Lagrangian->Hamiltonian` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian->Hamiltonian [Lagrangian]
+;;   (fn [H-state]
+;;         (let [t (state->t H-state)
+;;                 q (coordinate H-state)
+;;                 p (momentum H-state)]
+;;             (letfn [(L [qdot] (Lagrangian (up t q qdot)))]
+;;                  ((Legendre-transform L) p)))))
 
 (defn Hamiltonian->Lagrangian [Hamiltonian]
   (fn [L-state]
@@ -5416,12 +5190,15 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §3.9 — Standard Map ---
 
 ;; (book p. 278)
-(defn standard-map [K]
-  (fn [theta I return failure]
-        (let [nI (+ I (* K (sin theta)))]
-            (return
-                 ((principal-value (* 2 Math/PI)) (+ theta nI))
-                 ((principal-value (* 2 Math/PI)) nI)))))
+;; (Pedagogical redef of `standard-map` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn standard-map [K]
+;;   (fn [theta I return failure]
+;;         (let [nI (+ I (* K (sin theta)))]
+;;             (return
+;;                  ((principal-value (* 2 Math/PI)) (+ theta nI))
+;;                  ((principal-value (* 2 Math/PI)) nI)))))
 
 ;; (book p. 279)
 (def window (frame 0.0 (* 2 Math/PI) 0.0 (* 2 Math/PI)))
@@ -5726,14 +5503,17 @@ gfx-win   ; auto-shows the accumulated curves
         (compose (Hamiltonian->state-derivative H) C)
         (* (D C) (Hamiltonian->state-derivative Hprime))))
 
-(defn polar-canonical [alpha]
-  (fn [state]
-        (let [t (state->t state)
-                theta (coordinate state)
-                I (momentum state)]
-            (let [x (* (sqrt (/ (* 2 I) alpha)) (sin theta))
-                     p_x (* (sqrt (* 2 alpha I)) (cos theta))]
-                 (up t x p_x)))))
+;; (Pedagogical redef of `polar-canonical` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn polar-canonical [alpha]
+;;   (fn [state]
+;;         (let [t (state->t state)
+;;                 theta (coordinate state)
+;;                 I (momentum state)]
+;;             (let [x (* (sqrt (/ (* 2 I) alpha)) (sin theta))
+;;                      p_x (* (sqrt (* 2 alpha I)) (cos theta))]
+;;                  (up t x p_x)))))
 
 (defn H-harmonic [m k]
   (fn [s]
@@ -5901,14 +5681,17 @@ gfx-win   ; auto-shows the accumulated curves
         (compose (Hamiltonian->state-derivative H) C)
         (* (D C) (Hamiltonian->state-derivative Hprime))))
 
-(defn polar-canonical [alpha]
-  (fn [state]
-        (let [t (state->t state)
-                theta (coordinate state)
-                I (momentum state)]
-            (let [x (* (sqrt (/ (* 2 I) alpha)) (sin theta))
-                     p_x (* (sqrt (* 2 alpha I)) (cos theta))]
-                 (up t x p_x)))))
+;; (Pedagogical redef of `polar-canonical` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn polar-canonical [alpha]
+;;   (fn [state]
+;;         (let [t (state->t state)
+;;                 theta (coordinate state)
+;;                 I (momentum state)]
+;;             (let [x (* (sqrt (/ (* 2 I) alpha)) (sin theta))
+;;                      p_x (* (sqrt (* 2 alpha I)) (cos theta))]
+;;                  (up t x p_x)))))
 
 (defn H-harmonic [m k]
   (fn [s]
@@ -6068,8 +5851,11 @@ gfx-win   ; auto-shows the accumulated curves
              (- J (* M J (transpose M))))))
 
 ;; (book p. 355)
-(defn symplectic-transform? [C]
-  (fn [s] (symplectic-matrix? (qp-submatrix ((D-as-matrix C) s)))))
+;; (Pedagogical redef of `symplectic-transform?` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn symplectic-transform? [C]
+;;   (fn [s] (symplectic-matrix? (qp-submatrix ((D-as-matrix C) s)))))
 
 ;; (book p. 356)
 (defn F [s]
@@ -6168,14 +5954,17 @@ gfx-win   ; auto-shows the accumulated curves
         (compose (Hamiltonian->state-derivative H) C)
         (* (D C) (Hamiltonian->state-derivative Hprime))))
 
-(defn polar-canonical [alpha]
-  (fn [state]
-        (let [t (state->t state)
-                theta (coordinate state)
-                I (momentum state)]
-            (let [x (* (sqrt (/ (* 2 I) alpha)) (sin theta))
-                     p_x (* (sqrt (* 2 alpha I)) (cos theta))]
-                 (up t x p_x)))))
+;; (Pedagogical redef of `polar-canonical` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn polar-canonical [alpha]
+;;   (fn [state]
+;;         (let [t (state->t state)
+;;                 theta (coordinate state)
+;;                 I (momentum state)]
+;;             (let [x (* (sqrt (/ (* 2 I) alpha)) (sin theta))
+;;                      p_x (* (sqrt (* 2 alpha I)) (cos theta))]
+;;                  (up t x p_x)))))
 
 (defn H-harmonic [m k]
   (fn [s]
@@ -6307,8 +6096,11 @@ gfx-win   ; auto-shows the accumulated curves
         (let [J (symplectic-unit (quot two-n 2))]
              (- J (* M J (transpose M))))))
 
-(defn symplectic-transform? [C]
-  (fn [s] (symplectic-matrix? (qp-submatrix ((D-as-matrix C) s)))))
+;; (Pedagogical redef of `symplectic-transform?` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn symplectic-transform? [C]
+;;   (fn [s] (symplectic-matrix? (qp-submatrix ((D-as-matrix C) s)))))
 
 (defn F [s]
   ((literal-function
@@ -6351,12 +6143,18 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- §5.8 — Projects ---
 
 ;; (book p. 410)
-(defn qp-submatrix [m]
-  (m:submatrix m 1 (m:num-rows m) 1 (m:num-cols m)))
+;; (Pedagogical redef of `qp-submatrix` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn qp-submatrix [m]
+;;   (m:submatrix m 1 (m:num-rows m) 1 (m:num-cols m)))
 
 ;; (book p. 410)
-(defn D-as-matrix [F]
-  (fn [s] (s->m (compatible-shape (F s)) ((D F) s) s)))"
+;; (Pedagogical redef of `D-as-matrix` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn D-as-matrix [F]
+;;   (fn [s] (s->m (compatible-shape (F s)) ((D F) s) s)))"
     "SICM 6.4 Lie Series"
     ";; ===========================================
 ;; SICM §6.4 — Lie Series
@@ -6429,10 +6227,16 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Computing Lie series ---
 
 ;; (book p. 448)
-(defn Lie-derivative [H] (fn [F] (Poisson-bracket F H)))
+;; (Pedagogical redef of `Lie-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lie-derivative [H] (fn [F] (Poisson-bracket F H)))
 
 ;; (book p. 448)
-(defn Lie-transform [H t] (exp (* t (Lie-derivative H))))
+;; (Pedagogical redef of `Lie-transform` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lie-transform [H t] (exp (* t (Lie-derivative H))))
 
 ;; (book p. 448)
 (defn H-harmonic [m k]
@@ -6572,9 +6376,15 @@ gfx-win   ; auto-shows the accumulated curves
   (fn [x] (println (simplify x)))
   (take 6 (((exp (* 'epsilon D)) (fn [x] (sqrt (+ x 1)))) 0)))
 
-(defn Lie-derivative [H] (fn [F] (Poisson-bracket F H)))
+;; (Pedagogical redef of `Lie-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lie-derivative [H] (fn [F] (Poisson-bracket F H)))
 
-(defn Lie-transform [H t] (exp (* t (Lie-derivative H))))
+;; (Pedagogical redef of `Lie-transform` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lie-transform [H t] (exp (* t (Lie-derivative H))))
 
 (defn H-harmonic [m k]
   (fn [state]
@@ -6669,8 +6479,11 @@ gfx-win   ; auto-shows the accumulated curves
 ;; (book p. 455)
 (defn Lie-derivative-procedure [H] (fn [F] (Poisson-bracket F H)))
 
-(def Lie-derivative
-  (make-operator Lie-derivative-procedure 'Lie-derivative))"
+;; (Pedagogical redef of `Lie-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def Lie-derivative
+;;   (make-operator Lie-derivative-procedure 'Lie-derivative))"
     "SICM 8 Appendix: Scheme"
     ";; ===========================================
 ;; SICM §8 — Appendix: Scheme
@@ -6697,16 +6510,27 @@ gfx-win   ; auto-shows the accumulated curves
 ;; --- Definitions ---
 
 ;; (book p. 499)
-(def pi 3.141592653589793)
+;; (Pedagogical redef of `pi` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (def pi 3.141592653589793)
 
-
-(defn square [x] (* x x))
+;; (Pedagogical redef of `square` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn square [x] (* x x))
 
 ;; (book p. 499)
-(defn square [x] (* x x))
+;; (Pedagogical redef of `square` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn square [x] (* x x))
 
 ;; (book p. 499)
-(defn compose [f g] (fn [x] (f (g x))))
+;; (Pedagogical redef of `compose` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn compose [f g] (fn [x] (f (g x))))
 
 
 ((compose square sin) 2)
@@ -6717,28 +6541,42 @@ gfx-win   ; auto-shows the accumulated curves
 ;;=> .826821810431806
 
 ;; (book p. 499)
-(defn compose [f g] (fn [x] (f (g x))))
+;; (Pedagogical redef of `compose` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn compose [f g] (fn [x] (f (g x))))
 
-
-(defn compose [f g] (fn [x] (f (g x))))
+;; (Pedagogical redef of `compose` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn compose [f g] (fn [x] (f (g x))))
 
 
 ;; --- Conditionals ---
 
 ;; (book p. 499)
-(defn abs [x] (cond (< x 0) (- x) (= x 0) x (> x 0) x))
+;; (Pedagogical redef of `abs` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn abs [x] (cond (< x 0) (- x) (= x 0) x (> x 0) x))
 
 ;; (book p. 499)
 (cond predicate-1 consequent-1  nil predicate-n consequent-n)
 
 ;; (book p. 501)
-(defn abs [x] (if (< x 0) (- x) x))
+;; (Pedagogical redef of `abs` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn abs [x] (if (< x 0) (- x) x))
 
 
 ;; --- Recursive procedures ---
 
 ;; (book p. 501)
-(defn factorial [n] (if (= n 0) 1 (* n (factorial (- n 1)))))
+;; (Pedagogical redef of `factorial` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn factorial [n] (if (= n 0) 1 (* n (factorial (- n 1)))))
 
 
 (factorial 6)
@@ -6765,13 +6603,16 @@ gfx-win   ; auto-shows the accumulated curves
 (let [variable-1 expression-1 variable-n expression-n] body)
 
 ;; (book p. 502)
-(defn factorial [n]
-  (letfn [(factlp
-                [count answer]
-                (if (> count n)
-                        answer
-                        (factlp (+ count 1) (* count answer))))]
-        (factlp 1 1)))
+;; (Pedagogical redef of `factorial` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn factorial [n]
+;;   (letfn [(factlp
+;;                 [count answer]
+;;                 (if (> count n)
+;;                         answer
+;;                         (factlp (+ count 1) (* count answer))))]
+;;         (factlp 1 1)))
 
 
 (factorial 6)
@@ -6850,13 +6691,16 @@ a-vector
 ;; --- Effects ---
 
 ;; (book p. 505)
-(defn factorial [n]
-  (letfn [(factlp
-                [count answer] (write-line (list count answer))
-                (if (> count n)
-                        answer
-                        (factlp (+ count 1) (* count answer))))]
-        (factlp 1 1)))
+;; (Pedagogical redef of `factorial` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn factorial [n]
+;;   (letfn [(factlp
+;;                 [count answer] (write-line (list count answer))
+;;                 (if (> count n)
+;;                         answer
+;;                         (factlp (+ count 1) (* count answer))))]
+;;         (factlp 1 1)))
 
 ;; (book p. 506)
 (factorial 6)
@@ -6953,7 +6797,10 @@ a-vector
 ;; --- Functions ---
 
 ;; (book p. 510)
-(defn d [x1 y1 x2 y2] (sqrt (+ (square (- x2 x1)) (square (- y2 y1)))))
+;; (Pedagogical redef of `d` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn d [x1 y1 x2 y2] (sqrt (+ (square (- x2 x1)) (square (- y2 y1)))))
 
 ;; (book p. 510)
 (def h (compose cube sin))
