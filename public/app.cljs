@@ -1045,7 +1045,8 @@ gfx-win   ; auto-shows the accumulated curves
   ;;          (* l m θdot (sin θ) ((D y_s) t))
   ;;          (* g l m (cos θ))
   ;;          (* -1 g m (y_s t))
-  ;;          (* (/ 1 2) m (expt ((D y_s) t) 2))))"
+  ;;          (* (/ 1 2) m (expt ((D y_s) t) 2)))
+  )"
     "SICM 1.7 Evolution of Dynamical State – part 1 (Emmy)"
     ";; ============================================================
 ;; SICM 1.7 Evolution of Dynamical State – part 1 (Emmy)
@@ -1280,7 +1281,8 @@ gfx-win   ; auto-shows the accumulated curves
   ;;=> '(down
   ;;          (+ (* -1 m vy z) (* m vz y))
   ;;          (+ (* m vx z) (* -1 m vz x))
-  ;;          (+ (* -1 m vx y) (* m vy x))))"
+  ;;          (+ (* -1 m vx y) (* m vy x)))
+  )"
     "SICM 1.9 Abstraction of Path Functions (Emmy)"
     ";; ============================================================
 ;; SICM 1.9 Abstraction of Path Functions (Emmy)
@@ -1567,7 +1569,8 @@ gfx-win   ; auto-shows the accumulated curves
   ;;            (/ (+ (* m ((D y) t)) (* -1 (p_y t))) m))
   ;;          (down
   ;;            (+ ((D p_x) t) (((partial 0) V) (x t) (y t)))
-  ;;            (+ ((D p_y) t) (((partial 1) V) (x t) (y t))))))
+  ;;            (+ ((D p_y) t) (((partial 1) V) (x t) (y t)))))
+  )
 
 (do
   (simplify
@@ -1581,7 +1584,8 @@ gfx-win   ; auto-shows the accumulated curves
   ;;            (* m (V x y))
   ;;            (* (/ 1 2) (expt p_x 2))
   ;;            (* (/ 1 2) (expt p_y 2)))
-  ;;          m))"
+  ;;          m)
+  )"
     "SICM 3.2 Poisson Brackets (Emmy)"
     ";; ============================================================
 ;; SICM 3.2 Poisson Brackets (Emmy)
@@ -1667,7 +1671,8 @@ gfx-win   ; auto-shows the accumulated curves
   ;;                (* m (expt (r t) 3) ((D V) (r t)))
   ;;                (* -1 (expt (p_phi t) 2)))
   ;;              (* m (expt (r t) 3)))
-  ;;            ((D p_phi) t))))
+  ;;            ((D p_phi) t)))
+  )
 
 (do
   (simplify
@@ -1681,7 +1686,8 @@ gfx-win   ; auto-shows the accumulated curves
   ;;            (* (/ 1 2) C (expt p_theta 2) (expt (sin theta) 2))
   ;;            (* -1 C p_phi p_psi (cos theta))
   ;;            (* (/ 1 2) C (expt p_phi 2)))
-  ;;          (* A C (expt (sin theta) 2))))
+  ;;          (* A C (expt (sin theta) 2)))
+  )
 
 (do
   (let [top-state (up
@@ -1727,7 +1733,8 @@ gfx-win   ; auto-shows the accumulated curves
       ;;                    (* -1 p_phi p_psi))
       ;;                  (* A (expt (sin theta) 3)))
       ;;                0
-      ;;                0)))
+      ;;                0))
+      )
     (c/compile-state-fn
         (fn [] sysder)
         []
@@ -1792,7 +1799,8 @@ gfx-win   ; auto-shows the accumulated curves
     ;;               \"  const _59 = 0.0;\"
     ;;               \"  const _60 = [_58, _59, _59];\"
     ;;               \"  const _61 = [_08, _33, _60];\"
-    ;;               \"  return _61;\"]))]))"
+    ;;               \"  return _61;\"]))]
+    ))"
     "SICM 3.5 Phase Space Evolution (Emmy)"
     ";; ============================================================
 ;; SICM 3.5 Phase Space Evolution (Emmy)
@@ -1833,7 +1841,8 @@ gfx-win   ; auto-shows the accumulated curves
     ;;              (* a l m omega p_theta (sin (* omega t)) (sin theta))
     ;;              (* -1 g (expt l 3) (expt m 2) (cos theta))
     ;;              (* (/ 1 2) (expt p_theta 2)))
-    ;;            (* (expt l 2) m)))
+    ;;            (* (expt l 2) m))
+    )
   (let [sysder (simplify
                  ((Hamiltonian->state-derivative
                     (Lagrangian->Hamiltonian
@@ -1910,7 +1919,8 @@ gfx-win   ; auto-shows the accumulated curves
     ;;               \"  const _40 = _35 + _39;\"
     ;;               \"  const _41 = _40 / l;\"
     ;;               \"  const _42 = [_04, _17, _41];\"
-    ;;               \"  return _42;\"]))]))"
+    ;;               \"  return _42;\"]))]
+    ))"
     "SICM 5.1 Point Transformations (Emmy)"
     ";; ============================================================
 ;; SICM 5.1 Point Transformations (Emmy)
@@ -1938,7 +1948,8 @@ gfx-win   ; auto-shows the accumulated curves
   ;;            (* m (expt r 2) (V r))
   ;;            (* (/ 1 2) (expt p_r 2) (expt r 2))
   ;;            (* (/ 1 2) (expt p_phi 2)))
-  ;;          (* m (expt r 2))))"
+  ;;          (* m (expt r 2)))
+  )"
     "SICM 5.2 General Canonical Transformations (Emmy)"
     ";; ============================================================
 ;; SICM 5.2 General Canonical Transformations (Emmy)
@@ -2005,13 +2016,15 @@ gfx-win   ; auto-shows the accumulated curves
     ;;            [0 0 0 0 0]
     ;;            [0 0 0 0 0]
     ;;            [0 0 0 0 0]
-    ;;            [0 0 0 0 0])))
+    ;;            [0 0 0 0 0])
+    ))
 
 (do
   (simplify
       ((symplectic-transform? (F->CT p->r))
         (up 't (up 'r 'theta) (down 'p_r 'p_theta))))
-  ;;=> '(matrix-by-rows [0 0 0 0] [0 0 0 0] [0 0 0 0] [0 0 0 0]))
+  ;;=> '(matrix-by-rows [0 0 0 0] [0 0 0 0] [0 0 0 0] [0 0 0 0])
+  )
 
 (do
   (let [rotating (fn [n]
@@ -2037,7 +2050,8 @@ gfx-win   ; auto-shows the accumulated curves
     (simplify
         ((canonical-K? (C-rotating 'Omega) (K 'Omega))
           (up 't (up 'x 'y 'z) (down 'p_x 'p_y 'p_z))))
-    ;;=> '(up 0 (up 0 0 0) (down 0 0 0))))"
+    ;;=> '(up 0 (up 0 0 0) (down 0 0 0))
+    ))"
     "SICM 5.3 Invariants of Canonical Transformations (Emmy)"
     ";; ============================================================
 ;; SICM 5.3 Invariants of Canonical Transformations (Emmy)
@@ -2238,7 +2252,8 @@ gfx-win   ; auto-shows the accumulated curves
     ;;                    ((D U) r_0))
     ;;                  (* (expt dt 3) p_phi_0 (expt p_r_0 2) (expt r_0 2))
     ;;                  (* (/ -1 3) (expt dt 3) (expt p_phi_0 3)))
-    ;;                (* (expt m 3) (expt r_0 6)))))))"
+    ;;                (* (expt m 3) (expt r_0 6)))))
+    ))"
     "SICM 6.2 Time Evolution is Canonical (Emmy)"
     ";; ============================================================
 ;; SICM 6.2 Time Evolution is Canonical (Emmy)
@@ -2384,20 +2399,24 @@ gfx-win   ; auto-shows the accumulated curves
 
 (do
   (simplify ((literal-function 'g [0 0] 0) 'x 'y))
-  ;;=> '(g x y))
+  ;;=> '(g x y)
+  )
 
 (do
   (let [s (up 't (up 'x 'y) (down 'p_x 'p_y))
         H (literal-function 'H (up 0 (up 0 0) (down 0 0)) 0)]
     (simplify (H s))
     ;;=> '(H (up t (up x y) (down p_x p_y)))
-    (thrown?
+    (comment
+      (thrown?
         IllegalArgumentException
-        (H (up 0 (up 1 2) (down 1 2 3))))
-    (thrown? IllegalArgumentException (H (up 0 (up 1) (down 1 2))))
-    (thrown?
+        (H (up 0 (up 1 2) (down 1 2 3)))))
+    (comment
+      (thrown? IllegalArgumentException (H (up 0 (up 1) (down 1 2)))))
+    (comment
+      (thrown?
         IllegalArgumentException
-        (H (up (up 1 2) (up 1 2) (down 1 2))))
+        (H (up (up 1 2) (up 1 2) (down 1 2)))))
     (freeze (simplify ((D H) s)))
     ;;=> '(down
     ;;            (((partial 0) H) (up t (up x y) (down p_x p_y)))
@@ -2406,7 +2425,8 @@ gfx-win   ; auto-shows the accumulated curves
     ;;              (((partial 1 1) H) (up t (up x y) (down p_x p_y))))
     ;;            (up
     ;;              (((partial 2 0) H) (up t (up x y) (down p_x p_y)))
-    ;;              (((partial 2 1) H) (up t (up x y) (down p_x p_y)))))))"
+    ;;              (((partial 2 1) H) (up t (up x y) (down p_x p_y)))))
+    ))"
     "SICM 7.3 Two Frequencies (Emmy)"
     ";; ============================================================
 ;; SICM 7.3 Two Frequencies (Emmy)

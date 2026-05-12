@@ -176,6 +176,16 @@
                     (= 3 (count a)))))
         (let [[_ expected actual] (second x)]
           (list 'BEMMY-EXPECT actual expected))
+        ;; (is (thrown? Class expr)) / (is (thrown-with-msg? …))
+        ;; — clojure.test special-form assertions. `thrown?` is only
+        ;; meaningful inside `is`; stripping `is` leaves a bare
+        ;; `(thrown? …)` call that doesn't resolve. Wrap in `comment`
+        ;; so the body is never analyzed.
+        (and (seq? x)
+             (= 'is (first x))
+             (seq? (second x))
+             (contains? '#{thrown? thrown-with-msg?} (first (second x))))
+        (list 'comment (second x))
         ;; (is form) — boolean form
         (and (seq? x) (= 'is (first x)) (= 2 (count x)))
         (list 'BEMMY-EXPECT-TRUE (second x))
@@ -266,7 +276,26 @@
                 (.append out indent)
                 (.append out ";;=> ")
                 (.append out (str/replace expected #"\n"
-                                          (str "\n" indent ";;   "))))
+                                          (str "\n" indent ";;   ")))
+                ;; If the marker's closing `)` is immediately followed
+                ;; by another `)` (i.e. it sits at the tail of an
+                ;; enclosing `(testing …)` → `(do …)` or `(let […])`
+                ;; wrapper), those trailing close-parens would land on
+                ;; the `;;=>` comment line and be consumed by it,
+                ;; leaving the outer form unbalanced (manifesting as
+                ;; "EOF while reading, expected ) to match ("). Insert
+                ;; a newline + the marker's indent so the close-parens
+                ;; end up on their own line. We DON'T insert a newline
+                ;; unconditionally, because that would introduce a
+                ;; whitespace-only blank line between adjacent assertion
+                ;; markers — and the page-eval test's read-all-forms
+                ;; splits on blank lines, which would carve a multi-
+                ;; statement `(let […] a b c)` into chunks the reader
+                ;; can't parse.
+                (when (and (< end (count text))
+                           (= \) (.charAt text end)))
+                  (.append out "\n")
+                  (.append out indent)))
           :true (.append out (str/trim body)))
         (recur out (long end)))
       (do (.append out (subs text i)) (str out)))))
