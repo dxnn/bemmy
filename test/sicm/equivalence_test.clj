@@ -35,8 +35,17 @@
       ;; emmy.env doesn't re-export the row/column accessors; pull them in
       ;; explicitly so translated `m:nth-row`/`m:nth-col` resolves.
       (clojure.core/refer 'emmy.matrix :only '[row column])
-      ;; SICM built-ins Emmy doesn't ship.
-      (clojure.core/refer 'sicm.compat))
+      ;; Intern (not refer) sicm.compat's publics — which include the
+      ;; emmy.mechanics.* names pulled in via intern-missing! over there.
+      ;; A bare (refer 'sicm.compat) would pull them in as refers, and
+      ;; SICM pages that legitimately redefine book names like
+      ;; L-harmonic / L-free-particle would then trip JVM's
+      ;; refer-shadow warning (and, more importantly, SCI's hard
+      ;; throw of the same condition in the browser). Mirrors the
+      ;; intern-publics dance in src/scittle/emmy.cljs.
+      (doseq [[s v] (ns-publics 'sicm.compat)]
+        (when-not (ns-resolve n s)
+          (intern n s (deref v)))))
     n))
 
 (defn eval-forms-in-ns [ns forms]

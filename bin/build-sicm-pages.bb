@@ -137,36 +137,6 @@
        (map #(str ";; " %))
        (str/join "\n")))
 
-(defn- prepend-unmap-if-def
-  "If the chunk's first top-level form is a `(def X …)`, `(defn X …)`,
-  or `(defn- X …)`, prepend `(ns-unmap *ns* 'X)` on its own line above
-  the chunk. SCI throws (rather than warns, as JVM Clojure does) when a
-  `def` collides with a name already `:refer`'d into the user ns via
-  `emmy.env` or one of the `emmy.mechanics.*` namespaces; unmapping the
-  reffered binding immediately before the page's own defn lets the new
-  definition take over. The unmap is idempotent for names that aren't
-  currently reffered, so this is safe to apply uniformly."
-  [chunk]
-  (let [trimmed (str/triml chunk)
-        f (read-form-or-nil trimmed)
-        n (when (and (seq? f)
-                     (contains? '#{def defn defn-} (first f))
-                     (symbol? (second f)))
-            (second f))]
-    (if n
-      (str "(ns-unmap *ns* '" n ")\n" trimmed)
-      chunk)))
-
-(defn- inject-defn-unmaps
-  "Walk top-level chunks of `text` (split on blank lines, the
-  inter-form separator used elsewhere in this generator) and prepend a
-  per-defn `(ns-unmap *ns* 'X)` to each chunk whose lead form is a
-  def/defn."
-  [text]
-  (->> (str/split text #"\n[\t ]*\n")
-       (map prepend-unmap-if-def)
-       (str/join "\n\n")))
-
 (defn render-entry
   "Render one corpus entry as either prereq or main content. For prereq
   use, we just dump the runnable form(s); for main use, we add a
@@ -187,7 +157,7 @@
       (.append sb (str "\n;; --- " subheading " ---\n\n")))
     (when (and (not prereq?) page)
       (.append sb (str ";; (book p. " page ")\n")))
-    (.append sb (-> runnable-text str/trim inject-defn-unmaps))
+    (.append sb (str/trim runnable-text))
     (when (and (not prereq?) effective-expected
                (readable-expected? effective-expected))
       (.append sb (str "\n;;=> "

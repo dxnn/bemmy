@@ -333,43 +333,6 @@
 (defn- is-require? [form]
   (and (seq? form) (= 'require (first form))))
 
-(defn- read-form-or-nil [s]
-  (try
-    (with-open [rdr (java.io.PushbackReader. (java.io.StringReader. s))]
-      (let [f (read reader-opts rdr)]
-        (when-not (= f ::eof) f)))
-    (catch Throwable _ nil)))
-
-(defn- prepend-unmap-if-def
-  "If the chunk's first top-level form is a `(def X …)`, `(defn X …)`,
-  or `(defn- X …)`, prepend `(ns-unmap *ns* 'X)` on its own line above
-  the chunk. SCI throws (rather than warns, as JVM Clojure does) when a
-  `def` collides with a name already `:refer`'d into the user ns via
-  `emmy.env` or one of the `emmy.mechanics.*` namespaces; the canonical
-  case here is `(def simplify (comp e/freeze e/simplify))` emitted as a
-  helper. Unmap is idempotent for names that aren't currently reffered,
-  so this is safe to apply uniformly."
-  [chunk]
-  (let [trimmed (str/triml chunk)
-        f (read-form-or-nil trimmed)
-        n (when (and (seq? f)
-                     (contains? '#{def defn defn-} (first f))
-                     (symbol? (second f)))
-            (second f))]
-    (if n
-      (str "(ns-unmap *ns* '" n ")\n" trimmed)
-      chunk)))
-
-(defn- inject-defn-unmaps
-  "Walk top-level chunks of `text` (split on blank lines, the
-  inter-form separator used by the renderer) and prepend a per-defn
-  `(ns-unmap *ns* 'X)` to each chunk whose lead form is a def/defn.
-  Mirrors the same fix in build-sicm-pages.bb."
-  [text]
-  (->> (str/split text #"\n[\t ]*\n")
-       (map prepend-unmap-if-def)
-       (str/join "\n\n")))
-
 (defn- filter-page-helpers
   "Helpers may include a `(require …)` form (always first when
   present, emitted by extract-ns-requires) plus any `(defn …)` /
@@ -416,7 +379,6 @@
          (remove nil?)
          (str/join "\n\n")
          render-markers
-         inject-defn-unmaps
          str/trimr)))
 
 (defn extract-ns-requires

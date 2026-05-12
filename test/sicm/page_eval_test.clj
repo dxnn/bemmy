@@ -158,15 +158,21 @@
   (.getMessage ^Throwable
                (loop [x t] (if-let [c (.getCause x)] (recur c) x))))
 
-(defn- silence-warnings
-  "Run `f` with *err* redirected to a sink so the noise from JVM
-  Clojure's refer-shadow warnings (`X already refers to …`) doesn't
-  pollute test output. Each generated page's (declare …) at the top
-  emits one such warning per emmy.env-shadowed name; harmless but
-  voluminous."
+(defn- capture-warnings
+  "Run `f` with *err* redirected to a buffer. Returns
+  `{:result (f) :refer-warnings [\"line1\" \"line2\" …]}`, where
+  refer-warnings are exactly the JVM Clojure 'X already refers to Y'
+  lines produced during evaluation. The page-eval harness fails on
+  any such line — they're a proxy for SCI's hard-throw on the same
+  condition in the browser. Other *err* output is dropped (we don't
+  care about anything else here)."
   [f]
-  (binding [*err* (java.io.StringWriter.)]
-    (f)))
+  (let [sw (java.io.StringWriter.)
+        result (binding [*err* sw] (f))]
+    {:result result
+     :refer-warnings (->> (str/split-lines (str sw))
+                          (filter #(re-find #"already refers to" %))
+                          (mapv str/trim))}))
 
 (defn check-section-page
   [[chapter section :as section-key] page-name page-source]
@@ -175,8 +181,9 @@
         all-entries     (concat prereqs section-entries)
         ns              (eq/fresh-eval-ns! (ns-sym page-name))
         page-forms      (read-all-forms page-source)
-        eval-log        (silence-warnings
-                          (fn [] (mapv #(try-eval-form ns %) page-forms)))
+        {eval-log :result refer-warnings :refer-warnings}
+        (capture-warnings
+          (fn [] (mapv #(try-eval-form ns %) page-forms)))
         ;; idx → eval-log entry, via occurrence-counted matching so
         ;; repeated forms (e.g. §8's `(c1)`) line up by position
         ;; rather than collapsing to first/last.
@@ -193,6 +200,14 @@
                      (assoc acc (:idx entry) match)))
             acc))]
     (testing page-name
+      ;; Hard fail on any refer-shadow warning — JVM Clojure prints it,
+      ;; SCI throws on the same condition in the browser. Surfacing
+      ;; these here makes a JVM-only `bb test:pages` run catch the
+      ;; collisions without having to fire up Scittle.
+      (when (seq refer-warnings)
+        (is false
+            (format "refer-shadow warnings during page eval (these throw in SCI):\n  %s"
+                    (str/join "\n  " refer-warnings))))
       ;; Hard fail on any unexpected eval error in the page. Graphics
       ;; calls are stubbed via sicm.compat so they don't error here.
       (doseq [[i log-entry] (map-indexed vector eval-log)]
@@ -242,9 +257,14 @@
   [page-name page-source]
   (let [ns         (eq/fresh-eval-ns! (ns-sym page-name))
         page-forms (read-all-forms page-source)
-        eval-log   (silence-warnings
-                     (fn [] (mapv #(try-eval-form ns %) page-forms)))]
+        {eval-log :result refer-warnings :refer-warnings}
+        (capture-warnings
+          (fn [] (mapv #(try-eval-form ns %) page-forms)))]
     (testing page-name
+      (when (seq refer-warnings)
+        (is false
+            (format "refer-shadow warnings during page eval (these throw in SCI):\n  %s"
+                    (str/join "\n  " refer-warnings))))
       (doseq [[i log-entry] (map-indexed vector eval-log)]
         (when-let [t (:error log-entry)]
           (is false
