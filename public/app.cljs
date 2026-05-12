@@ -759,22 +759,31 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'x)
 (def x (literal-function 'x))
 
+(ns-unmap *ns* 'y)
 (def y (literal-function 'y))
 
+(ns-unmap *ns* 'z)
 (def z (literal-function 'z))
 
+(ns-unmap *ns* 'q)
 (def q (up x y z))
 
+(ns-unmap *ns* 'test-path)
 (def test-path (fn [t] (up (+ (* 4 t) 7) (+ (* 3 t) 5) (+ (* 2 t) 1))))
 
+(ns-unmap *ns* 'make-η)
 (def make-η (fn [ν t1 t2] (fn [t] (* (- t t1) (- t t2) (ν t)))))
 
+(ns-unmap *ns* 'varied-free-particle-action)
 (def varied-free-particle-action
  (fn [mass q ν t1 t2]
    (fn [ε]
@@ -893,38 +902,53 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'δ)
 (defn δ
   \"The variation operator (p. 28).\"
   [η]
   (fn [f] (fn [q] (let [g (fn [ε] (f (+ q (* ε η))))] ((D g) 0)))))
 
+(ns-unmap *ns* 'x)
 (def x (literal-function 'x))
 
+(ns-unmap *ns* 'f)
 (def f (literal-function 'f))
 
+(ns-unmap *ns* 'g)
 (def g (literal-function 'g))
 
+(ns-unmap *ns* 'q)
 (def q (literal-function 'q))
 
+(ns-unmap *ns* 'η)
 (def η (literal-function 'η))
 
+(ns-unmap *ns* 'φ)
 (def φ (literal-function 'φ))
 
+(ns-unmap *ns* 'F)
 (def F (fn [q] (fn [t] (f (q t)))))
 
+(ns-unmap *ns* 'G)
 (def G (fn [q] (fn [t] (g (q t)))))
 
+(ns-unmap *ns* 'δ_η)
 (def δ_η (δ η))
 
+(ns-unmap *ns* 'φ)
 (def φ (fn [f] (fn [q] (fn [t] (φ ((f q) t))))))
 
+(ns-unmap *ns* 'test-path)
 (def test-path
  (fn [t] (up (+ 'a0 (* 'a t)) (+ 'b0 (* 'b t)) (+ 'c0 (* 'c t)))))
 
+(ns-unmap *ns* 'proposed-solution)
 (def proposed-solution (fn [t] (* 'a (cos (+ (* 'ω t) 'φ)))))
 
 (simplify (((δ_η identity) q) 't))
@@ -1005,29 +1029,40 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'δ)
 (defn δ
   \"The variation operator (p. 28).\"
   [η]
   (fn [f] (fn [q] (let [g (fn [ε] (f (+ q (* ε η))))] ((D g) 0)))))
 
+(ns-unmap *ns* 'x)
 (def x (literal-function 'x))
 
+(ns-unmap *ns* 'y)
 (def y (literal-function 'y))
 
+(ns-unmap *ns* 'r)
 (def r (literal-function 'r))
 
+(ns-unmap *ns* 'θ)
 (def θ (literal-function 'θ))
 
+(ns-unmap *ns* 'φ)
 (def φ (literal-function 'φ))
 
+(ns-unmap *ns* 'U)
 (def U (literal-function 'U))
 
+(ns-unmap *ns* 'y_s)
 (def y_s (literal-function 'y_s))
 
+(ns-unmap *ns* 'L-alternate-central-polar)
 (def L-alternate-central-polar
  (fn [m U] (compose (L-central-rectangular m U) (F->C p->r))))
 
@@ -1162,23 +1197,31 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'δ)
 (defn δ
   \"The variation operator (p. 28).\"
   [η]
   (fn [f] (fn [q] (let [g (fn [ε] (f (+ q (* ε η))))] ((D g) 0)))))
 
+(ns-unmap *ns* 'x)
 (def x (literal-function 'x))
 
+(ns-unmap *ns* 'y)
 (def y (literal-function 'y))
 
+(ns-unmap *ns* 'v_x)
 (def v_x (literal-function 'v_x))
 
+(ns-unmap *ns* 'v_y)
 (def v_y (literal-function 'v_y))
 
+(ns-unmap *ns* 'harmonic-state-derivative)
 (def harmonic-state-derivative
  (fn [m k] (Lagrangian->state-derivative (L-harmonic m k))))
 
@@ -1263,15 +1306,19 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.examples.driven-pendulum :as driven]
   '[emmy.value :as v :refer [within]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'δ)
 (defn δ
   \"The variation operator (p. 28).\"
   [η]
   (fn [f] (fn [q] (let [g (fn [ε] (f (+ q (* ε η))))] ((D g) 0)))))
 
+(ns-unmap *ns* 'pend-state-derivative)
 (def pend-state-derivative
  (fn [m l g a ω] (Lagrangian->state-derivative (driven/L m l g a ω))))
 
@@ -1346,21 +1393,28 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'δ)
 (defn δ
   \"The variation operator (p. 28).\"
   [η]
   (fn [f] (fn [q] (let [g (fn [ε] (f (+ q (* ε η))))] ((D g) 0)))))
 
+(ns-unmap *ns* 'U)
 (def U (literal-function 'U))
 
+(ns-unmap *ns* 'V)
 (def V (literal-function 'V))
 
+(ns-unmap *ns* 'spherical-state)
 (def spherical-state (up 't (up 'r 'θ 'φ) (up 'rdot 'θdot 'φdot)))
 
+(ns-unmap *ns* 'T3-spherical)
 (def T3-spherical
  (fn [m]
    (fn [[_ [r θ _] [rdot θdot φdot]]]
@@ -1372,9 +1426,11 @@ gfx-win   ; auto-shows the accumulated curves
          (square (* r θdot))
          (square (* r (sin θ) φdot)))))))
 
+(ns-unmap *ns* 'L3-central)
 (def L3-central
  (fn [m Vr] (let [Vs (fn [[_ [r]]] (Vr r))] (- (T3-spherical m) Vs))))
 
+(ns-unmap *ns* 'ang-mom-z)
 (def ang-mom-z
  (fn [m] (fn [[_ q v]] (nth (cross-product q (* m v)) 2))))
 
@@ -1468,15 +1524,19 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.lagrange :as L]
   '[emmy.value :as v :refer [within]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'δ)
 (defn δ
   \"The variation operator (p. 28).\"
   [η]
   (fn [f] (fn [q] (let [g (fn [ε] (f (+ q (* ε η))))] ((D g) 0)))))
 
+(ns-unmap *ns* 'F->C)
 (def F->C
  (fn [F]
    (let [f-bar #(->> % Gamma (compose F) Gamma)] (Gamma-bar f-bar))))
@@ -1494,6 +1554,7 @@ gfx-win   ; auto-shows the accumulated curves
       (->local 't 'x 'v 'a)))
 ;;=> '(+ (* a m) (* k x))
 
+(ns-unmap *ns* 'x)
 (def x (literal-function 'x))
 
 (simplify
@@ -1516,16 +1577,22 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.rigid :as r]
   '[emmy.mechanics.rotation :refer [Euler->M]])
 
+(ns-unmap *ns* 'Euler-state)
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
+(ns-unmap *ns* 'θ)
 (def θ (literal-function 'θ))
 
+(ns-unmap *ns* 'φ)
 (def φ (literal-function 'φ))
 
+(ns-unmap *ns* 'ψ)
 (def ψ (literal-function 'ψ))
 
+(ns-unmap *ns* 'q)
 (def q (up θ φ ψ))
 
+(ns-unmap *ns* 'M-on-path)
 (def M-on-path (compose Euler->M q))
 
 (freeze (simplify (M-on-path 't)))
@@ -1580,6 +1647,7 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.rotation :refer [Euler->M]]
   '[emmy.value :as v])
 
+(ns-unmap *ns* 'Euler-state)
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
 (v/=
@@ -1625,15 +1693,19 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.polynomial.gcd :as pg]
   '[emmy.util :as u])
 
+(ns-unmap *ns* 'Euler-state)
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
+(ns-unmap *ns* 'relative-error)
 (def relative-error
  (fn [value reference-value]
    (when (zero? reference-value) (u/illegal \"zero reference value\"))
    (/ (- value reference-value) reference-value)))
 
+(ns-unmap *ns* 'points)
 (def points (atom []))
 
+(ns-unmap *ns* 'monitor-errors)
 (def monitor-errors
  (fn [A B C L0 E0]
    (fn [t state]
@@ -1648,16 +1720,22 @@ gfx-win   ; auto-shows the accumulated curves
           (relative-error (ref L 2) (ref L0 2))
           (relative-error E E0)])))))
 
+(ns-unmap *ns* 'A)
 (def A 1.0)
 
+(ns-unmap *ns* 'B)
 (def B (Math/sqrt 2.0))
 
+(ns-unmap *ns* 'C)
 (def C 2.0)
 
+(ns-unmap *ns* 'state0)
 (def state0 (up 0.0 (up 1.0 0.0 0.0) (up 0.1 0.1 0.1)))
 
+(ns-unmap *ns* 'L0)
 (def L0 ((r/Euler-state->L-space A B C) state0))
 
+(ns-unmap *ns* 'E0)
 (def E0 ((r/T-rigid-body A B C) state0))
 
 (binding [pg/*poly-gcd-time-limit* [1 :seconds]]
@@ -1687,6 +1765,7 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.rigid :as r]
   '[emmy.mechanics.rotation :refer [Euler->M]])
 
+(ns-unmap *ns* 'Euler-state)
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
 (freeze (simplify ((r/T-rigid-body 'A 'A 'C) Euler-state)))
@@ -1712,6 +1791,7 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.hamilton :as H]
   '[emmy.mechanics.lagrange :as L])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
 (do
@@ -1760,6 +1840,7 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.env :as e :refer [+ zero? up down literal-function]]
   '[emmy.mechanics.hamilton :as H])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
 (do
@@ -1792,6 +1873,7 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.mechanics.lagrange :as L]
   '[emmy.polynomial.gcd :as pg])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
 (do
@@ -1969,6 +2051,7 @@ gfx-win   ; auto-shows the accumulated curves
   '[emmy.expression.analyze :as a]
   '[emmy.expression.compile :as c])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
 (do
@@ -2101,6 +2184,7 @@ gfx-win   ; auto-shows the accumulated curves
      literal-function]]
   '[emmy.mechanics.hamilton :as H])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
 (do
@@ -2147,8 +2231,10 @@ gfx-win   ; auto-shows the accumulated curves
      literal-function]]
   '[emmy.mechanics.hamilton :as H])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'J-func)
 (def J-func (fn [[_ dh1 dh2]] (up 0 dh2 (- dh1))))
 
 (do
@@ -2263,18 +2349,23 @@ gfx-win   ; auto-shows the accumulated curves
      F->CT
      literal-function]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'omega)
 (def omega
  (fn [zeta1 zeta2]
    (-
      (* (momentum zeta2) (coordinate zeta1))
      (* (momentum zeta1) (coordinate zeta2)))))
 
+(ns-unmap *ns* 'a-polar-state)
 (def a-polar-state (up 't (up 'r 'phi) (down 'pr 'pphi)))
 
+(ns-unmap *ns* 'zeta1)
 (def zeta1 (up 0 (up 'dr1 'dphi1) (down 'dpr1 'dpphi1)))
 
+(ns-unmap *ns* 'zeta2)
 (def zeta2 (up 0 (up 'dr2 'dphi2) (down 'dpr2 'dpphi2)))
 
 (let [DCs ((D (F->CT p->r)) a-polar-state)]
@@ -2314,8 +2405,10 @@ gfx-win   ; auto-shows the accumulated curves
      F->CT
      literal-function]])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
+(ns-unmap *ns* 'C)
 (def C
  (fn [alpha omega omega0]
    (fn [delta-t]
@@ -2339,19 +2432,25 @@ gfx-win   ; auto-shows the accumulated curves
                      (sin (* omega (+ t0 delta-t))))))]
          (+ (* M a) b))))))
 
+(ns-unmap *ns* 'solution)
 (def solution
  (fn [alpha omega omega0]
    (fn [state0]
      (fn [t] (((C alpha omega omega0) (- t (first state0))) state0)))))
 
+(ns-unmap *ns* 'sol)
 (def sol ((solution 'α 'ω 'ω_0) (up 't_0 'q_0 'p_0)))
 
+(ns-unmap *ns* 'solution-C)
 (def solution-C (sol 't))
 
+(ns-unmap *ns* '_q)
 (def _q (ref solution-C 0))
 
+(ns-unmap *ns* '_p)
 (def _p (ref solution-C 1))
 
+(ns-unmap *ns* '_Dsol)
 (def _Dsol ((D sol) 't))"
     "SICM 5.10 Generating Functions (Emmy)"
     ";; ============================================================
@@ -2387,6 +2486,7 @@ gfx-win   ; auto-shows the accumulated curves
      literal-function]]
   '[emmy.mechanics.hamilton :as H])
 
+(ns-unmap *ns* 'simplify)
 (def simplify (comp e/freeze e/simplify))
 
 (letfn
@@ -2497,26 +2597,35 @@ gfx-win   ; auto-shows the accumulated curves
 (require
   '[emmy.env :as e :refer [+ * / simplify up sin cos square exp]])
 
+(ns-unmap *ns* 'H0)
 (def H0
  (fn [alpha] (fn [[_ _ ptheta]] (/ (square ptheta) (* 2 alpha)))))
 
+(ns-unmap *ns* 'H1)
 (def H1 (fn [beta] (fn [[_ theta _]] (* -1 beta (cos theta)))))
 
+(ns-unmap *ns* 'H-pendulum-series)
 (def H-pendulum-series
  (fn [alpha beta epsilon] (series (H0 alpha) (* epsilon (H1 beta)))))
 
+(ns-unmap *ns* 'W)
 (def W
  (fn [alpha beta]
    (fn [[_ theta ptheta]] (/ (* -1 alpha beta (sin theta)) ptheta))))
 
+(ns-unmap *ns* 'a-state)
 (def a-state (up 't 'theta 'p_theta))
 
+(ns-unmap *ns* 'L)
 (def L (Lie-derivative (W 'α 'β)))
 
+(ns-unmap *ns* 'H)
 (def H (H-pendulum-series 'α 'β 'ε))
 
+(ns-unmap *ns* 'E)
 (def E (((exp (* 'ε L)) H) a-state))
 
+(ns-unmap *ns* 'C)
 (def C
  (fn [alpha beta epsilon order]
    (fn [state]
@@ -2606,10 +2715,13 @@ gfx-win   ; auto-shows the accumulated curves
      exp]]
   '[emmy.value :refer [within]])
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'h)
 (def h (compose cube sin))
 
+(ns-unmap *ns* 'g)
 (def g (* cube sin))
 
 (cube (sin 2))
@@ -2667,6 +2779,7 @@ gfx-win   ; auto-shows the accumulated curves
      exp]]
   '[emmy.value :refer [within]])
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
 (do
@@ -2728,8 +2841,10 @@ gfx-win   ; auto-shows the accumulated curves
      exp]]
   '[emmy.value :refer [within]])
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'derivative-of-sine)
 (def derivative-of-sine (D sin))
 
 (simplify (derivative-of-sine 'x))
@@ -2771,8 +2886,10 @@ gfx-win   ; auto-shows the accumulated curves
      exp]]
   '[emmy.value :refer [within]])
 
+(ns-unmap *ns* 'near)
 (def near (within 1.0E-6))
 
+(ns-unmap *ns* 'g)
 (def g (fn [x y] (up (square (+ x y)) (cube (- y x)) (exp (+ x y)))))
 
 (freeze (simplify ((D g) 'x 'y)))
