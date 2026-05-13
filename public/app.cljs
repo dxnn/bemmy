@@ -7342,6 +7342,7 @@ p
 (defn eval! []
   (when-let [src (current-source)]
     (let [eval-id (swap! !eval-id inc)
+          [_ page-name] (:current @!pages)
           results (reduce
                    (fn [acc form-src]
                      (try
@@ -7356,7 +7357,10 @@ p
                                      :err  (or (.-message e) (str e))})))))
                    []
                    (top-forms src))]
-      (reset! !result {:status :ok :results results :eval-id eval-id}))))
+      (reset! !result {:status    :ok
+                       :results   results
+                       :eval-id   eval-id
+                       :page-name page-name}))))
 
 (defn- escape-html [s]
   (-> s
@@ -8427,8 +8431,14 @@ p
        "Share"]]]
     [:div.pane
      [:div.label
-      (let [[_ cur-name] (:current @!pages)]
-        (if cur-name (str "Result of " cur-name) "Result"))]
+      ;; Show the page-name from the last evaluation, not the code
+      ;; panel's current selection — switching pages in the dropdown
+      ;; shouldn't change the result-pane label until the user
+      ;; actually re-evaluates.
+      (let [{:keys [status page-name]} @!result]
+        (if (and (= :ok status) page-name)
+          (str "Result of " page-name)
+          "Result"))]
      [result-pane]]]
    (when-let [m @!toast]
      [:div.toast m])])
