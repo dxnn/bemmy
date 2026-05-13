@@ -277,7 +277,9 @@
              '[emmy.matrix :as matrix]
              '[emmy.mechanics.hamilton :as ham]
              '[emmy.mechanics.lagrange :as lag]
-             '[emmy.quaternion :as quat])
+             '[emmy.quaternion :as quat]
+             '[emmy.numerical.ode :as ode]
+             '[emmy.polynomial.gcd :as pg])
 
     ;; Several names below shadow `:refer`'d bindings from emmy.env
     ;; (R / R2 / R3 type-signature shorthands, evolve / state-advancer
@@ -369,8 +371,6 @@
     ;; takes (state monitor dt t-final tol); Emmy's takes (state dt t
     ;; {:observe … :epsilon …}). Adapt by arg count + map shape, and
     ;; call SICM-style monitors with just the state (t lives inside).
-    (require '[emmy.numerical.ode :as ode])
-
     (defn- sicm-observe [monitor]
       (when monitor (fn [_t state] (monitor state))))
 
@@ -458,6 +458,18 @@
     ;; render; return a sentinel so subsequent forms don't error.
     (defn explore-map [_window _the-map _n] :graphics)
 
+    ;; SICM §6.7 references `1st-order-map` (a Lie-series-truncated
+    ;; advance map) as a free symbol; the book elides its definition.
+    ;; Renamed by test/translate-corpus.js to `first-order-map`
+    ;; (Clojure can't read a digit-leading symbol); stubbed here as a
+    ;; no-op advancer (state-in, state-out). The §6.7 page is
+    ;; pedagogical anyway — the result is meaningful only with
+    ;; `explore-map`'s interactive UI, which is itself a stub here.
+    (defn first-order-map
+      ([state] state)
+      ([state _dt] state)
+      ([state _dt & _] state))
+
     ;; scmutils numerical-method bookkeeping. SICM exercises read this
     ;; bare; expose it as a normal var (SCI doesn't need ^:dynamic
     ;; metadata unless someone tries to `binding` it).
@@ -468,7 +480,6 @@
     ;; `(binding [pg/*poly-gcd-time-limit* [1 :seconds]] …)` to bound
     ;; runaway simplification. SCI's analyzer rejects the binding
     ;; without :dynamic in the var metadata, so retrofit it.
-    (require '[emmy.polynomial.gcd :as pg])
     (alter-meta! #'emmy.polynomial.gcd/*poly-gcd-time-limit*
                  assoc :dynamic true)
 

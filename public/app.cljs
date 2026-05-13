@@ -4526,12 +4526,9 @@ gfx-win   ; auto-shows the accumulated curves
                 p (momentum state)]
             (plot-point win q p))))
 
-(let [m 1.0
-      l 1.0
-      g 9.8
-      A 0.1
-      omega (* 2 (sqrt 9.8))
-      (evolve H-pend-sysder m l g A omega) (up 0.0 1.0 0.0)])
+(let [m 1.0 l 1.0 g 9.8 A 0.1 omega (* 2 (sqrt 9.8))]
+  ((evolve H-pend-sysder m l g A omega)
+       (up 0.0 1.0 0.0) (monitor-p-theta window) 0.01 100.0 1.0e-12))
 
 ;; --- §3.6.2 — Computing Stroboscopic Surfaces of Section ---
 
@@ -4782,12 +4779,9 @@ gfx-win   ; auto-shows the accumulated curves
                 p (momentum state)]
             (plot-point win q p))))
 
-(let [m 1.0
-      l 1.0
-      g 9.8
-      A 0.1
-      omega (* 2 (sqrt 9.8))
-      (evolve H-pend-sysder m l g A omega) (up 0.0 1.0 0.0)])
+(let [m 1.0 l 1.0 g 9.8 A 0.1 omega (* 2 (sqrt 9.8))]
+  ((evolve H-pend-sysder m l g A omega)
+       (up 0.0 1.0 0.0) (monitor-p-theta window) 0.01 100.0 1.0e-12))
 
 (defn driven-pendulum-map [m l g A omega]
   (let [advance (state-advancer H-pend-sysder m l g A omega)
@@ -5113,12 +5107,9 @@ gfx-win   ; auto-shows the accumulated curves
                 p (momentum state)]
             (plot-point win q p))))
 
-(let [m 1.0
-      l 1.0
-      g 9.8
-      A 0.1
-      omega (* 2 (sqrt 9.8))
-      (evolve H-pend-sysder m l g A omega) (up 0.0 1.0 0.0)])
+(let [m 1.0 l 1.0 g 9.8 A 0.1 omega (* 2 (sqrt 9.8))]
+  ((evolve H-pend-sysder m l g A omega)
+       (up 0.0 1.0 0.0) (monitor-p-theta window) 0.01 100.0 1.0e-12))
 
 (defn driven-pendulum-map [m l g A omega]
   (let [advance (state-advancer H-pend-sysder m l g A omega)
@@ -6493,7 +6484,7 @@ gfx-win   ; auto-shows the accumulated curves
 
 ;; (book p. 455)
 (explore-map
-  win (HH-collector win 1st-order-map 0.125 0.1 1.e-10 1000) false)
+  win (HH-collector win first-order-map 0.125 0.1 1.e-10 1000) false)
 
 ;; (book p. 455)
 (defn Lie-derivative-procedure [H] (fn [F] (Poisson-bracket F H)))
@@ -7270,6 +7261,20 @@ p
     (js/scittle.core.eval_string (pr-str v))
     (catch :default _ v)))
 
+(defn- skip-tex?
+  "True for values where emmy.expression.render/->TeX produces
+  garbled output instead of a meaningful TeX expression:
+    - Functions: ->TeX returns the JS `.toString()` source.
+    - Cons / seq with a non-Emmy head (e.g. `freeze`'s
+      `(matrix-by-rows …)` output): ->TeX iterates the head
+      symbol's characters and turns each one into a `bmatrix`
+      cell, producing literal `\\begin{bmatrix}\\displaystyle{\\}
+      \\displaystyle{b} \\displaystyle{e}…` output. The page's
+      pr-str is fine in both cases — just suppress the TeX block."
+  [v]
+  (or (fn? v)
+      (and (seq? v) (not (vector? v)))))
+
 (defn- eval-with-tex [src]
   ;; maybe-show turns a SICM-style frame atom into Mafs hiccup so the
   ;; user can leave `win2` (or any frame) as the last form and see the
@@ -7279,9 +7284,20 @@ p
                      "   (try (emmy.expression.render/->TeX v#)\n"
                      "        (catch :default _ nil))])")
         [v tex] (js/scittle.core.eval_string wrapped)]
-    (if (emmy-fragment? v)
-      {:value (expand-fragment v) :tex nil}
-      {:value v :tex tex})))
+    (cond
+      (emmy-fragment? v) {:value (expand-fragment v) :tex nil}
+      (skip-tex? v)      {:value v :tex nil}
+      :else              {:value v :tex tex})))
+
+(defn- pr-display
+  "pr-str-like rendering that avoids dumping JS function source for
+  CLJS fn values. Emmy expressions that simplify to a function (e.g.
+  `(simplify (((δ_η (φ F)) q) 't))` in SICM 1.5) would otherwise
+  pr-str as the underlying JS .toString() — many KB of `switch
+  (arguments.length)` boilerplate. Render fns as `#<fn>` and call
+  pr-str on everything else."
+  [v]
+  (if (fn? v) "#<fn>" (pr-str v)))
 
 (defn- ws-char? [c]
   (case c (" " "\n" "\t" "\r" ",") true false))
@@ -7342,7 +7358,7 @@ p
                        (let [{:keys [value tex]} (eval-with-tex form-src)]
                          (conj acc {:form  form-src
                                     :value value      ; raw, for hiccup detection
-                                    :pr    (pr-str value)
+                                    :pr    (pr-display value)
                                     :tex   tex}))
                        (catch :default e
                          (reduced

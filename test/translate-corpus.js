@@ -23,6 +23,36 @@ function ednStr(s) {
 
 const corpus = JSON.parse(fs.readFileSync(inPath, 'utf8'));
 
+// Hand-fixes for HTML-scrape corruption + Clojure-incompatible symbols
+// that the upstream tgvaughan.github.io/sicm corpus carries. Each
+// patch matches by a unique distinguishing substring rather than by
+// idx, so reorderings in the source corpus don't silently no-op.
+
+function patchCode(code) {
+  // §3.5 / §3.6.2 / §3.6.4 / §3.9 prereq: the original scrape's
+  // `(let ((...) (omega (* 2 (sqrt 9.8))) ((evolve H-pend-sysder ...) …))`
+  // lost the `)` that should close the binding list before the body,
+  // so the function-call body got pulled into the bindings vector and
+  // sicm2emmy emitted an invalid `(let [... (evolve …) (up …)])`.
+  // Re-insert the missing `)` so the body sits outside.
+  if (/\(omega \(\* 2 \(sqrt 9\.8\)\)\)\s*\n\s*\(\(evolve H-pend-sysder/.test(code)) {
+    code = code.replace(
+      /(\(omega \(\* 2 \(sqrt 9\.8\)\)\))\s*\n(\s*)\(\(evolve H-pend-sysder/,
+      '$1)\n$2((evolve H-pend-sysder');
+  }
+  return code;
+}
+
+function patchTranslated(translated) {
+  // SICM book uses `1st-order-map` as a free symbol in §6.7; Clojure
+  // can't read a token that starts with a digit followed by alpha. The
+  // plugin defines a stub `first-order-map` (no-op state advancer) so
+  // the page evaluates instead of failing the reader on
+  // "Invalid number: 1st-order-map".
+  translated = translated.replace(/\b1st-order-map\b/g, 'first-order-map');
+  return translated;
+}
+
 // Type-inference env, reset per chapter so cross-chapter aliases don't leak.
 let envChapter = null;
 let env = null;
@@ -33,7 +63,8 @@ corpus.forEach((entry, idx) => {
     envChapter = entry.chapter;
     env = Object.create(null);
   }
-  const translated = translate(entry.code, env);
+  const code = patchCode(entry.code);
+  const translated = patchTranslated(translate(code, env));
   const fields = [
     `:chapter ${ednStr(entry.chapter)}`,
     `:chapter-title ${ednStr(entry.chapter_title ?? '')}`,
@@ -41,7 +72,7 @@ corpus.forEach((entry, idx) => {
     `:section-title ${ednStr(entry.section_title ?? '')}`,
     `:page ${entry.page != null ? entry.page : 'nil'}`,
     `:idx ${idx}`,
-    `:code ${ednStr(entry.code)}`,
+    `:code ${ednStr(code)}`,
     `:translated ${ednStr(translated)}`,
   ];
   if (entry.subheading !== undefined) {
