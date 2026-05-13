@@ -407,5 +407,80 @@
             ([initial-state t opts-or-tol]
                (if (map? opts-or-tol)
                  (emmy-adv initial-state t opts-or-tol)
-                 (emmy-adv initial-state t {:epsilon opts-or-tol})))))))")
+                 (emmy-adv initial-state t {:epsilon opts-or-tol})))))))
+
+    ;; --- scmutils built-ins SICM pages reach for that Emmy doesn't
+    ;; --- ship. Mirrors the JVM-side `test/sicm/compat.clj`. Stubs
+    ;; --- return innocuous placeholders where there's no Emmy
+    ;; --- equivalent — enough to keep the surrounding page text
+    ;; --- evaluating instead of bailing out on a free symbol.
+
+    ;; scmutils picker for the ODE integrator method. Emmy uses a
+    ;; fixed strategy, so this is a no-op.
+    (defn set-ode-integration-method! [& _] nil)
+
+    ;; SICM's integer floor. Symbolic Emmy expressions don't reduce
+    ;; to a number, so simplify first and only floor when the result
+    ;; is genuinely numeric.
+    (defn floor->exact [x]
+      (let [s (try (simplify x) (catch :default _ x))]
+        (if (number? s) (long (Math/floor (double s))) s)))
+
+    ;; SICM canonical time-evolution operator `C*`. Used in
+    ;; §6.2-style constructions like `(((C* alpha omega) dt) state0)`.
+    ;; Stub returns the identity flow so chained defns evaluate
+    ;; without crashing.
+    (defn C* [& _] (fn [_dt] (fn [state] state)))
+
+    ;; scmutils single-arg predicate / expression wrappers. Stubs.
+    (defn predicate-1 [pred] (fn [x] (pred x)))
+    (defn expression-1 [expr] expr)
+    (defn default-collector [& _] nil)
+    (defn write-line [& args] (apply println args))
+
+    ;; scmutils `make-operator` builds an Operator wrapper around a
+    ;; function. For most SICM page uses we can pretend it's the
+    ;; function itself.
+    (defn make-operator [f & _] f)
+
+    ;; scmutils `bisect` root finder. Stub: midpoint.
+    (defn bisect
+      ([_f a b] (/ (+ (double a) (double b)) 2.0))
+      ([_f a b _tol] (/ (+ (double a) (double b)) 2.0)))
+
+    ;; scmutils 2D-point plot-data accessors. Stubs.
+    (defn abscissa [pt] (if (sequential? pt) (first pt) pt))
+    (defn ordinate [pt] (if (and (sequential? pt) (next pt)) (second pt) pt))
+    (defn make-point [x y] [x y])
+
+    ;; scmutils interactive surface-of-section explorer drives a
+    ;; `frame` window with iterates of `the-map`. JVM tests don't
+    ;; render; return a sentinel so subsequent forms don't error.
+    (defn explore-map [_window _the-map _n] :graphics)
+
+    ;; scmutils numerical-method bookkeeping. SICM exercises read this
+    ;; bare; expose it as a normal var (SCI doesn't need ^:dynamic
+    ;; metadata unless someone tries to `binding` it).
+    (def *machine-epsilon* 2.220446049250313e-16)
+
+    ;; scmutils close-enuf? — interval equality. Mirrors the JVM
+    ;; stub in test/sicm/compat.clj.
+    (defn close-enuf?
+      ([h1 h2] (close-enuf? h1 h2 1e-15 10))
+      ([h1 h2 tolerance] (close-enuf? h1 h2 tolerance 10))
+      ([h1 h2 tolerance scale]
+       (<= (abs (- (double h1) (double h2)))
+           (* tolerance
+              (+ (* scale (abs (double h1)))
+                 (* scale (abs (double h2)))
+                 1.0)))))
+
+    ;; scmutils matrix accessors. Emmy ships row / column in
+    ;; emmy.matrix; expose them bare so SICM page text resolves.
+    ;; `matrix` alias is already bound at the top of this eval-string.
+    (def row    matrix/row)
+    (def column matrix/column)
+    (defn m:submatrix [m & _] m)
+    (def m:num-rows matrix/num-rows)
+    (def m:num-cols matrix/num-cols)")
    500))
