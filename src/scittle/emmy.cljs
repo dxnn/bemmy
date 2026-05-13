@@ -257,7 +257,22 @@
   ;; Surfaces SICM-book names that ship inside Emmy sub-namespaces but
   ;; aren't pre-referred into emmy.env, plus a 2-arg transpose dispatch
   ;; the canonical-transform machinery needs.
-  (scittle/eval-string
+  ;;
+  ;; Deferred via setTimeout 500: when run inline, our ns-unmap of
+  ;; names in emmy.env's SCI exposure (R2, R3, evolve, state-advancer,
+  ;; …) takes effect briefly — a probe inside this eval-string
+  ;; confirms (ns-resolve *ns* 'evolve) returns nil right after the
+  ;; unmap — but by the time the page is interactive, the names are
+  ;; back to #'emmy.env/*. Something in scittle's post-init pipeline
+  ;; (likely emmy.sci/config running once the plugin registry settles)
+  ;; re-applies emmy.env :refer :all on user, clobbering our local
+  ;; interns. setTimeout 0 isn't enough to outlast it; 500ms reliably
+  ;; lands the shim after the post-init refer-replay. Names that
+  ;; aren't in emmy.env's SCI exposure (L-pend, make-quaternion, …)
+  ;; would work inline too, but bundling them in the same deferred
+  ;; block keeps the shim coherent and easy to reason about.
+  (js/setTimeout
+   #(scittle/eval-string
    "(require '[emmy.generic :as g]
              '[emmy.matrix :as matrix]
              '[emmy.mechanics.hamilton :as ham]
@@ -270,6 +285,15 @@
     ;; `(def X …)` when X is currently referred from another ns, so
     ;; clear the slate first. ns-unmap is idempotent on names that
     ;; aren't currently mapped, so the unconditional sweep is safe.
+    ;;
+    ;; The sweep alone isn't sufficient for *every* name in practice —
+    ;; for `R2`, `R3`, `evolve`, `state-advancer` the subsequent
+    ;; `(def …)` form still resolves the name back to its emmy.env
+    ;; refer during this plugin-init eval-string (probably because the
+    ;; analyzer captures the binding before the unmap is observed).
+    ;; The defs for those four names below use `intern` directly
+    ;; (which bypasses the def-collision check entirely) instead of
+    ;; `def`. The others use plain `def` and pick up the unmap fine.
     (doseq [s '[H-central-polar
                 make-quaternion quaternion->vector quaternion->3vector
                 quaternion->rotation-matrix rotation-matrix->quaternion
@@ -317,8 +341,8 @@
     ;; Type-signature shorthand (literal-function 'x R/R2/R3) and the
     ;; lowercase form some corpus snippets carry.
     (def R  '(-> Real Real))
-    (def R2 '(-> Real Real Real))
-    (def R3 '(-> Real Real Real Real))
+    (intern *ns* 'R2 '(-> Real Real Real))
+    (intern *ns* 'R3 '(-> Real Real Real Real))
     (def r  '(-> Real Real))
 
     ;; SICM's L-pend takes a y-position-of-pivot fn; emmy's L-pendulum
@@ -363,16 +387,25 @@
                      {:observe (sicm-observe monitor)
                       :epsilon tol}))))
 
-    (defn evolve [state-derivative & state-derivative-args]
-      (adapt-emmy-integrator
-        (apply ode/evolve state-derivative state-derivative-args)))
+    ;; evolve / state-advancer use `intern` instead of `defn` —
+    ;; SCI's def-collision check otherwise leaves them pointing at
+    ;; emmy.env/evolve and emmy.env/state-advancer (which only accept
+    ;; 3-arg call shapes) instead of these SICM-shape wrappers (which
+    ;; accept the 5-arg `(state monitor dt t-final tol)` shape SICM
+    ;; pages use).
+    (intern *ns* 'evolve
+      (fn [state-derivative & state-derivative-args]
+        (adapt-emmy-integrator
+          (apply ode/evolve state-derivative state-derivative-args))))
 
-    (defn state-advancer [state-derivative & state-derivative-args]
-      (let [emmy-adv (apply ode/state-advancer
-                            state-derivative state-derivative-args)]
-        (fn ([initial-state t]
-             (emmy-adv initial-state t))
-          ([initial-state t opts-or-tol]
-             (if (map? opts-or-tol)
-               (emmy-adv initial-state t opts-or-tol)
-               (emmy-adv initial-state t {:epsilon opts-or-tol}))))))"))
+    (intern *ns* 'state-advancer
+      (fn [state-derivative & state-derivative-args]
+        (let [emmy-adv (apply ode/state-advancer
+                              state-derivative state-derivative-args)]
+          (fn ([initial-state t]
+               (emmy-adv initial-state t))
+            ([initial-state t opts-or-tol]
+               (if (map? opts-or-tol)
+                 (emmy-adv initial-state t opts-or-tol)
+                 (emmy-adv initial-state t {:epsilon opts-or-tol})))))))")
+   500))
