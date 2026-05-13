@@ -253,6 +253,65 @@
               [mafs.plot/OfX {:y      (fn [x] (double (f params x)))
                               :domain [(double x-min) (double x-max)]}]]]))))
 
+    (defn state-trajectory
+      \"Pre-compute a Hamiltonian trajectory and return an advancer-
+       shaped (fn [_init t]) closure that linear-interpolates the
+       pre-computed table. Replaces re-integrating the ODE per plot
+       sample — for a 256-sample plot that's ~256× more work than
+       integrating once and looking up.
+
+       Implementation: a tiny RK4 on phase-space-derivative bypasses
+       two Emmy/CLJS edges that block the obvious
+       `((state-advancer Hamilton-equations) H)` approach —
+       compile-state-fn doesn't accept a fn-shaped H, and Emmy's
+       rational arithmetic emits BigInt leaves that the bundled ODE
+       solver can't mix with Number. Each step coerces the state
+       through a plain CLJS vector of doubles; user code that does
+       `(nth (advancer …) 1)` works on the vec the same as on an
+       up-tuple.\"
+      [H initial-state t0 t1 n-grid]
+      (let [sd      (phase-space-derivative H)
+            ;; Walk an up/down structure into a plain CLJS vector
+            ;; of doubles. Sufficient for the depth-1 single-DOF
+            ;; (up t q p) states the auto-graph H templates use.
+            ;; `js/Number` (not cljs.core/double) — Emmy's rational
+            ;; arithmetic emits BigInt leaves; double's underlying
+            ;; +x conversion throws on BigInt, but js/Number coerces
+            ;; BigInt/Ratio/Number/Float uniformly to Number.
+            ->vec   (fn coerce [s]
+                      (if (sequential? s)
+                        (mapv coerce s)
+                        (js/Number s)))
+            sd*     (fn [v] (->vec (sd (apply up v))))
+            v+      (fn [a b] (mapv cljs.core/+ a b))
+            vs      (fn [k a] (mapv #(cljs.core/* k %) a))
+            n       n-grid
+            dt      (cljs.core// (cljs.core/- t1 t0)
+                                 (cljs.core/dec n))
+            dt2     (cljs.core// dt 2)
+            dt6     (cljs.core// dt 6)
+            step    (fn [s]
+                      (let [k1 (sd* s)
+                            k2 (sd* (v+ s (vs dt2 k1)))
+                            k3 (sd* (v+ s (vs dt2 k2)))
+                            k4 (sd* (v+ s (vs dt k3)))]
+                        (v+ s (vs dt6 (v+ k1 (v+ (vs 2.0 k2)
+                                                 (v+ (vs 2.0 k3) k4)))))))
+            init-v  (->vec initial-state)
+            samples (loop [s init-v, acc [init-v], i 0]
+                      (if (>= i (cljs.core/dec n))
+                        acc
+                        (let [s' (step s)]
+                          (recur s' (conj acc s') (cljs.core/inc i)))))
+            max-i   (cljs.core/- (count samples) 2)]
+        (fn [_init t]
+          (let [idx (cljs.core// (cljs.core/- t t0) dt)
+                i   (max 0 (min max-i (int (Math/floor idx))))
+                a   (cljs.core/- idx i)
+                s0  (nth samples i)
+                s1  (nth samples (inc i))]
+            (v+ s0 (vs a (v+ s1 (vs -1.0 s0))))))))
+
     (defn plot-with-params
       \"Render y = f(params, x) with a Leva control panel for params.
 

@@ -7781,10 +7781,11 @@ p
     {:init-axis    "p0 0.0"
      :prelude-rows (fn [call-str]
                      [(str "H        " call-str)
-                      ";; state-advancer + Hamilton-equations gives a stepper:"
-                      ";;   (advancer initial-state t-final) → final state."
-                      ";; Verify your Emmy build exposes both at user-namespace level."
-                      "advancer ((state-advancer Hamilton-equations) H)"])
+                      ";; state-trajectory integrates Hamilton's equations once at let-time,"
+                      ";; sampling n-grid points; the returned advancer linear-interpolates"
+                      ";; from that table. (Calling state-advancer per sample re-runs the ODE"
+                      ";; from t0 every time — 256 redundant integrations per plot.)"
+                      "advancer (state-trajectory H (up t0 q0 p0) t0 t1 64)"])
      :plot-cmts    []
      :plot-body    "(fn [t] (nth (advancer (up t0 q0 p0) t) 1))"
      :param2d-cmts []
@@ -7792,13 +7793,13 @@ p
      :param3d-emit "(let [s (advancer (up t0 q0 p0) t)]\n                (emit t (nth s 1) (nth s 2)))"
      :surface-cmts (fn [swept]
                      [(str ";; Sweep '" swept " over the surface's y axis. Each row pre-computes")
-                      (str ";; a stepper for one " swept " value; re-integrating per surface sample.")])
+                      (str ";; one trajectory table for that " swept "; surface samples interpolate.")])
      :surface-row  (fn [swept call-str]
-                     (str "advs  (mapv (fn [" swept "] ((state-advancer Hamilton-equations) " call-str ")) " swept "s)"))
+                     (str "advs  (mapv (fn [" swept "] (state-trajectory " call-str " (up t0 q0 p0) t0 t1 64)) " swept "s)"))
      :surface-emit (fn [swept] (str "(emit t " swept " (nth ((nth advs j) (up t0 q0 p0) t) 1))"))
-     :animate-cmt  ";; memoize the stepper on the slider tuple so the ODE setup\n      ;; happens once per (m k …) combination."
+     :animate-cmt  ";; memoize the trajectory table per slider tuple — one ODE integration\n      ;; per (m k …) combination, then interpolation across all x samples."
      :memo-name    "memo-adv"
-     :memo-body    (fn [call-str] (str "((state-advancer Hamilton-equations) " call-str ")"))
+     :memo-body    (fn [call-str] (str "(state-trajectory " call-str " (up t0 q0 p0) t0 t1 64)"))
      :animate-call (fn [names-str] (str "(nth ((memo-adv " names-str ") (up t0 q0 p0) t) 1)"))}})
 
 (declare hamiltonian-form)

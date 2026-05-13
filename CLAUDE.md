@@ -140,14 +140,6 @@ Workflow:
 
 ## Todo
 
-- **Vendor regen for autocomplete.** The wiring is in place but
-  `@codemirror/autocomplete` isn't on disk. Run `bin/vendor.sh` to
-  fetch (it's already in `bin/vendor-cm.mjs`'s ENTRIES). Reload,
-  and typing in the editor should bring up suggestions.
-- **Hamiltonian template performance.** Each plot/parametric sample
-  re-integrates the ODE from t0; for many samples that's slow.
-  Pre-computing an interpolation table inside the let would fix it
-  — comment in the template flags the spot.
 - **2D Lagrangian auto-detection.** Currently the `:plot` /
   `:parametric-2d` Lagrangian templates carry comments showing the
   2D alternative (swap q0/q1 to ups, switch the `:xy` body), but
