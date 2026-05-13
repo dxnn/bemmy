@@ -331,7 +331,7 @@
     (doseq [s '[H-central-polar
                 make-quaternion quaternion quaternion->vector quaternion->3vector
                 quaternion->rotation-matrix rotation-matrix->quaternion
-                quaternion-ref quaternion->real-part q:r q:i q:j q:k
+                quaternion-ref quaternion->real-part q:i q:j q:k
                 vector-length euclidean-norm
                 R R2 R3 r ref
                 periodic-drive L-pend L-periodically-driven-pendulum
@@ -366,7 +366,6 @@
     (def rotation-matrix->quaternion quat/from-rotation-matrix)
     (def quaternion-ref              (fn [q i] (nth (quat/->vector q) i)))
     (def quaternion->real-part       quat/get-r)
-    (def q:r                         quat/get-r)
     (def q:i                         quat/get-i)
     (def q:j                         quat/get-j)
     (def q:k                         quat/get-k)

@@ -209,15 +209,6 @@
                            (str/replace #"\n" "\n;;   ")))))
     (.toString sb)))
 
-(defn dedupe-prereqs
-  "If the SICM book redefines a name in a later section (e.g.
-  L-central-polar in §1.5.2 then again in §1.6 and §1.6.1), keep all
-  occurrences in prereq order — Clojure just rebinds, and order matches
-  textbook reading. So this is currently identity; left here to flag
-  the question."
-  [entries]
-  entries)
-
 (defn- read-entry-forms
   "Read the entry's :translated text into a vector of top-level forms,
   tolerating reader errors (some translated SICM text contains symbols
@@ -277,8 +268,7 @@
   (let [{:keys [chapter section-title chapter-title source entries]} section
         keep-runnable   #(not (or (placeholder-entry? %)
                                   (print-result-only-entry? %)))
-        prereqs (dedupe-prereqs
-                  (filterv keep-runnable (chapter-prereq-entries section)))
+        prereqs (filterv keep-runnable (chapter-prereq-entries section))
         entries (filterv keep-runnable entries)
         all-entries (concat prereqs entries)
         def-names   (page-def-names all-entries)

@@ -123,7 +123,6 @@
 (def quaternion->angle-axis      emmy.quaternion/->angle-axis)
 (def quaternion-ref              (fn [q i] (nth (emmy.quaternion/->vector q) i)))
 (def quaternion->real-part       emmy.quaternion/get-r)
-(def q:r                         emmy.quaternion/get-r)
 (def q:i                         emmy.quaternion/get-i)
 (def q:j                         emmy.quaternion/get-j)
 (def q:k                         emmy.quaternion/get-k)
