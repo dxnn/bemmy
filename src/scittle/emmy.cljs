@@ -463,6 +463,15 @@
     ;; metadata unless someone tries to `binding` it).
     (def *machine-epsilon* 2.220446049250313e-16)
 
+    ;; Emmy's polynomial-GCD time-limit knob isn't marked ^:dynamic
+    ;; upstream, but SICM Ch. 2 / Ch. 3 tests do
+    ;; `(binding [pg/*poly-gcd-time-limit* [1 :seconds]] …)` to bound
+    ;; runaway simplification. SCI's analyzer rejects the binding
+    ;; without :dynamic in the var metadata, so retrofit it.
+    (require '[emmy.polynomial.gcd :as pg])
+    (alter-meta! #'emmy.polynomial.gcd/*poly-gcd-time-limit*
+                 assoc :dynamic true)
+
     ;; scmutils close-enuf? — interval equality. Mirrors the JVM
     ;; stub in test/sicm/compat.clj.
     (defn close-enuf?

@@ -6461,24 +6461,23 @@ gfx-win   ; auto-shows the accumulated curves
 ;; (book p. 455)
 (defn HH-collector [win advance E dt sec-eps n]
   (fn [x y done fail]
-        (let [collector (default-collector monitor pmap n)]
-            (letfn [(monitor
-                         [last-crossing-state state]
-                         (plot-point
-                                  win
-                                  (ref
-                                              (coordinate
-                                                   last-crossing-state)
-                                              1)
-                                  (ref
-                                              (momentum
-                                                   last-crossing-state)
-                                              1)))
-                       (pmap
-                         [x y cont fail]
-                         (find-next-crossing
-                               y advance dt sec-eps cont))]
-                 (cond
+        (letfn [(monitor
+                    [last-crossing-state state]
+                    (plot-point
+                             win
+                             (ref
+                                         (coordinate
+                                              last-crossing-state)
+                                         1)
+                             (ref
+                                         (momentum
+                                              last-crossing-state)
+                                         1)))
+                  (pmap
+                    [x y cont fail]
+                    (find-next-crossing y advance dt sec-eps cont))]
+            (let [collector (default-collector monitor pmap n)]
+                   (cond
                         (and (up? x) (up? y)) (collector x y done fail)
                         (and (number? x) (number? y))
                         (let [initial-state (section->state E x y)]
@@ -6580,9 +6579,6 @@ gfx-win   ; auto-shows the accumulated curves
 ;;  or clojure.core. Calls below resolve to that referred binding.)
 ;; (defn abs [x] (cond (< x 0) (- x) (= x 0) x (> x 0) x))
 
-;; (book p. 499)
-(cond predicate-1 consequent-1  nil predicate-n consequent-n)
-
 ;; (book p. 501)
 ;; (Pedagogical redef of `abs` — kept as a comment so the page
 ;;  doesn't collide with the same name `:refer`'d in from emmy.env
@@ -6618,9 +6614,6 @@ gfx-win   ; auto-shows the accumulated curves
 
 (f 3)
 ;;=> 1
-
-;; (book p. 502)
-(let [variable-1 expression-1 variable-n expression-n] body)
 
 ;; (book p. 502)
 ;; (Pedagogical redef of `factorial` — kept as a comment so the page

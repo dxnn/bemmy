@@ -322,14 +322,33 @@
       return [L(A('letfn'), V(fnDefs.map(mkFnSpec)), ...rest)];
     }
     if (fnDefs.length > 0) {
-      // Vals OUTER, fns INNER. Scheme's internal `define`s are visible
-      // to all sibling defs and the body, but Clojure's `letfn` doesn't
-      // see lexically-later let bindings. Putting vals in the outer
-      // `let` and fns in the inner `letfn` matches the typical SICM
-      // pattern (val defined first, fn closes over it) — e.g. §2.2's
-      // `M-on-path` is bound and then `omega-cross` references it.
-      const pairs = valDefs.flatMap(d => [d.c[1], d.c[2] || A('nil')]);
-      return [L(A('let'), B(pairs), L(A('letfn'), V(fnDefs.map(mkFnSpec)), ...rest))];
+      // Both vals and fns. Scheme's internal `define`s are mutually
+      // visible; Clojure's `let` / `letfn` aren't. Pick the nesting
+      // order from dependency direction: if any val references any fn
+      // name (e.g. §6.7's `(let ((collector (default-collector monitor
+      // pmap n))) …)` where `monitor` and `pmap` are sibling fns),
+      // emit fns OUTER so the val's init expression can resolve them.
+      // Otherwise default to vals OUTER, fns INNER — the §2.2 pattern,
+      // where `M-on-path` is bound and then `omega-cross` (a fn)
+      // closes over it.
+      const fnNames = new Set(fnDefs.map(d => d.c[1] && d.c[1].v).filter(Boolean));
+      const collectNames = (n, into) => {
+        if (!n) return;
+        if (n.t === 'atom' && fnNames.has(n.v)) into.add(n.v);
+        if (n.c) for (const ch of n.c) collectNames(ch, into);
+      };
+      const valDependsOnFn = valDefs.some(d => {
+        const used = new Set();
+        collectNames(d.c[2], used);
+        return used.size > 0;
+      });
+      const valPairs = valDefs.flatMap(d => [d.c[1], d.c[2] || A('nil')]);
+      if (valDependsOnFn) {
+        return [L(A('letfn'), V(fnDefs.map(mkFnSpec)),
+                  L(A('let'), B(valPairs), ...rest))];
+      }
+      return [L(A('let'), B(valPairs),
+                L(A('letfn'), V(fnDefs.map(mkFnSpec)), ...rest))];
     }
     const pairs = defs.flatMap(d => [d.c[1], d.c[2] || A('nil')]);
     return [L(A('let'), B(pairs), ...rest)];

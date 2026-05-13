@@ -91,13 +91,19 @@
        :printed-result nil})))
 
 (defn placeholder-entry?
-  "True when the entry's :translated contains a literal `...` symbol —
-  the SICM book uses ... as a 'fill in the rest' pedagogical marker
-  inside an otherwise-incomplete defn (e.g. §1.5.1's `delta`). Such
-  snippets aren't runnable code; the generator skips them entirely
-  rather than emit a defn whose body has an unresolvable `...`."
+  "True when the entry's :translated is a SICM-book syntax example
+  with placeholder names rather than runnable code. Catches:
+    - a literal `...` marker (§1.5.1's `delta` 'fill in the rest')
+    - the book's `predicate-1 / consequent-1 / variable-n /
+      expression-n / consequent-n / predicate-n` placeholders that
+      appear in §8 Appendix's syntax cheatsheet (`(cond (predicate-1
+      consequent-1) ...)`, `(let ((variable-1 expression-1) ...))`,
+      etc.). These aren't runnable; skip them so the page doesn't
+      bail out on a free symbol."
   [entry]
-  (boolean (re-find #"(\s|\()\.\.\.(\s|\))" (:translated entry ""))))
+  (let [t (:translated entry "")]
+    (boolean (or (re-find #"(\s|\()\.\.\.(\s|\))" t)
+                 (re-find #"\b(predicate|consequent|variable|expression)-(?:1|n)\b" t)))))
 
 (defn print-result-only-entry?
   "True when the entry's :translated parses to a single math-shaped
