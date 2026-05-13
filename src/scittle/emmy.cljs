@@ -1,10 +1,12 @@
 (ns scittle.emmy
   {:no-doc true}
-  (:require [emmy.leva]
+  (:require [emmy.generic :as g]
+            [emmy.leva]
             [emmy.mafs]
             [emmy.mathbox]
             [emmy.mathbox.plot]
             [emmy.sci]
+            [emmy.structure :as struct]
             [emmy.viewer]
             [emmy.viewer.compile]
             [emmy.viewer.physics]
@@ -15,6 +17,31 @@
             [sci.core :as sci]
             [sci.ctx-store]
             [scittle.core :as scittle]))
+
+;; --- Upstream-Emmy monkey patches ------------------------------------
+;; These extend Emmy's `g/mul` multimethod at plugin-load time. The
+;; methods aren't reachable from within the SCI ctx because
+;; `emmy.generic/mul` is marked `^:no-doc`, which `emmy.sci/copy-ns`
+;; honors — so the SICM-compat shim's eval-string can't `defmethod` on
+;; it. The patches live here at the CLJS compile site, which has full
+;; Emmy access.
+;;
+;; SICM §2.12's `quaternion->3vector` returns `(rest (->vector q))` — a
+;; cljs.core seq. The chapter then computes `(/ v3 norm)`, which becomes
+;; `(g/mul seq (g/invert symbolic))`. Emmy ships scalar×up/down/matrix
+;; dispatch but not scalar×<cljs-seq>, so the multimethod throws
+;; "No method … for dispatch value [#object[Function] …]". (`#object
+;; [Function]` is how `pr-str` renders the bare JS constructor for an
+;; anonymous CLJS type — here, an IndexedSeq.) Patch by deriving the
+;; common CLJS seq classes into one parent keyword and routing through
+;; `(apply struct/up …)` so the existing up×scalar dispatch handles it.
+(doseq [t [Cons List IndexedSeq LazySeq cljs.core/ChunkedSeq]]
+  (derive t ::cljs-seq))
+
+(defmethod g/mul [::cljs-seq :emmy.expression/numeric] [a b]
+  (g/mul (apply struct/up a) b))
+(defmethod g/mul [:emmy.expression/numeric ::cljs-seq] [a b]
+  (g/mul a (apply struct/up b)))
 
 ;; emmy-viewers' high-level helpers (emmy.mafs/of-x etc.) and the small
 ;; emmy.viewer utility namespace need to live in SCI, but emmy-viewers ships
@@ -105,7 +132,12 @@
                :domain [(double t-min) (double t-max)]}])
       win)
 
-    (defn plot-point [win [x y]]
+    ;; scmutils ships a 3-arg `(plot-point win x y)`; SCI's defn happily
+    ;; accepts extra args, so an earlier 2-arg `[win [x y]]` shape didn't
+    ;; arity-error on 3-arg calls — it destructured `[x y]` from the
+    ;; second (numeric) arg and failed with `nth not supported on Number`
+    ;; mid-integration. Match the book's signature.
+    (defn plot-point [win x y]
       (swap! win update :drawables conj
              [mafs.core/Point {:x (double x) :y (double y)}])
       win)
@@ -297,11 +329,11 @@
     ;; (which bypasses the def-collision check entirely) instead of
     ;; `def`. The others use plain `def` and pick up the unmap fine.
     (doseq [s '[H-central-polar
-                make-quaternion quaternion->vector quaternion->3vector
+                make-quaternion quaternion quaternion->vector quaternion->3vector
                 quaternion->rotation-matrix rotation-matrix->quaternion
                 quaternion-ref quaternion->real-part q:r q:i q:j q:k
                 vector-length euclidean-norm
-                R R2 R3 r
+                R R2 R3 r ref
                 periodic-drive L-pend L-periodically-driven-pendulum
                 evolve state-advancer]]
       (ns-unmap *ns* s))
@@ -324,6 +356,10 @@
     ;; ones. Aliasing here keeps SICM page text running unmodified.
 
     (def make-quaternion             quat/make)
+    ;; SICM book uses `(quaternion a b c d)` (no `make-` prefix) at the
+    ;; call site (e.g. §2.12 'Composition of rotations'); Emmy ships
+    ;; `quat/make`. Alias both for the SICM book reading.
+    (def quaternion                  quat/make)
     (def quaternion->vector          quat/->vector)
     (def quaternion->3vector         (fn [q] (rest (quat/->vector q))))
     (def quaternion->rotation-matrix quat/->rotation-matrix)
@@ -457,6 +493,29 @@
     ;; `frame` window with iterates of `the-map`. JVM tests don't
     ;; render; return a sentinel so subsequent forms don't error.
     (defn explore-map [_window _the-map _n] :graphics)
+
+    ;; SICM book uses `(ref aa idx)` to index into a list — e.g. §2.12's
+    ;; `quaternion->RM` does `(let [aa (quaternion->angle-axis q)]
+    ;;   (let [theta (ref aa 0) n (ref aa 1)] ...))`. Emmy's
+    ;; `emmy.env/ref` falls through to `(get-in a ks)` for non-associative
+    ;; values, and lists aren't associative in CLJS — so the book-style
+    ;; call silently returns nil and the downstream rotation-matrix
+    ;; computation produces garbage that fails the next g/mul dispatch.
+    ;; Wrap ref so a sequential, non-vector value + a 1-key int call uses
+    ;; nth; otherwise delegate to whatever was previously bound.
+    (let [emmy-ref @(resolve 'emmy.env/ref)]
+      (intern *ns* 'ref
+        (fn [a & ks]
+          (cond
+            (nil? ks)
+            (emmy-ref a)
+            (and (sequential? a)
+                 (not (vector? a))
+                 (= 1 (count ks))
+                 (integer? (first ks)))
+            (nth a (first ks))
+            :else
+            (apply emmy-ref a ks)))))
 
     ;; SICM §6.7 references `1st-order-map` (a Lie-series-truncated
     ;; advance map) as a free symbol; the book elides its definition.
