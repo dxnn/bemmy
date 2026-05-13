@@ -482,5 +482,59 @@
     (def column matrix/column)
     (defn m:submatrix [m & _] m)
     (def m:num-rows matrix/num-rows)
-    (def m:num-cols matrix/num-cols)")
+    (def m:num-cols matrix/num-cols)
+
+    ;; --- emmy.examples.{pendulum,driven-pendulum,top}
+    ;; Emmy's SICM test files require these as :as pendulum / :as driven /
+    ;; :as top to drive the Lagrangians; the example namespaces aren't
+    ;; shipped in the scittle SCI context though. Inline the three small
+    ;; defs the deftests actually call (pendulum/L, driven/L, top/L,
+    ;; top/L-axisymmetric) into user, then `create-ns` + `intern` each
+    ;; under the right namespaced name so a page-level
+    ;; `(require '[emmy.examples.pendulum :as pendulum])` resolves and
+    ;; `(pendulum/L …)` calls find the var.
+
+    (defn pendulum-T [m l _ x]
+      (let [v (D x)]
+        (fn [[t θ θdot]]
+          (let [[vx vy :as vt] (v t)]
+            (* (/ 1 2) m
+               (+ (square vt)
+                  (* 2 l θdot (+ (* vy (sin θ)) (* vx (cos θ))))
+                  (square (* l θdot))))))))
+
+    (defn pendulum-V [m l g x]
+      (fn [[t θ _]]
+        (* m g (- (ref (x t) 1) (* l (cos θ))))))
+
+    (def pendulum-L (- pendulum-T pendulum-V))
+
+    (defn driven-vertical-periodic-drive [amplitude frequency phase]
+      (fn [t]
+        (up 0 (* amplitude (cos (+ (* frequency t) phase))))))
+
+    (defn driven-L [m l g a ω]
+      (pendulum-L m l g (driven-vertical-periodic-drive a ω 0)))
+
+    (defn top-L [A B C gMR]
+      (let [T (comp simplify (T-rigid-body A B C))
+            V (fn [[_ [theta _ _]]]
+                (* gMR (cos theta)))]
+        (- T V)))
+
+    (defn top-L-axisymmetric [A C gMR] (top-L A A C gMR))
+
+    (create-ns 'emmy.examples.pendulum)
+    (intern 'emmy.examples.pendulum 'T pendulum-T)
+    (intern 'emmy.examples.pendulum 'V pendulum-V)
+    (intern 'emmy.examples.pendulum 'L pendulum-L)
+
+    (create-ns 'emmy.examples.driven-pendulum)
+    (intern 'emmy.examples.driven-pendulum 'vertical-periodic-drive
+            driven-vertical-periodic-drive)
+    (intern 'emmy.examples.driven-pendulum 'L driven-L)
+
+    (create-ns 'emmy.examples.top)
+    (intern 'emmy.examples.top 'L top-L)
+    (intern 'emmy.examples.top 'L-axisymmetric top-L-axisymmetric)")
    500))
