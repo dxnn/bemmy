@@ -529,6 +529,25 @@
       ([state _dt] state)
       ([state _dt & _] state))
 
+    ;; SICM §6.7 defines `HH-collector` whose body references
+    ;; `find-next-crossing` and `section->state`, both defined in §3.6.4
+    ;; (chapter 3). `bin/build-sicm-pages.bb` only inlines same-chapter
+    ;; prereqs, so the §6.7 page sees those names as free symbols and
+    ;; SCI fails to compile the defn at analysis time. Like
+    ;; `first-order-map`, the surrounding §6.7 form is pedagogical and
+    ;; only runs through `explore-map`, which is itself stubbed — so
+    ;; no-op stubs are enough to let the defn compile.
+    (defn find-next-crossing [_state _advance _dt _sec-eps _cont] nil)
+    (defn section->state    [_E _y _py] nil)
+
+    ;; SICM book convention: `win` is the current graphics window. §3.6.x
+    ;; pages each define their own `(def win (frame …))` with appropriate
+    ;; viewBox; §6.7 references `win` as a free symbol at the explore-map
+    ;; call without defining its own. Provide a default so the page
+    ;; analyzes; user pages that define `win` shadow this via their
+    ;; own ns-unmap-then-def header.
+    (def win (frame -1 1 -1 1))
+
     ;; scmutils numerical-method bookkeeping. SICM exercises read this
     ;; bare; expose it as a normal var (SCI doesn't need ^:dynamic
     ;; metadata unless someone tries to `binding` it).
