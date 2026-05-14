@@ -321,7 +321,137 @@
      js/NaN))
  {:a     {:value 0.0 :min -0.5 :max 0.5 :step 0.02}
   :t-end {:value (cljs.core/* 0.5 Math/PI) :min 0.0 :max Math/PI :step 0.05}}
- [0.0 Math/PI] [-1.2 1.5])"]})
+ [0.0 Math/PI] [-1.2 1.5])"]
+
+   "SICM 1.9 Abstraction of Path Functions (Emmy)"
+   ["three concrete instantiations of one path-function abstraction"
+    ";; (literal-function 'q) is the abstract path; instantiating it with
+;; concrete CLJS fns shows how downstream Lagrangians evaluate uniformly
+;; across paths. Three curves: cos, half-amplitude sin(2x), tanh — all
+;; valid (q t) callbacks for a Lagrangian's t→q lookup.
+(let [domain [(cljs.core/- (cljs.core/* 2 Math/PI)) (cljs.core/* 2 Math/PI)]]
+  [mafs.core/Mafs {:viewBox {:x domain :y [-1.5 1.5]}}
+   [mafs.coordinates/Cartesian]
+   [mafs.plot/OfX {:y (fn [x] (Math/cos x))
+                   :domain domain :color \"#3090ff\"}]
+   [mafs.plot/OfX {:y (fn [x] (cljs.core/* 0.5 (Math/sin (cljs.core/* 2 x))))
+                   :domain domain :color \"#e63946\"}]
+   [mafs.plot/OfX {:y (fn [x] (Math/tanh x))
+                   :domain domain :color \"#2a9d8f\"}]])"]
+
+   "SICM 5.2 General Canonical Transformations (Emmy)"
+   ["a coordinate grid rotated by 30° in phase space — canonical"
+    ";; The map (q, p) → (Q, P) = (q cos θ − p sin θ, q sin θ + p cos θ)
+;; is a phase-space rotation, the simplest non-trivial canonical
+;; transformation. Plot a 5×5 grid before (gray) and after (blue) the
+;; rotation. Both grids have the same area per cell — area preservation
+;; is the geometric face of \"canonical\".
+(let [θ (cljs.core// Math/PI 6)
+      step 0.25
+      qs (mapv (fn [i] (cljs.core/+ -1.0 (cljs.core/* step i))) (range 9))
+      cθ (Math/cos θ)
+      sθ (Math/sin θ)
+      rotate (fn [q p] [(cljs.core/- (cljs.core/* q cθ) (cljs.core/* p sθ))
+                        (cljs.core/+ (cljs.core/* q sθ) (cljs.core/* p cθ))])]
+  (into
+    [mafs.core/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
+     [mafs.coordinates/Cartesian]]
+    (concat
+      ;; Original-grid lines — horizontal then vertical.
+      (for [p qs]
+        [mafs.plot/OfX {:y (fn [_] p) :domain [-1 1] :color \"#888888\"}])
+      ;; Original vertical lines, drawn as parametric so we can do
+      ;; constant-x segments.
+      (for [q qs]
+        [mafs.plot/Parametric
+         {:t [-1 1]
+          :xy (fn [t] [q t])
+          :color \"#888888\"}])
+      ;; Rotated horizontal lines (after rotate at every q).
+      (for [p qs]
+        [mafs.plot/Parametric
+         {:t [-1 1]
+          :xy (fn [t] (rotate t p))
+          :color \"#3090ff\"}])
+      ;; Rotated vertical lines.
+      (for [q qs]
+        [mafs.plot/Parametric
+         {:t [-1 1]
+          :xy (fn [t] (rotate q t))
+          :color \"#3090ff\"}]))))"]
+
+   "SICM 5.7 Symplectic Condition (Emmy)"
+   ["area preservation: a unit square sent through a canonical rotation"
+    ";; The symplectic condition is dQ ∧ dP = dq ∧ dp — the canonical
+;; transformation preserves the 2-form on phase space. Concretely:
+;; a unit-area region maps to a unit-area region, possibly reshaped.
+;; Plot the unit square [0,1]² rotated by four progressively larger
+;; canonical angles — each image rectangle has area 1.
+(let [angles [0 (cljs.core// Math/PI 8) (cljs.core// Math/PI 4) (cljs.core// (cljs.core/* 3 Math/PI) 8)]
+      colors [\"#888888\" \"#3090ff\" \"#2a9d8f\" \"#e63946\"]
+      ;; Closed border of [0,1]² parametrized by t ∈ [0, 4].
+      square (fn [t]
+               (let [t (mod t 4.0)
+                     i (int (Math/floor t))
+                     f (cljs.core/- t i)]
+                 (case i
+                   0 [f 0.0]
+                   1 [1.0 f]
+                   2 [(cljs.core/- 1.0 f) 1.0]
+                   3 [0.0 (cljs.core/- 1.0 f)])))
+      rotate (fn [θ q p]
+               (let [cθ (Math/cos θ) sθ (Math/sin θ)]
+                 [(cljs.core/- (cljs.core/* q cθ) (cljs.core/* p sθ))
+                  (cljs.core/+ (cljs.core/* q sθ) (cljs.core/* p cθ))]))]
+  (into
+    [mafs.core/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
+     [mafs.coordinates/Cartesian]]
+    (map-indexed
+      (fn [i θ]
+        [mafs.plot/Parametric
+         {:t [0 4]
+          :xy (fn [t] (let [[q p] (square t)] (rotate θ q p)))
+          :color (nth colors i)}])
+      angles)))"]
+
+   "SICM 6.2 Time Evolution is Canonical (Emmy)"
+   ["traveling wave — Hamiltonian flow visualized via animate"
+    ";; sin(x − t) is the time-evolved sine under translation-Hamiltonian
+;; H = p (acting on phase functions f via {f, H}). Auto-advancing t
+;; makes the whole wavefront slide right at unit speed. Time-evolution
+;; is canonical: the wave keeps its shape (no diffusion, no growth) —
+;; a phase-space volume preserved as it advances.
+(animate
+ (fn [t x] (Math/sin (cljs.core/- x t)))
+ [(cljs.core/- Math/PI) Math/PI] [-1.2 1.2] 0.6)"]
+
+   "SICM 2.9 Vector Angular Momentum – part 1 (Emmy)"
+   ["3D: angular momentum L = I·ω for ω = (0.4, 0.3, 0.7) with diagonal I"
+    ";; The body-frame angular momentum L_i = I_i ω_i with diagonal inertia
+;; tensor (A, B, C). Red is ω, green is L. For an isotropic body
+;; (A = B = C) they coincide; for an anisotropic body the directions
+;; differ — visible here.
+(let [A 1.0 B 1.6 C 0.4
+      ω [0.4 0.3 0.7]
+      L [(cljs.core/* A (nth ω 0))
+         (cljs.core/* B (nth ω 1))
+         (cljs.core/* C (nth ω 2))]]
+  [mathbox/MathBox
+   {:container {:style {:height \"400px\" :width \"100%\"}}}
+   [mb/Cartesian {:range [[-1 1] [-1 1] [-1 1]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    ;; ω — red.
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x (nth ω 0))
+                                           (cljs.core/* x (nth ω 1))
+                                           (cljs.core/* x (nth ω 2))))}]
+    [mb/Line {:color \"#e63946\" :width 5}]
+    ;; L — green.
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x (nth L 0))
+                                           (cljs.core/* x (nth L 1))
+                                           (cljs.core/* x (nth L 2))))}]
+    [mb/Line {:color \"#2a9d8f\" :width 5}]]])"]})
 
 (def reader-opts
   {:eof ::eof

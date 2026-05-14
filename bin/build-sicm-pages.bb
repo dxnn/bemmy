@@ -333,6 +333,49 @@
                     (cljs.core/* c (Math/cos θ))))}]
     [mb/Surface {:shaded true :color \"#3090ff\" :opacity 0.7}]]])"]
 
+   ["2" "2.8"]
+   ["3D: Poinsot's construction — inertia ellipsoid with ω and L vectors"
+    ";; The free rigid body's motion has a geometric construction: the
+;; inertia ellipsoid ½I(ω) = T = const rolls without slipping on an
+;; invariable plane perpendicular to L. The point of contact is where ω
+;; touches the surface. For diagonal I = diag(A, B, C) and a fixed ω,
+;; ω is red, L = I·ω is green; for an anisotropic body their directions
+;; differ. (The plane itself is omitted — the visual focus is the
+;; ellipsoid + two vectors.)
+(let [A 1.0
+      B 1.6
+      C 0.4
+      ;; A specific angular velocity in body frame.
+      ωx 0.6 ωy 0.5 ωz 0.8
+      ;; Ellipsoid semi-axes in ω-space for ½I(ω) = 1.
+      a (cljs.core// 1.0 (Math/sqrt A))
+      b (cljs.core// 1.0 (Math/sqrt B))
+      c (cljs.core// 1.0 (Math/sqrt C))
+      ;; L = I·ω
+      Lx (cljs.core/* A ωx) Ly (cljs.core/* B ωy) Lz (cljs.core/* C ωz)]
+  [mathbox/MathBox
+   {:container {:style {:height \"400px\" :width \"100%\"}}}
+   [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    ;; Inertia ellipsoid — translucent surface.
+    [mb/Area
+     {:rangeX [0 Math/PI]
+      :rangeY [0 (cljs.core/* 2 Math/PI)]
+      :width 32 :height 32 :channels 3
+      :expr (fn [emit θ φ]
+              (emit (cljs.core/* a (Math/sin θ) (Math/cos φ))
+                    (cljs.core/* b (Math/sin θ) (Math/sin φ))
+                    (cljs.core/* c (Math/cos θ))))}]
+    [mb/Surface {:shaded true :color \"#3090ff\" :opacity 0.4}]
+    ;; ω vector — red.
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x ωx) (cljs.core/* x ωy) (cljs.core/* x ωz)))}]
+    [mb/Line {:color \"#e63946\" :width 5}]
+    ;; L vector — green.
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x Lx) (cljs.core/* x Ly) (cljs.core/* x Lz)))}]
+    [mb/Line {:color \"#2a9d8f\" :width 5}]]])"]
+
    ["3" "3.1.1"]
    ["Legendre transform: L(v) vs H(p), with a tangent at v=1.5"
     ";; For L(v) = ½v² (free particle, m=1), the Legendre transform gives
