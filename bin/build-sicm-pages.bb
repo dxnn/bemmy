@@ -556,7 +556,9 @@
   ;; sections drop.
   #{;; ch1 — Lagrangian Mechanics
     "1.4" "1.5.1" "1.5.2" "1.6" "1.6.1" "1.6.2" "1.6.3"
-    "1.7" "1.8.2" "1.8.3" "1.8.4" "1.8.5" "1.9"
+    "1.7" "1.8.2" "1.8.3" "1.8.5" "1.9"
+    ;; §1.8.4 (Restricted Three-Body Problem — L0/V-eff/LR3B/LR3B1) is
+    ;; NOT exercised by the section-1-8 deftest; let scrape through.
     ;; ch2 — Rigid Bodies / Rotation
     "2.7" "2.10"
     ;; ch3 — Hamiltonian Mechanics
@@ -566,7 +568,10 @@
     ;; ch6 — Canonical Evolution
     "6.2"
     ;; ch7 — Canonical Perturbation Theory
-    "7.2"})
+    ;; (§7.2's H0/H1/W/Lie-derivative / H-pendulum-series are NOT
+    ;; exercised by ch7's `section-2` deftest — that deftest just
+    ;; covers literal-function arity. Let scrape through.)
+    })
 
 (defn- read-emmy-pages
   "Shell out to the sibling generator and read its EDN. Returns a vec

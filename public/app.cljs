@@ -3060,6 +3060,597 @@ sysder
    [mafs.plot/OfX {:y (fn [x] (Math/sin x))      :domain domain :color \"#3090ff\"}]
    [mafs.plot/OfX {:y (fn [x] (Math/cos x))      :domain domain :color \"#e63946\"}]
    [mafs.plot/OfX {:y (fn [x] (- (Math/sin x)))  :domain domain :color \"#2a9d8f\"}]])"
+    "SICM 1.8.4 The Restricted Three-Body Problem"
+    ";; ===========================================
+;; SICM §1.8.4 — The Restricted Three-Body Problem
+;; Chapter 1 — Lagrangian Mechanics
+;; https://tgvaughan.github.io/sicm/chapter001.html
+;; ===========================================
+;; Self-contained: earlier-chapter prerequisites are
+;; inlined below.
+
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
+
+;; --- Prerequisites from earlier sections of Chapter 1 ---
+
+(defn L-free-particle [mass]
+  (fn [local]
+        (let [v (velocity local)] (* 1/2 mass (dot-product v v)))))
+
+(def q
+  (up
+       (literal-function 'x) (literal-function 'y) (literal-function 'z)))
+
+(q 't)
+
+((D q) 't)
+
+((Gamma q) 't)
+
+((compose (L-free-particle 'm) (Gamma q)) 't)
+
+(simplify ((compose (L-free-particle 'm) (Gamma q)) 't))
+
+;; (Pedagogical redef of `Lagrangian-action` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian-action [L q t1 t2]
+;;   (definite-integral (compose L (Gamma q)) t1 t2))
+
+(defn test-path [t] (up (+ (* 4 t) 7) (+ (* 3 t) 5) (+ (* 2 t) 1)))
+
+(Lagrangian-action (L-free-particle 3.0) test-path 0.0 10.0)
+
+(defn make-eta [nu t1 t2] (fn [t] (* (- t t1) (- t t2) (nu t))))
+
+(defn varied-free-particle-action [mass q nu t1 t2]
+  (fn [eps]
+        (let [eta (make-eta nu t1 t2)]
+            (Lagrangian-action
+                 (L-free-particle mass) (+ q (* eps eta)) t1 t2))))
+
+((varied-free-particle-action
+   3.0 test-path (up sin cos square) 0.0 10.0)
+  0.001)
+
+(minimize
+  (varied-free-particle-action
+            3.0 test-path (up sin cos square) 0.0 10.0)
+  -2.0 1.0)
+
+(defn parametric-path-action [Lagrangian t0 q0 t1 q1]
+  (fn [qs]
+        (let [path (make-path t0 q0 t1 q1 qs)]
+            (Lagrangian-action Lagrangian path t0 t1))))
+
+;; (Pedagogical redef of `find-path` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn find-path [Lagrangian t0 q0 t1 q1 n]
+;;   (let [initial-qs (linear-interpolants q0 q1 n)]
+;;         (let [minimizing-qs (multidimensional-minimize
+;;                                  (parametric-path-action
+;;                                                             Lagrangian
+;;                                                             t0 q0 t1 q1)
+;;                                  initial-qs)]
+;;              (make-path t0 q0 t1 q1 minimizing-qs))))
+
+(defn L-harmonic [m k]
+  (fn [local]
+        (let [q (coordinate local) v (velocity local)]
+            (- (* 1/2 m (square v)) (* 1/2 k (square q))))))
+
+(def q (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 3))
+
+(def win2 (frame 0.0 (/ Math/PI 2) 0.0 1.2))
+
+
+(defn parametric-path-action [Lagrangian t0 q0 t1 q1]
+  (fn [intermediate-qs]
+        (let [path (make-path t0 q0 t1 q1 intermediate-qs)]
+            (graphics-clear win2)
+            (plot-function win2 path t0 t1 (/ (- t1 t0) 100))
+            (Lagrangian-action Lagrangian path t0 t1))))
+
+
+(find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
+
+(defn f [q]
+  (compose
+        (literal-function
+                 'F
+                 '(->
+                                    (UP Real (UP* Real) (UP* Real)) Real))
+        (Gamma q)))
+
+;; (Pedagogical redef of `Lagrange-equations` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrange-equations [Lagrangian]
+;;   (fn [q]
+;;         (-
+;;             (D (compose ((partial 2) Lagrangian) (Gamma q)))
+;;             (compose ((partial 1) Lagrangian) (Gamma q)))))
+
+(defn test-path [t]
+  (up (+ (* 'a t) 'a0) (+ (* 'b t) 'b0) (+ (* 'c t) 'c0)))
+
+
+(((Lagrange-equations (L-free-particle 'm)) test-path) 't)
+
+(simplify
+  (((Lagrange-equations (L-free-particle 'm))
+             (literal-function
+                                                        'x))
+            't))
+
+(defn proposed-solution [t] (* 'A (cos (+ (* 'omega t) 'phi))))
+
+
+(simplify
+  (((Lagrange-equations (L-harmonic 'm 'k)) proposed-solution)
+            't))
+
+(defn L-central-polar [m V]
+  (fn [local]
+        (let [q (coordinate local) qdot (velocity local)]
+            (let [r (ref q 0)
+                     phi (ref q 1)
+                     rdot (ref qdot 0)
+                     phidot (ref qdot 1)]
+                 (-
+                      (* 1/2 m (+ (square rdot) (square (* r phidot))))
+                      (V r))))))
+
+(defn gravitational-energy [G m1 m2] (fn [r] (- (/ (* G m1 m2) r))))
+
+(defn L-uniform-acceleration [m g]
+  (fn [local]
+        (let [q (coordinate local) v (velocity local)]
+            (let [y (ref q 1)] (- (* 1/2 m (square v)) (* m g y))))))
+
+
+(simplify
+  (((Lagrange-equations (L-uniform-acceleration 'm 'g))
+             (up
+                                                                  (literal-function
+                                                                      'x)
+                                                                  (literal-function
+                                                                      'y)))
+            't))
+
+(defn L-central-rectangular [m U]
+  (fn [local]
+        (let [q (coordinate local) v (velocity local)]
+            (- (* 1/2 m (square v)) (U (sqrt (square q)))))))
+
+(simplify
+  (((Lagrange-equations
+              (L-central-rectangular
+                                  'm
+                                  (literal-function
+                                                         'U)))
+             (up
+                                                                                                                                                                                                                               (literal-function
+                                                                                                                                                                                                                                   'x)
+                                                                                                                                                                                                                               (literal-function
+                                                                                                                                                                                                                                   'y)))
+            't))
+
+(defn L-central-polar [m U]
+  (fn [local]
+        (let [q (coordinate local) qdot (velocity local)]
+            (let [r (ref q 0)
+                     phi (ref q 1)
+                     rdot (ref qdot 0)
+                     phidot (ref qdot 1)]
+                 (-
+                      (* 1/2 m (+ (square rdot) (square (* r phidot))))
+                      (U r))))))
+
+(simplify
+  (((Lagrange-equations
+              (L-central-polar
+                                  'm (literal-function 'U)))
+             (up
+                                                                                                                              (literal-function
+                                                                                                                                  'r)
+                                                                                                                              (literal-function
+                                                                                                                                  'phi)))
+            't))
+
+;; (Pedagogical redef of `F->C` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn F->C [F]
+;;   (fn [local]
+;;         (up
+;;             (state->t local) (F local)
+;;             (+
+;;                 (((partial 0) F) local)
+;;                 (* (((partial 1) F) local) (velocity local))))))
+
+;; (Pedagogical redef of `p->r` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn p->r [local]
+;;   (let [polar-tuple (coordinate local)]
+;;         (let [r (ref polar-tuple 0) phi (ref polar-tuple 1)]
+;;              (let [x (* r (cos phi)) y (* r (sin phi))] (up x y)))))
+
+(simplify
+  (velocity
+            ((F->C p->r)
+                      (up 't (up 'r 'phi) (up 'rdot 'phidot)))))
+
+(defn L-central-polar [m U]
+  (compose (L-central-rectangular m U) (F->C p->r)))
+
+
+(simplify
+  ((L-central-polar 'm (literal-function 'U))
+            (up
+                                                        't (up 'r 'phi)
+                                                        (up
+                                                            'rdot
+                                                            'phidot))))
+
+(defn L-free-rectangular [m]
+  (fn [local]
+        (let [vx (ref (velocities local) 0)
+                vy (ref (velocities local) 1)]
+            (* 1/2 m (+ (square vx) (square vy))))))
+
+(defn L-free-polar [m] (compose (L-free-rectangular m) (F->C p->r)))
+
+(defn F [Omega]
+  (fn [local]
+        (let [t (state->t local)
+                r (ref (coordinate local) 0)
+                theta (ref (coordinate local) 1)]
+            (up r (+ theta (* Omega t))))))
+
+
+(defn L-rotating-polar [m Omega]
+  (compose (L-free-polar m) (F->C (F Omega))))
+
+(defn L-rotating-rectangular [m Omega]
+  (compose (L-rotating-polar m Omega) (F->C r->p)))
+
+((L-rotating-rectangular 'm 'Omega)
+  (up
+                                      't (up 'x_r 'y_r)
+                                      (up 'xdot_r 'ydot_r)))
+
+(((Lagrange-equations (L-rotating-rectangular 'm 'Omega))
+   (up
+                                                            (literal-function
+                                                                'x r)
+                                                            (literal-function
+                                                                'y r)))
+  't)
+
+(defn T-pend [m l g ys]
+  (fn [local]
+        (let [t (state->t local)
+                theta (coordinate local)
+                thetadot (velocity local)]
+            (let [vys (D ys)]
+                 (*
+                      1/2 m
+                      (+
+                         (square (* l thetadot)) (square (vys t))
+                         (* 2 l (vys t) thetadot (sin theta))))))))
+
+
+(defn V-pend [m l g ys]
+  (fn [local]
+        (let [t (state->t local) theta (coordinate local)]
+            (* m g (- (ys t) (* l (cos theta)))))))
+
+
+(def L-pend (- T-pend V-pend))
+
+(simplify
+  (((Lagrange-equations
+              (L-pend
+                                  'm 'l 'g (literal-function 'y_s)))
+             (literal-function
+                                                                                                                             'theta))
+            't))
+
+(defn L-uniform-acceleration [m g]
+  (fn [local]
+        (let [q (coordinate local) v (velocity local)]
+            (let [y (ref q 1)] (- (* 1/2 m (square v)) (* m g y))))))
+
+(defn dp-coordinates [l y_s]
+  (fn [local]
+        (let [t (state->t local) theta (coordinate local)]
+            (let [x (* l (sin theta))
+                     y (- (y_s t) (* l (cos theta)))]
+                 (up x y)))))
+
+(defn L-pend [m l g y_s]
+  (compose
+        (L-uniform-acceleration m g) (F->C (dp-coordinates l y_s))))
+
+(simplify
+  ((L-pend 'm 'l 'g (literal-function 'y_s))
+            (up
+                                                       't 'theta
+                                                       'thetadot)))
+
+((compose (Rz (* 'Omega 't)) (Ry 'phi)) (up 'x_0 'y_0 'z_0))
+
+(defn Lagrangian->acceleration [L]
+  (let [P ((partial 2) L) F ((partial 1) L)]
+        (solve-linear-left
+             ((partial 2) P)
+             (-
+                                F
+                                (+
+                                   ((partial 0) P)
+                                   (* ((partial 1) P) velocity))))))
+
+;; (Pedagogical redef of `Lagrangian->state-derivative` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian->state-derivative [L]
+;;   (let [acceleration (Lagrangian->acceleration L)]
+;;         (fn [state] (up 1 (velocity state) (acceleration state)))))
+
+(defn harmonic-state-derivative [m k]
+  (Lagrangian->state-derivative (L-harmonic m k)))
+
+
+((harmonic-state-derivative 'm 'k) (up 't (up 'x 'y) (up 'v_x 'v_y)))
+
+;; (Pedagogical redef of `Lagrange-equations-first-order` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrange-equations-first-order [L]
+;;   (fn [q v]
+;;         (let [state-path (qv->state-path q v)]
+;;             (-
+;;                  (D state-path)
+;;                  (compose (Lagrangian->state-derivative L) state-path)))))
+
+
+(defn qv->state-path [q v] (fn [t] (up t (q t) (v t))))
+
+(simplify
+  (((Lagrange-equations-first-order (L-harmonic 'm 'k))
+             (up
+                                                                  (literal-function
+                                                                      'x)
+                                                                  (literal-function
+                                                                      'y))
+             (up
+                                                                  (literal-function
+                                                                      'v_x)
+                                                                  (literal-function
+                                                                      'v_y)))
+            't))
+
+((state-advancer harmonic-state-derivative 2.0 1.0)
+  (up
+                                                      1.0 (up 1.0 2.0)
+                                                      (up 3.0 4.0))
+  10.0 1.0e-12)
+
+(defn periodic-drive [amplitude frequency phase]
+  (fn [t] (* amplitude (cos (+ (* frequency t) phase)))))
+
+
+(defn L-periodically-driven-pendulum [m l g A omega]
+  (let [ys (periodic-drive A omega 0)] (L-pend m l g ys)))
+
+(simplify
+  (((Lagrange-equations
+              (L-periodically-driven-pendulum
+                                  'm 'l 'g 'A 'omega))
+             (literal-function
+                                                                                                                                       'theta))
+            't))
+
+(defn pend-state-derivative [m l g A omega]
+  (Lagrangian->state-derivative
+        (L-periodically-driven-pendulum
+                                      m l g A omega)))
+
+
+(simplify
+  ((pend-state-derivative 'm 'l 'g 'A 'omega)
+            (up
+                                                        't 'theta
+                                                        'thetadot)))
+
+(defn monitor-theta [win]
+  (fn [state]
+        (let [theta ((principal-value Math/PI) (coordinate state))]
+            (plot-point win (state->t state) theta))))
+
+
+(def plot-win (frame 0.0 100.0 (- Math/PI) Math/PI))
+
+
+((evolve pend-state-derivative 1.0 1.0 9.8 0.1 (* 2.0 (sqrt 9.8)))
+  (up
+                                                                     0.0
+                                                                     1.0
+                                                                     0.0)
+  (monitor-theta
+                                                                     plot-win)
+  0.01 100.0 1.0e-13)
+;local error tolerance
+
+;; (Pedagogical redef of `Lagrangian->energy` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn Lagrangian->energy [L]
+;;   (let [P ((partial 2) L)] (- (* P velocity) L)))
+
+(defn T3-spherical [m]
+  (fn [state]
+        (let [q (coordinate state) qdot (velocity state)]
+            (let [r (ref q 0)
+                     theta (ref q 1)
+                     rdot (ref qdot 0)
+                     thetadot (ref qdot 1)
+                     phidot (ref qdot 2)]
+                 (*
+                      1/2 m
+                      (+
+                         (square rdot) (square (* r thetadot))
+                         (square (* r (sin theta) phidot))))))))
+
+(defn L3-central [m Vr]
+  (letfn [(Vs [state] (let [r (ref (coordinate state) 0)] (Vr r)))]
+        (- (T3-spherical m) Vs)))
+
+(simplify
+  (((partial 1) (L3-central 'm (literal-function 'V)))
+            (up
+                                                                 't
+                                                                 (up
+                                                                     'r
+                                                                     'theta
+                                                                     'phi)
+                                                                 (up
+                                                                     'rdot
+                                                                     'thetadot
+                                                                     'phidot))))
+
+(simplify
+  (((partial 2) (L3-central 'm (literal-function 'V)))
+            (up
+                                                                 't
+                                                                 (up
+                                                                     'r
+                                                                     'theta
+                                                                     'phi)
+                                                                 (up
+                                                                     'rdot
+                                                                     'thetadot
+                                                                     'phidot))))
+
+(defn ang-mom-z [m]
+  (fn [rectangular-state]
+        (let [xyz (coordinate rectangular-state)
+                v (velocity rectangular-state)]
+            (ref (cross-product xyz (* m v)) 2))))
+
+;; (Pedagogical redef of `s->r` — kept as a comment so the page
+;;  doesn't collide with the same name `:refer`'d in from emmy.env
+;;  or clojure.core. Calls below resolve to that referred binding.)
+;; (defn s->r [spherical-state]
+;;   (let [q (coordinate spherical-state)]
+;;         (let [r (ref q 0) theta (ref q 1) phi (ref q 2)]
+;;              (let [x (* r (sin theta) (cos phi))
+;;                       y (* r (sin theta) (sin phi))
+;;                       z (* r (cos theta))]
+;;                   (up x y z)))))
+
+(simplify
+  ((compose (ang-mom-z 'm) (F->C s->r))
+            (up
+                                                  't (up 'r 'theta 'phi)
+                                                  (up
+                                                      'rdot 'thetadot
+                                                      'phidot))))
+
+(simplify
+  ((Lagrangian->energy (L3-central 'm (literal-function 'V)))
+            (up
+                                                                        't
+                                                                        (up
+                                                                            'r
+                                                                            'theta
+                                                                            'phi)
+                                                                        (up
+                                                                            'rdot
+                                                                            'thetadot
+                                                                            'phidot))))
+
+;; --- §1.8.4 — The Restricted Three-Body Problem ---
+
+;; (book p. 87)
+(defn L0 [m V]
+  (fn [local]
+        (let [t (state->t local)
+                q (coordinate local)
+                v (velocities local)]
+            (- (* 1/2 m (square v)) (V t q)))))
+
+;; (book p. 87)
+(defn V [a GM0 GM1 m]
+  (fn [t xy]
+        (let [Omega (sqrt (/ (+ GM0 GM1) (expt a 3)))
+                a0 (* (/ GM1 (+ GM0 GM1)) a)
+                a1 (* (/ GM0 (+ GM0 GM1)) a)]
+            (let [x (ref xy 0)
+                     y (ref xy 1)
+                     x0 (* -1 a0 (cos (* Omega t)))
+                     y0 (* -1 a0 (sin (* Omega t)))
+                     x1 (* +1 a1 (cos (* Omega t)))
+                     y1 (* +1 a1 (sin (* Omega t)))]
+                 (let [r0 (sqrt
+                               (+
+                                     (square (- x x0)) (square (- y y0))))
+                          r1 (sqrt
+                               (+
+                                     (square (- x x1)) (square (- y y1))))]
+                      (- (+ (/ (* GM0 m) r0) (/ (* GM1 m) r1))))))))
+
+;; (book p. 88)
+(defn LR3B [m a GM0 GM1]
+  (fn [local]
+        (let [q (coordinate local)
+                qdot (velocities local)
+                Omega (sqrt (/ (+ GM0 GM1) (expt a 3)))
+                a0 (* (/ GM1 (+ GM0 GM1)) a)
+                a1 (* (/ GM0 (+ GM0 GM1)) a)]
+            (let [x (ref q 0)
+                     y (ref q 1)
+                     xdot (ref qdot 0)
+                     ydot (ref qdot 1)]
+                 (let [r0 (sqrt (+ (square (+ x a0)) (square y)))
+                          r1 (sqrt (+ (square (- x a1)) (square y)))]
+                      (+
+                           (* 1/2 m (square qdot))
+                           (* 1/2 m (square Omega) (square q))
+                           (* m Omega (- (* x ydot) (* xdot y)))
+                           (/ (* GM0 m) r0) (/ (* GM1 m) r1)))))))
+
+;; (book p. 88)
+(defn LR3B1 [m a0 a1 Omega GM0 GM1]
+  (fn [local]
+        (let [q (coordinate local) qdot (velocities local)]
+            (let [x (ref q 0)
+                     y (ref q 1)
+                     xdot (ref qdot 0)
+                     ydot (ref qdot 1)]
+                 (let [r0 (sqrt (+ (square (+ x a0)) (square y)))
+                          r1 (sqrt (+ (square (- x a1)) (square y)))]
+                      (+
+                           (* 1/2 m (square qdot))
+                           (* 1/2 m (square Omega) (square q))
+                           (* m Omega (- (* x ydot) (* xdot y)))
+                           (/ (* GM0 m) r0) (/ (* GM1 m) r1)))))))
+
+;; (book p. 88)
+((Lagrangian->energy (LR3B1 'm 'a_0 'a_1 'Omega 'GM_0 'GM_1))
+  (up
+                                                                't
+                                                                (up
+                                                                    'x_r
+                                                                    'y_r)
+                                                                (up
+                                                                    'v_r↑x
+                                                                    'v_r↑y)))
+;;=> (+ (* 1/2 m (expt v_r↑x 2)) (* 1/2 m (expt v_r↑y 2)) (/ (* -1 GM_0 m) (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2)))) (/ (* -1 GM_1 m) (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2)))) (* -1/2 m (expt Omega 2) (expt x_r 2)) (* -1/2 m (expt Omega 2) (expt y_r 2)))"
     "SICM 1.12 Projects"
     ";; ===========================================
 ;; SICM §1.12 — Projects
@@ -7275,6 +7866,93 @@ sysder
 ;;  or clojure.core. Calls below resolve to that referred binding.)
 ;; (def Lie-derivative
 ;;   (make-operator Lie-derivative-procedure 'Lie-derivative))"
+    "SICM 7.2 Pendulum as a Perturbed Rotor"
+    ";; ===========================================
+;; SICM §7.2 — Pendulum as a Perturbed Rotor
+;; Chapter 7 — Canonical Perturbation Theory
+;; https://tgvaughan.github.io/sicm/chapter007.html
+;; ===========================================
+;; Self-contained: earlier-chapter prerequisites are
+;; inlined below.
+
+(doseq [s '[C C-inv H-pendulum-series H0 H1 W solution solution0]]
+  (when-not (ns-resolve *ns* s) (intern *ns* s)))
+
+;; (book p. 462)
+(defn H0 [alpha]
+  (fn [state] (let [p (momentum state)] (/ (square p) (* 2 alpha)))))
+
+
+(defn H1 [beta]
+  (fn [state]
+        (let [theta (coordinate state)] (* -1 beta (cos theta)))))
+
+;; (book p. 462)
+(defn H-pendulum-series [alpha beta epsilon]
+  (series (H0 alpha) (* epsilon (H1 beta))))
+
+;; (book p. 462)
+(defn W [alpha beta]
+  (fn [state]
+        (let [theta (coordinate state) p (momentum state)]
+            (/ (* -1 alpha beta (sin theta)) p))))
+
+;; (book p. 462)
+((+ ((Lie-derivative (W 'alpha 'beta)) (H0 'alpha)) (H1 'beta))
+  (up
+                                                                  't
+                                                                  'theta
+                                                                  'p))
+;;=> 0
+
+;; (book p. 462)
+(simplify
+  (series:sum
+            (((exp
+                          (*
+                               'epsilon
+                               (Lie-derivative (W 'alpha 'beta))))
+                         (H-pendulum-series
+                                                                                                                                                                       'alpha
+                                                                                                                                                                       'beta
+                                                                                                                                                                       'epsilon))
+                        (up
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                't
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                'theta
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                'p))
+            2))
+
+;; (book p. 462)
+(defn solution0 [alpha beta]
+  (fn [t]
+        (fn [state0]
+            (let [t0 (state->t state0)
+                    theta0 (coordinate state0)
+                    p0 (momentum state0)]
+                (up t (+ theta0 (/ (* (- t t0) p0) alpha)) p0)))))
+
+;; (book p. 462)
+(defn C [alpha beta epsilon order]
+  (fn [state]
+        (series:sum
+            (((Lie-transform (W alpha beta) epsilon) identity)
+                        state)
+            order)))
+
+;; (book p. 464)
+(simplify ((C 'alpha 'beta 'epsilon 2) (up 't 'theta 'p)))
+
+;; (book p. 464)
+(defn C-inv [alpha beta epsilon order] (C alpha beta (- epsilon) order))
+
+;; (book p. 464)
+(defn solution [epsilon order]
+  (fn [alpha beta]
+        (fn [delta-t]
+            (compose
+                (C alpha beta epsilon order)
+                ((solution0 alpha beta) delta-t)
+                (C-inv alpha beta epsilon order)))))"
     "SICM 8 Appendix: Scheme"
     ";; ===========================================
 ;; SICM §8 — Appendix: Scheme
