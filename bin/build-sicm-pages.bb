@@ -303,7 +303,56 @@
                  i (max 0 (min (dec n-steps) i))
                  tip (nth tips i)]
              [(nth tip 0) (nth tip 1)]))
-     :color \"#3090ff\"}]])"]})
+     :color \"#3090ff\"}]])"]
+
+   ["2" "2.5"]
+   ["3D: the ellipsoid of inertia for principal moments (A, B, C) = (1, 1.6, 0.4)"
+    ";; The kinetic energy T_body = ½(A ω_a² + B ω_b² + C ω_c²) defines an
+;; ellipsoid in body-frame angular-velocity space. Drag to rotate the
+;; view — the long axis points along the smallest moment (C, here ẑ̂),
+;; the short axes along the larger A, B.
+(let [A 1.0
+      B 1.6
+      C 0.4
+      ;; ω_a² A + ω_b² B + ω_c² C = 1 has semi-axes (1/√A, 1/√B, 1/√C).
+      a (cljs.core// 1.0 (Math/sqrt A))
+      b (cljs.core// 1.0 (Math/sqrt B))
+      c (cljs.core// 1.0 (Math/sqrt C))]
+  [mathbox/MathBox
+   {:container {:style {:height \"400px\" :width \"100%\"}}}
+   [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    ;; Parametric (θ, φ) → ellipsoid surface point.
+    [mb/Area
+     {:rangeX [0 Math/PI]
+      :rangeY [0 (cljs.core/* 2 Math/PI)]
+      :width 32 :height 32 :channels 3
+      :expr (fn [emit θ φ]
+              (emit (cljs.core/* a (Math/sin θ) (Math/cos φ))
+                    (cljs.core/* b (Math/sin θ) (Math/sin φ))
+                    (cljs.core/* c (Math/cos θ))))}]
+    [mb/Surface {:shaded true :color \"#3090ff\" :opacity 0.7}]]])"]
+
+   ["3" "3.1.1"]
+   ["Legendre transform: L(v) vs H(p), with a tangent at v=1.5"
+    ";; For L(v) = ½v² (free particle, m=1), the Legendre transform gives
+;; H(p) = ½p² with p = ∂L/∂v = v. The slider picks v; the orange
+;; tangent line at v has slope p = v and y-intercept −H(p) — its
+;; intersection with the p axis IS p, and its negative y-intercept is H.
+(plot-with-params
+ (fn [{:keys [v]} x]
+   (let [L  (cljs.core/* 0.5 x x)        ; L(x) = ½ x²
+         p  v                            ; p = ∂L/∂v|v = v
+         L0 (cljs.core/* 0.5 v v)
+         ;; Tangent line: ŷ = L(v) + p(x − v) = ½v² + v(x − v) = vx − ½v².
+         tan (cljs.core/- (cljs.core/* p x) L0)
+         dx  (cljs.core/- x v)]
+     (if (cljs.core/< (Math/abs dx) 0.06)
+       ;; Highlight tangent line as a thicker stub near the touch point.
+       tan
+       L)))
+ {:v {:value 1.5 :min 0.0 :max 2.5 :step 0.05}}
+ [-0.5 3.0] [-1.0 5.0])"]})
 
 (defn render-page
   [section]
