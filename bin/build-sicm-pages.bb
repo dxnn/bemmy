@@ -557,18 +557,18 @@
             ;; Current test-particle position.
             [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]))})))
 
-;; Default: μ = 0.1 (Sun-Jupiter-ish ratio). Test particle starts to the
-;; left of both primaries with moderate upward velocity — Jacobi
-;; integral lands between L3 (outer escape blocked) and L1/L2 (inner
-;; necks open), so the orbit weaves around the system, occasionally
-;; threading the L1 neck toward the secondary. Cmd-Enter to run.
-[cr3bp-anim {:μ 0.1 :x0 -0.7 :y0 0.0 :vx0 0.0 :vy0 0.6 :t-max 30.0}]
+;; Default: μ = 0.1 (Sun-Jupiter-ish ratio). Test particle at (-0.6, 0)
+;; with retrograde tangential velocity — gives a stable orbit looping
+;; around the heavier primary that gets perturbed by the lighter one
+;; into a precessing rosette filling roughly x∈[-0.6, 0.4], y∈[-0.5, 0.5].
+;; Cmd-Enter to run.
+[cr3bp-anim {:μ 0.1 :x0 -0.6 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]
 
 ;; Other invocations to try (un-comment one at a time):
-;; equal masses, looping orbit:
-;; [cr3bp-anim {:μ 0.5  :x0 0.0  :y0 1.2 :vx0 0.6 :vy0 0.0 :t-max 35.0}]
-;; Earth-Moon-like ratio (μ ≈ 0.012), near L4 with small perturbation:
-;; [cr3bp-anim {:μ 0.012 :x0 0.487 :y0 0.866 :vx0 0.0 :vy0 0.0 :t-max 60.0}]"]})
+;; Tight retrograde just outside the lighter primary — a small clean loop:
+;; [cr3bp-anim {:μ 0.1  :x0 0.85 :y0 0.0 :vx0 0.0 :vy0 -1.5  :t-max 25.0}]
+;; Smaller mass ratio (μ = 0.05), nearly-Keplerian around primary 0:
+;; [cr3bp-anim {:μ 0.05 :x0 -0.5 :y0 0.0 :vx0 0.0 :vy0 -0.8  :t-max 30.0}]"]})
 
 (defn render-page
   [section]
