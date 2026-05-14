@@ -138,176 +138,191 @@
   ";; ====================================================================
 ;; BEmmy — 3D Graphics
 ;; ====================================================================
-;; 3D visualization via MathBox 2 (WebGL on Three.js). Click and drag
-;; the rendered scene to rotate; scroll to zoom.
+;; 3D via MathBox 2 (WebGL on Three.js). Drag the rendered scene to
+;; rotate; scroll to zoom.
 ;;
 ;; Two namespaces are pre-aliased:
-;;   mathbox  →  mathbox.core         the [mathbox/MathBox] container
-;;   mb       →  mathbox.primitives   Cartesian, Axis, Interval, ...
+;;   mathbox  →  mathbox.core        the [mathbox/MathBox] container
+;;   mb       →  mathbox.primitives  Cartesian, Axis, Interval, Area, ...
 ;;
-;; MathBox uses a data → draw composition pattern: a 'data' primitive
+;; MathBox uses a data-then-draw composition pattern: a 'data' primitive
 ;; (Interval, Area, Volume) emits points; a 'draw' primitive (Line,
-;; Surface, Point) consumes them.
+;; Surface, Point) consumes them. The 5th arg in :expr callbacks is
+;; MathBox's global animation clock — reference it for free animation.
 ;; ====================================================================
 
 
-;; ----- Cartesian with three axes --------------------------------------
+;; ----- The empty canvas — Cartesian with three axes ---------------------
 
 [mathbox/MathBox
   {:container {:style {:height \"400px\" :width \"100%\"}}}
-  [mb/Cartesian
-    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+  [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
     [mb/Axis {:axis 1 :width 3}]
     [mb/Axis {:axis 2 :width 3}]
     [mb/Axis {:axis 3 :width 3}]]]
 
 
-;; ----- A 3D parametric helix ------------------------------------------
-;; Interval emits points along t; Line draws them as a curve.
+;; ----- A helix — 1D-indexed parametric curve ---------------------------
+;; Interval emits points along t; Line consumes them as a curve.
 
 [mathbox/MathBox
   {:container {:style {:height \"400px\" :width \"100%\"}}}
-  [mb/Cartesian
-    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
-    [mb/Axis {:axis 1}]
-    [mb/Axis {:axis 2}]
-    [mb/Axis {:axis 3}]
+  [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
     [mb/Interval
-      {:range    [0 (* 4 Math/PI)]
-       :width    256
-       :channels 3
-       :expr     (fn [emit t i time]
-                   (emit (Math/cos t) (* 0.2 t) (Math/sin t)))}]
+      {:range [0 (* 4 Math/PI)] :width 256 :channels 3
+       :expr (fn [emit t i time]
+               (emit (Math/cos t) (* 0.2 t) (Math/sin t)))}]
     [mb/Line {:width 4 :color \"#3090ff\"}]]]
 
 
-;; ----- A 3D surface z = f(x, y) ---------------------------------------
-;; Area emits a grid of points; Surface draws them.
+;; ----- A torus — 2D-indexed parametric surface --------------------------
+;; Area emits a 2D grid of points; Surface renders them as a shaded patch.
+;; Parametrize a torus by (u, v): outer radius R, tube radius r.
 
 [mathbox/MathBox
   {:container {:style {:height \"400px\" :width \"100%\"}}}
-  [mb/Cartesian
-    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
-    [mb/Axis {:axis 1}]
-    [mb/Axis {:axis 2}]
-    [mb/Axis {:axis 3}]
+  [mb/Cartesian {:range [[-2 2] [-2 2] [-1 1]] :scale [1 1 0.5]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
     [mb/Area
-      {:rangeX   [-2 2]
-       :rangeY   [-2 2]
-       :width    32
-       :height   32
-       :channels 3
-       :expr     (fn [emit x y i j time]
-                   (emit x (Math/sin (* x y)) y))}]
-    [mb/Surface {:shaded true :color \"#3090ff\"}]]]
+      {:rangeX [0 (* 2 Math/PI)] :rangeY [0 (* 2 Math/PI)]
+       :width 48 :height 24 :channels 3
+       :expr (fn [emit u v i j time]
+               (let [R 1.4 r 0.5]
+                 (emit (* (+ R (* r (Math/cos v))) (Math/cos u))
+                       (* (+ R (* r (Math/cos v))) (Math/sin u))
+                       (* r (Math/sin v)))))}]
+    [mb/Surface {:shaded true :color \"#3090ff\" :opacity 0.85}]]]
 
 
-;; ====================================================================
-;; SICM exercises
-;; ====================================================================
-;;
-;; The 'time' arg in :expr callbacks is MathBox's global animation
-;; clock; reference it inside expr to animate without writing your own
-;; timer. The clock advances automatically.
-
-
-;; ----- Animated rotating helix ----------------------------------------
-;; Same helix as above, but rotated by `time` so it spins continuously.
+;; ----- Animated rotating helix — using the global clock ----------------
+;; Reference `time` (5th arg in :expr) and the helix spins on its own —
+;; no manual timer.
 
 [mathbox/MathBox
   {:container {:style {:height \"400px\" :width \"100%\"}}}
-  [mb/Cartesian
-    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+  [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
     [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
     [mb/Interval
-      {:range    [0 (* 4 Math/PI)]
-       :width    256
-       :channels 3
-       :expr     (fn [emit t i time]
-                   (emit (Math/cos (+ t time))
-                         (* 0.2 t)
-                         (Math/sin (+ t time))))}]
+      {:range [0 (* 4 Math/PI)] :width 256 :channels 3
+       :expr (fn [emit t i time]
+               (emit (Math/cos (+ t time))
+                     (* 0.2 t)
+                     (Math/sin (+ t time))))}]
     [mb/Line {:width 4 :color \"#3090ff\"}]]]
 
 
-;; ----- 3D Lissajous knot ----------------------------------------------
-;; Three perpendicular harmonic oscillations with rational frequency
-;; ratios trace closed knot-like curves — what a particle in a 3D
-;; anisotropic harmonic well would do.
+;; ----- Trefoil knot — the simplest non-trivial closed knot --------------
+;; A (p, q)-torus knot with p=2, q=3. Tune p and q for higher-order
+;; torus knots; ratios that share a common factor fail to close.
 
 [mathbox/MathBox
   {:container {:style {:height \"400px\" :width \"100%\"}}}
-  [mb/Cartesian
-    {:range [[-1.5 1.5] [-1.5 1.5] [-1.5 1.5]] :scale [1 1 1]}
+  [mb/Cartesian {:range [[-3 3] [-3 3] [-1.2 1.2]] :scale [1 1 0.7]}
     [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
     [mb/Interval
-      {:range    [0 (* 2 Math/PI)]
-       :width    512
-       :channels 3
-       :expr     (fn [emit t i time]
-                   (emit (Math/cos (* 3 t))
-                         (Math/sin (* 4 t))
-                         (Math/sin (* 5 t))))}]
+      {:range [0 (* 2 Math/PI)] :width 512 :channels 3
+       :expr (fn [emit t i time]
+               (let [p 2 q 3]
+                 (emit (* (+ 2 (Math/cos (* q t))) (Math/cos (* p t)))
+                       (* (+ 2 (Math/cos (* q t))) (Math/sin (* p t)))
+                       (Math/sin (* q t)))))}]
+    [mb/Line {:width 4 :color \"#a060ff\"}]]]
+
+
+;; ----- Lorenz attractor — chaos in 3D ----------------------------------
+;; The classic chaotic ODE: ẋ=σ(y−x), ẏ=x(ρ−z)−y, ż=xy−βz with σ=10,
+;; ρ=28, β=8/3. Pre-compute the trajectory via Euler steps; render as a
+;; Line. Each lobe is a 'butterfly wing'; nearby initial conditions
+;; diverge exponentially.
+
+(let [σ 10.0  ρ 28.0  β (/ 8.0 3.0)
+      dt 0.005
+      n-steps 4000
+      step (fn [s]
+             (let [x (nth s 0) y (nth s 1) z (nth s 2)]
+               [(+ x (* dt (* σ (- y x))))
+                (+ y (* dt (- (* x (- ρ z)) y)))
+                (+ z (* dt (- (* x y) (* β z))))]))
+      states (vec (take n-steps (iterate step [1.0 1.0 1.0])))]
+  [mathbox/MathBox
+    {:container {:style {:height \"400px\" :width \"100%\"}}}
+    [mb/Cartesian {:range [[-25 25] [-30 30] [0 50]] :scale [1 1 1]}
+      [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+      [mb/Interval
+        {:range [0 (dec n-steps)] :width n-steps :channels 3
+         :expr (fn [emit t i time]
+                 (let [s (nth states (max 0 (min (dec n-steps) (int i))))]
+                   (emit (nth s 0) (nth s 1) (nth s 2))))}]
+      [mb/Line {:width 2 :color \"#e63946\"}]]])
+
+
+;; ====================================================================
+;; SICM-flavored
+;; ====================================================================
+
+
+;; ----- 3D Lissajous — three perpendicular sinusoids --------------------
+;; Rational frequency ratios produce closed curves; (3, 4, 5) below is
+;; clean. Irrational ratios fill a torus densely.
+
+[mathbox/MathBox
+  {:container {:style {:height \"400px\" :width \"100%\"}}}
+  [mb/Cartesian {:range [[-1.5 1.5] [-1.5 1.5] [-1.5 1.5]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    [mb/Interval
+      {:range [0 (* 2 Math/PI)] :width 512 :channels 3
+       :expr (fn [emit t i time]
+               (emit (Math/cos (* 3 t))
+                     (Math/sin (* 4 t))
+                     (Math/sin (* 5 t))))}]
     [mb/Line {:width 3 :color \"#a060ff\"}]]]
 
 
-;; ----- Lagrangian L(q, v) = ½v² − ½q² as a surface --------------------
-;; The harmonic-oscillator Lagrangian over its (q, v) phase space.
-;; Saddle-shaped: kinetic energy lifts in v, potential energy depresses
-;; in q.
+;; ----- Harmonic-oscillator Lagrangian L(q, v) = ½v² − ½q² --------------
+;; A saddle in 3-space: kinetic energy lifts in v, potential energy
+;; depresses in q. The action-minimizing path threads between the
+;; positive-v and positive-q regions.
 
 [mathbox/MathBox
   {:container {:style {:height \"400px\" :width \"100%\"}}}
-  [mb/Cartesian
-    {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
+  [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
     [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
     [mb/Area
-      {:rangeX   [-1.5 1.5]
-       :rangeY   [-1.5 1.5]
-       :width    32
-       :height   32
-       :channels 3
-       :expr     (fn [emit q v i j time]
-                   (emit q (- (* 0.5 v v) (* 0.5 q q)) v))}]
+      {:rangeX [-1.5 1.5] :rangeY [-1.5 1.5]
+       :width 32 :height 32 :channels 3
+       :expr (fn [emit q v i j time]
+               (emit q (- (* 0.5 v v) (* 0.5 q q)) v))}]
     [mb/Surface {:shaded true :color \"#3090ff\"}]]]
 
 
-;; ----- Animated harmonic-oscillator orbit -----------------------------
-;; A particle's phase-space trajectory unwound along time. The (q, v)
-;; circle from Graphics is here a helix in (q, t, v) space, lifting
-;; with t as the particle oscillates.
+;; ----- Phase-space helix — harmonic-oscillator orbit lifted in time ----
+;; The (q, v) phase circle from Graphics is here a helix in (q, t, v):
+;; the 1D oscillator's full spacetime trajectory.
 
 [mathbox/MathBox
   {:container {:style {:height \"400px\" :width \"100%\"}}}
-  [mb/Cartesian
-    {:range [[-1.5 1.5] [0 (* 2 Math/PI)] [-1.5 1.5]] :scale [1 1.5 1]}
+  [mb/Cartesian {:range [[-1.5 1.5] [0 (* 2 Math/PI)] [-1.5 1.5]] :scale [1 1.5 1]}
     [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
     [mb/Interval
-      {:range    [0 (* 2 Math/PI)]
-       :width    256
-       :channels 3
-       :expr     (fn [emit t i time]
-                   (emit (Math/cos t) t (- (Math/sin t))))}]
+      {:range [0 (* 2 Math/PI)] :width 256 :channels 3
+       :expr (fn [emit t i time]
+               (emit (Math/cos t) t (- (Math/sin t))))}]
     [mb/Line {:width 4 :color \"#1f883d\"}]]]
 ")
 
 (def graphics-page
   ";; ====================================================================
-;; GRAPHICS — visualization tour
+;; GRAPHICS — 2D visualization tour
 ;; ====================================================================
-;; Three layers, simplest to most flexible:
-;;
-;;   plot               one-shot plot of y = f(x)
-;;   plot-with-params   plot with slider-controlled parameters
-;;   frame + plot-fn    SICM-book imperative graphics model
-;;
-;; Plus the underlying Mafs hiccup for finer control.
-;; Evaluate sections individually with Cmd-Enter on a single form.
+;; A layered tour through BEmmy's 2D graphics — simplest one-liner to
+;; raw Mafs hiccup. Each section is independently runnable; Cmd-Enter
+;; on any one form gives you that example.
 ;; ====================================================================
 
 
 ;; A few examples below use the harmonic-oscillator Lagrangian. Define
-;; it once here; it'll stay in scope for every form on this page.
+;; it once here; it stays in scope for every form on this page.
 
 (defn L-harmonic [m k]
   (fn [local]
@@ -317,137 +332,126 @@
          (* 1/2 k (square q))))))
 
 
-;; ----- Layer 1: plot ----------------------------------------------------
+;; ----- Layer 1: plot — the one-liner -----------------------------------
 ;; Anything callable that returns a number for numeric x: a Clojure fn,
-;; an Emmy polynomial, a path returned from find-path, Math/sin, ...
-;; Domain defaults to [-5,5] x [-5,5]; pass extra args to override.
+;; Math/sin, an Emmy polynomial, a path from find-path, ...
 
 (plot Math/sin)
 
-(plot Math/cos [(- Math/PI) Math/PI])
-
+;; Cube with an explicit y-range:
 (plot (fn [x] (* x x x)) [-3 3] [-10 10])
 
-;; The path returned by Emmy's find-path is just a callable polynomial:
+;; find-path returns a numerical polynomial that approximates the
+;; action-minimizing path. Plot tracks cos(t) closely.
 (let [path (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)]
   (plot path [0 (/ Math/PI 2)] [0 1.2]))
 
 
-;; ----- Layer 2: plot-with-params ---------------------------------------
-;; A Leva slider panel plus a plot. f receives (params, x); the params
-;; come from the panel's current values. Drag a slider and the curve
-;; updates in real time.
+;; ----- Layer 2: plot-with-params — interactive sliders ------------------
+;; A Leva slider panel + a plot. f signature is (params, x) → y; drag a
+;; slider, the curve updates in real time.
 
+;; A driven damped oscillator's steady-state response. Drag ω across
+;; ω₀ = 2 to see the resonance peak; drag γ to broaden the resonance.
 (plot-with-params
-  (fn [{:keys [m k]} t] (* m (Math/sin (* k t))))
-  {:m {:value 1 :min 0   :max 5 :step 0.05}
-   :k {:value 1 :min 0.1 :max 5 :step 0.05}}
-  [0 (* 2 Math/PI)]
-  [-5 5])
+  (fn [{:keys [omega gamma omega0 F]} t]
+    (let [Δ²  (- (* omega0 omega0) (* omega omega))
+          den (Math/sqrt (+ (* Δ² Δ²) (* gamma gamma omega omega)))
+          A   (/ F den)
+          φ   (Math/atan2 (* gamma omega) Δ²)]
+      (* A (Math/cos (- (* omega t) φ)))))
+  {:omega  {:value 2.0 :min 0.5 :max 4.0 :step 0.05}
+   :omega0 {:value 2.0 :min 0.5 :max 4.0 :step 0.05}
+   :gamma  {:value 0.3 :min 0.0 :max 1.5 :step 0.02}
+   :F      {:value 1.0 :min 0.1 :max 3.0 :step 0.05}}
+  [0 (* 4 Math/PI)] [-3 3])
 
-;; The schema map is straight Leva config: :value seeds the initial
-;; slider position, :min/:max/:step shape the range. Any keys f
-;; destructures must appear in the schema.
 
-
-;; ----- Layer 3: SICM-book imperative graphics --------------------------
+;; ----- Layer 3: SICM frame — imperative graphics -----------------------
 ;; (frame x-min x-max y-min y-max) returns a graphics window — a Reagent
 ;; atom holding a viewBox and a vector of drawables. The book's
-;; graphics-clear / plot-function / plot-point all mutate it. (show win)
-;; renders it, and BEmmy auto-shows when the last form returns a frame.
+;; graphics-clear / plot-function / plot-point mutate it; the result
+;; pane auto-renders when the last form returns a frame.
 
-(def gfx-win (frame -3 3 -3 3))
-
-(graphics-clear gfx-win)
-(plot-function gfx-win Math/sin -3 3 0.05)
-(plot-function gfx-win Math/cos -3 3 0.05)
-gfx-win   ; auto-shows the accumulated curves
-
-;; (plot-path win path t0 t1) is a one-liner for the common case of
-;; 'clear, plot one curve, return win':
-
-(let [win  (frame 0 (/ Math/PI 2) 0 1.2)
-      path (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)]
-  (plot-path win path 0 (/ Math/PI 2)))
-
-
-;; ----- Underlying Mafs hiccup ------------------------------------------
-;; All the helpers above produce Reagent hiccup using mafs.cljs. Drop
-;; down to that level for full control. Note: VECTORS, not parens —
-;; these are Reagent components, not function calls.
-
-[mafs/Mafs {:viewBox {:x [-2 2] :y [-2 2]}}
- [mafs.coordinates/Cartesian]
- [mafs.plot/Parametric
-  {:t  [0 (* 2 Math/PI)]
-   :xy (fn [t] [(Math/cos t) (Math/sin t)])}]]
+;; Logistic-map cobweb. Iterate xₙ₊₁ = r·xₙ·(1−xₙ); the staircase shows
+;; the orbit chasing the attractor. r > 3 → period-2; r ≈ 3.57 → chaos.
+(let [r   3.5
+      win (frame 0 1 0 1)
+      logistic (fn [x] (* r x (- 1 x)))]
+  (plot-function win logistic 0 1 0.01)
+  (plot-function win (fn [x] x) 0 1 0.01)          ; identity line
+  (loop [x 0.1, n 0]
+    (when (< n 80)
+      (let [y (logistic x)]
+        (plot-point win x x)                       ; horizontal segment endpoint
+        (plot-point win x y)                       ; up to logistic curve
+        (recur y (inc n)))))
+  win)
 
 
-;; ----- emmy-viewers high-level helpers ---------------------------------
-;; emmy.mafs/parametric, emmy.mafs/of-x and friends compile their f
-;; through Emmy's expression machinery. They expect SYMBOLIC Emmy
-;; primitives (cos, sin, up, ...), not raw JS Math/cos. Wrap with
-;; emmy.mafs/mafs to provide the Mafs context.
+;; ----- Underlying Mafs hiccup — drop down for full control --------------
+;; The helpers above all emit Reagent hiccup using mafs.cljs. Drop down
+;; for arbitrary shapes. Vectors (not parens) — these are Reagent
+;; components, not function calls.
 
+;; Nonlinear-pendulum phase portrait. Below energy 2 trajectories are
+;; closed librations near θ = 0; the energy-2 separatrix (gray) goes
+;; through (±π, 0); above it the pendulum rotates over the top (red).
+(let [;; (energy, color) pairs in one pass — avoids index-lookup quirks.
+      energies+colors
+      [[-0.7 \"#3090ff\"] [-0.3 \"#3090ff\"] [0.1 \"#3090ff\"]
+       [0.5  \"#3090ff\"] [1.0  \"#3090ff\"] [1.5 \"#2a9d8f\"]
+       [1.95 \"#888888\"] [2.05 \"#e63946\"] [2.3 \"#e63946\"]
+       [3.0  \"#e63946\"]]
+      ;; p²/2 = E − (1 − cos θ); real p whenever E ≥ 1 − cos θ.
+      curve (fn [E sign color]
+              [mafs.plot/Parametric
+               {:t [-4 4]
+                :xy (fn [θ]
+                      (let [v (- E (- 1 (Math/cos θ)))]
+                        (if (>= v 0)
+                          [θ (* sign (Math/sqrt (* 2 v)))]
+                          [θ js/NaN])))
+                :color color}])]
+  (into
+    [mafs/Mafs {:viewBox {:x [-4 4] :y [-3 3]}}
+     [mafs.coordinates/Cartesian]]
+    (mapcat (fn [[E c]] [(curve E 1 c) (curve E -1 c)]) energies+colors)))
+
+
+;; ----- emmy-viewers — Emmy-symbolic helpers ----------------------------
+;; emmy.mafs/parametric, emmy.mafs/of-x and friends compile their fn
+;; through Emmy's expression pipeline. They expect SYMBOLIC Emmy
+;; primitives (sin, cos, up, ...), not raw JS Math/sin. Wrap with
+;; emmy.mafs/mafs to provide the context.
+
+;; A 3:4 Lissajous figure — emmy primitives compile into vectorized JS.
 (emmy.mafs/mafs
-  {:viewBox {:x [-2 2] :y [-2 2]}}
+  {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
   (emmy.mafs/parametric
-    {:t [0 6.28]
-     :xy (fn [t] (up (cos t) (sin t)))}))
+    {:t [0 (* 2 Math/PI)]
+     :xy (fn [t]
+           (up (sin (* 3 t))
+               (cos (* 4 t))))}))
 
 
-;; ====================================================================
-;; SICM exercises
-;; ====================================================================
+;; ----- animate — auto-playing time evolution ---------------------------
+;; y = f(t, x) with t auto-advancing. The timer cleans up on remount,
+;; so re-evaluating the next form stops this one.
+
+;; Two-wave beat pattern: sin(x−t) + sin(x−0.95·t). Two waves at
+;; slightly different speeds interfere in a slow envelope.
+(animate
+  (fn [t x]
+    (+ (Math/sin (- x t))
+       (Math/sin (- x (* 0.95 t)))))
+  [(- (* 2 Math/PI)) (* 2 Math/PI)] [-2.5 2.5] 0.5)
 
 
-;; ----- Optimized harmonic-oscillator path -----------------------------
-;; The numerically-optimized path for L = ½v² − ½q² between (0, 1) and
-;; (π/2, 0) should track cos(t) closely.
-
-(plot
-  (find-path (L-harmonic 1.0 1.0) 0.0 1.0 (/ Math/PI 2) 0.0 2)
-  [0 (/ Math/PI 2)] [0 1.2])
-
-
-;; ----- Phase portrait of the harmonic oscillator ----------------------
-;; In phase space (q, v), motion under L = ½v² − ½q² traces a circle.
-;; Mafs's Parametric draws (x(t), y(t)) over a t-range.
-
-[mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
- [mafs.coordinates/Cartesian]
- [mafs.plot/Parametric
-   {:t  [0 (* 2 Math/PI)]
-    :xy (fn [t] [(Math/cos t) (- (Math/sin t))])}]]
-
-
-;; ----- Travelling wave ψ(x, t) = sin(x − ct) --------------------------
-;; animate ticks t for you; Cmd-Enter and watch.
-
-(animate (fn [t x] (Math/sin (- x t)))
-         [(- (* 2 Math/PI)) (* 2 Math/PI)]
-         [-1.5 1.5])
-
-
-;; ----- Standing wave ψ = sin(x) · cos(t) ------------------------------
-;; The classic 'string fixed at both ends' visualization.
-
-(animate (fn [t x] (* (Math/sin x) (Math/cos t)))
-         [(- (* 2 Math/PI)) (* 2 Math/PI)]
-         [-1.5 1.5])
-
-
-;; ----- Damped oscillator with sliders ---------------------------------
-;; Drag γ to see the envelope tighten; drag ω to see the frequency
-;; shift. plot-with-params reactively re-evaluates on each tick.
-
-(plot-with-params
-  (fn [{:keys [omega gamma]} t]
-    (* (Math/exp (- (* gamma t)))
-       (Math/cos (* omega t))))
-  {:omega {:value 2 :min 0.5 :max 6   :step 0.05}
-   :gamma {:value 0.3 :min 0   :max 1.5 :step 0.01}}
-  [0 (* 4 Math/PI)] [-1.2 1.2])
+;; Standing wave ψ(x, t) = sin(x)·cos(t). The string fixed at both ends.
+(animate
+  (fn [t x] (* (Math/sin x) (Math/cos t)))
+  [(- (* 2 Math/PI)) (* 2 Math/PI)] [-1.2 1.2])
 ")
 
 (def auto-graph-page
