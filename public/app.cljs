@@ -829,7 +829,7 @@
 (simplify ((Gamma q) 't))
 ;;=> '(up t (up (x t) (y t) (z t)) (up ((D x) t) ((D y) t) ((D z) t)))
 
-(freeze (simplify ((compose (L-free-particle 'm) (Gamma q)) 't)))
+(simplify ((compose (L-free-particle 'm) (Gamma q)) 't))
 ;;=> '(+
 ;;        (* (/ 1 2) m (expt ((D x) t) 2))
 ;;        (* (/ 1 2) m (expt ((D y) t) 2))
@@ -838,17 +838,20 @@
 (Lagrangian-action (L-free-particle 3.0) test-path 0.0 10.0)
 ;;=> 435.0
 
-(let [m (minimize
-          (varied-free-particle-action
-            3.0
-            test-path
-            (up sin cos square)
-            0.0
-            10.0)
-          -2.0
-          1.0)]
-  (near 0.0 (:result m))
-  ((within 1.0E-4) 435 (:value m)))
+(def m
+ (minimize
+   (varied-free-particle-action
+     3.0
+     test-path
+     (up sin cos square)
+     0.0
+     10.0)
+   -2.0
+   1.0))
+
+(near 0.0 (:result m))
+
+((within 1.0E-4) 435 (:value m))
 
 (near
     436.2912143
@@ -860,23 +863,31 @@
        10.0)
       0.001))
 
-(let [values (atom [])
-      minimal-path (find-path
-                     (L-harmonic 1.0 1.0)
-                     0.0
-                     1.0
-                     (/ Math/PI 2)
-                     0.0
-                     3
-                     :observe
-                     (fn [_ pt _] (swap! values conj pt)))
-      good? (partial (within 2.0E-4) 0)
-      errors (for
-               [x (range 0.0 (/ Math/PI 2) 0.02)]
-               (abs (- (Math/cos x) (minimal-path x))))]
-  ((within 1.0E-4) 1 (minimal-path 0))
-  ((within 1.0E-5) 0 (minimal-path (/ Math/PI 2)))
-  (every? good? errors))
+(def values (atom []))
+
+(def minimal-path
+ (find-path
+   (L-harmonic 1.0 1.0)
+   0.0
+   1.0
+   (/ Math/PI 2)
+   0.0
+   3
+   :observe
+   (fn [_ pt _] (swap! values conj pt))))
+
+(def good? (partial (within 2.0E-4) 0))
+
+(def errors
+ (for
+   [x (range 0.0 (/ Math/PI 2) 0.02)]
+   (abs (- (Math/cos x) (minimal-path x)))))
+
+((within 1.0E-4) 1 (minimal-path 0))
+
+((within 1.0E-5) 0 (minimal-path (/ Math/PI 2)))
+
+(every? good? errors)
 
 ;; --- Example: interactive: drag `a` to perturb the path, watch action diverge ---
 
@@ -1084,10 +1095,9 @@
 ;;        (+ (* -1 r φdot (sin φ)) (* rdot (cos φ)))
 ;;        (+ (* r φdot (cos φ)) (* rdot (sin φ))))
 
-(freeze
-    (simplify
-      ((L-alternate-central-polar 'm U)
-        (->local 't (up 'r 'φ) (up 'rdot 'φdot)))))
+(simplify
+    ((L-alternate-central-polar 'm U)
+      (->local 't (up 'r 'φ) (up 'rdot 'φdot))))
 ;;=> '(+
 ;;        (* (/ 1 2) m (expt r 2) (expt φdot 2))
 ;;        (* (/ 1 2) m (expt rdot 2))
@@ -1113,23 +1123,24 @@
 ;;        (* (expt l 2) m (((expt D 2) θ) t))
 ;;        (* l m (sin (θ t)) (((expt D 2) y_s) t)))
 
-(let [Lf (fn [m g]
-           (fn [[_ [_ y] v]] (- (* 1/2 m (square v)) (* m g y))))
-      dp-coordinates (fn [l y_s]
-                       (fn [[t θ]]
-                         (let [x (* l (sin θ))
-                               y (- (y_s t) (* l (cos θ)))]
-                           (up x y))))
-      L-pend2 (fn [m l g y_s]
-                (compose (Lf m g) (F->C (dp-coordinates l y_s))))]
-  (freeze (simplify ((L-pend2 'm 'l 'g y_s) (->local 't 'θ 'θdot))))
-  ;;=> '(+
-  ;;          (* (/ 1 2) (expt l 2) m (expt θdot 2))
-  ;;          (* l m θdot (sin θ) ((D y_s) t))
-  ;;          (* g l m (cos θ))
-  ;;          (* -1 g m (y_s t))
-  ;;          (* (/ 1 2) m (expt ((D y_s) t) 2)))
-  )
+(def Lf
+ (fn [m g] (fn [[_ [_ y] v]] (- (* 1/2 m (square v)) (* m g y)))))
+
+(def dp-coordinates
+ (fn [l y_s]
+   (fn [[t θ]]
+     (let [x (* l (sin θ)) y (- (y_s t) (* l (cos θ)))] (up x y)))))
+
+(def L-pend2
+ (fn [m l g y_s] (compose (Lf m g) (F->C (dp-coordinates l y_s)))))
+
+(simplify ((L-pend2 'm 'l 'g y_s) (->local 't 'θ 'θdot)))
+;;=> '(+
+;;        (* (/ 1 2) (expt l 2) m (expt θdot 2))
+;;        (* l m θdot (sin θ) ((D y_s) t))
+;;        (* g l m (cos θ))
+;;        (* -1 g m (y_s t))
+;;        (* (/ 1 2) m (expt ((D y_s) t) 2)))
 
 ;; --- Example: a numerical path from find-path tracks the analytic cosine ---
 
@@ -1210,10 +1221,9 @@
     (up 0 (up 1.0 2.0) (up 3.0 4.0)))
 ;;=> (up 1 (up 3.0 4.0) (up -1/2 -1.0))
 
-(freeze
-    (flatten
-      ((harmonic-state-derivative 2.0 1.0)
-        (up 0 (up 1.0 2.0) (up 3.0 4.0)))))
+(flatten
+    ((harmonic-state-derivative 2.0 1.0)
+      (up 0 (up 1.0 2.0) (up 3.0 4.0))))
 ;;=> '(1 3.0 4.0 (/ -1 2) -1.0)
 
 (dotimes [_ 1]
@@ -1285,18 +1295,18 @@
 ;;        θdot
 ;;        (/ (+ (* a (expt ω 2) (cos (* t ω)) (sin θ)) (* -1 g (sin θ))) l))
 
-(let [opts {:compile? true, :epsilon 1.0E-13}
-      evolve-fn (evolve
-                  pend-state-derivative
-                  1.0
-                  1.0
-                  9.8
-                  0.1
-                  (* 2.0 (sqrt 9.8)))
-      answer (evolve-fn (up 0.0 1.0 0.0) 0.01 1.0 opts)
-      expected (up 1.0 -1.030115687 -1.40985359)
-      delta (->> answer (- expected) flatten (map abs) (reduce max))]
-  (< delta 1.0E-8))
+(def opts {:compile? true, :epsilon 1.0E-13})
+
+(def evolve-fn
+ (evolve pend-state-derivative 1.0 1.0 9.8 0.1 (* 2.0 (sqrt 9.8))))
+
+(def answer (evolve-fn (up 0.0 1.0 0.0) 0.01 1.0 opts))
+
+(def expected (up 1.0 -1.030115687 -1.40985359))
+
+(def delta (->> answer (- expected) flatten (map abs) (reduce max)))
+
+(< delta 1.0E-8)
 
 ;; --- Example: energy partition: kinetic and potential terms trade off along the path ---
 
@@ -1391,36 +1401,37 @@
 (simplify ((compose (ang-mom-z 'm) (F->C s->r)) spherical-state))
 ;;=> '(* m (expt r 2) φdot (expt (sin θ) 2))
 
-(freeze
-    (simplify
-      ((Lagrangian->energy (L3-central 'm V)) spherical-state)))
+(simplify ((Lagrangian->energy (L3-central 'm V)) spherical-state))
 ;;=> '(+
 ;;        (* (/ 1 2) m (expt r 2) (expt φdot 2) (expt (sin θ) 2))
 ;;        (* (/ 1 2) m (expt r 2) (expt θdot 2))
 ;;        (* (/ 1 2) m (expt rdot 2))
 ;;        (V r))
 
-(let [L (L-central-rectangular 'm U)
-      F-tilde (fn [angle-x angle-y angle-z]
-                (compose
-                  (Rx angle-x)
-                  (Ry angle-y)
-                  (Rz angle-z)
-                  coordinate))
-      Noether-integral (* ((partial 2) L) ((D F-tilde) 0 0 0))
-      state (up 't (up 'x 'y 'z) (up 'vx 'vy 'vz))]
-  (simplify (((partial 2) L) state))
-  ;;=> '(down (* m vx) (* m vy) (* m vz))
-  (simplify ((F-tilde 0 0 0) state))
-  ;;=> '(up x y z)
-  (simplify (((D F-tilde) 0 0 0) state))
-  ;;=> '(down (up 0 (* -1 z) y) (up z 0 (* -1 x)) (up (* -1 y) x 0))
-  (simplify (Noether-integral state))
-  ;;=> '(down
-  ;;          (+ (* -1 m vy z) (* m vz y))
-  ;;          (+ (* m vx z) (* -1 m vz x))
-  ;;          (+ (* -1 m vx y) (* m vy x)))
-  )
+(def L (L-central-rectangular 'm U))
+
+(def F-tilde
+ (fn [angle-x angle-y angle-z]
+   (compose (Rx angle-x) (Ry angle-y) (Rz angle-z) coordinate)))
+
+(def Noether-integral (* ((partial 2) L) ((D F-tilde) 0 0 0)))
+
+(def state (up 't (up 'x 'y 'z) (up 'vx 'vy 'vz)))
+
+(simplify (((partial 2) L) state))
+;;=> '(down (* m vx) (* m vy) (* m vz))
+
+(simplify ((F-tilde 0 0 0) state))
+;;=> '(up x y z)
+
+(simplify (((D F-tilde) 0 0 0) state))
+;;=> '(down (up 0 (* -1 z) y) (up z 0 (* -1 x)) (up (* -1 y) x 0))
+
+(simplify (Noether-integral state))
+;;=> '(down
+;;        (+ (* -1 m vy z) (* m vz y))
+;;        (+ (* m vx z) (* -1 m vz x))
+;;        (+ (* -1 m vx y) (* m vy x)))
 
 ;; --- Example: energy is conserved: E(t) hovers near its t=0 value along a pendulum trajectory ---
 
@@ -1539,7 +1550,7 @@
 
 (def M-on-path (compose Euler->M q))
 
-(freeze (simplify (M-on-path 't)))
+(simplify (M-on-path 't))
 ;;=> '(matrix-by-rows
 ;;        [(+
 ;;           (* -1 (sin (φ t)) (cos (θ t)) (sin (ψ t)))
@@ -1559,7 +1570,7 @@
 ;;         (* (cos (ψ t)) (sin (θ t)))
 ;;         (cos (θ t))])
 
-(freeze (simplify (((r/M-of-q->omega-body-of-t Euler->M) q) 't)))
+(simplify (((r/M-of-q->omega-body-of-t Euler->M) q) 't))
 ;;=> '(column-matrix
 ;;        (+
 ;;          (* (sin (ψ t)) (sin (θ t)) ((D φ) t))
@@ -1569,7 +1580,7 @@
 ;;          (* -1 (sin (ψ t)) ((D θ) t)))
 ;;        (+ (* (cos (θ t)) ((D φ) t)) ((D ψ) t)))
 
-(freeze (simplify ((r/M->omega-body Euler->M) Euler-state)))
+(simplify ((r/M->omega-body Euler->M) Euler-state))
 ;;=> '(column-matrix
 ;;        (+ (* φdot (sin ψ) (sin θ)) (* θdot (cos ψ)))
 ;;        (+ (* φdot (sin θ) (cos ψ)) (* -1 θdot (sin ψ)))
@@ -1784,7 +1795,7 @@
 
 (def Euler-state (up 't (up 'θ 'φ 'ψ) (up 'θdot 'φdot 'ψdot)))
 
-(freeze (simplify ((r/T-rigid-body 'A 'A 'C) Euler-state)))
+(simplify ((r/T-rigid-body 'A 'A 'C) Euler-state))
 ;;=> '(+
 ;;        (* (/ 1 2) A (expt φdot 2) (expt (sin θ) 2))
 ;;        (* (/ 1 2) C (expt φdot 2) (expt (cos θ) 2))
@@ -1834,39 +1845,35 @@
 ;;  or clojure.core. Calls below resolve to that referred binding.)
 ;; (def simplify (comp e/freeze e/simplify))
 
-(do
-  (simplify
-      (((Hamilton-equations
-          (H-rectangular
-            'm
-            (literal-function 'V (-> (X Real Real) Real))))
-         (up (literal-function 'x) (literal-function 'y))
-         (down (literal-function 'p_x) (literal-function 'p_y)))
-        't))
-  ;;=> '(up
-  ;;          0
-  ;;          (up
-  ;;            (/ (+ (* m ((D x) t)) (* -1 (p_x t))) m)
-  ;;            (/ (+ (* m ((D y) t)) (* -1 (p_y t))) m))
-  ;;          (down
-  ;;            (+ ((D p_x) t) (((partial 0) V) (x t) (y t)))
-  ;;            (+ ((D p_y) t) (((partial 1) V) (x t) (y t)))))
-  )
+(simplify
+    (((Hamilton-equations
+        (H-rectangular
+          'm
+          (literal-function 'V (-> (X Real Real) Real))))
+       (up (literal-function 'x) (literal-function 'y))
+       (down (literal-function 'p_x) (literal-function 'p_y)))
+      't))
+;;=> '(up
+;;        0
+;;        (up
+;;          (/ (+ (* m ((D x) t)) (* -1 (p_x t))) m)
+;;          (/ (+ (* m ((D y) t)) (* -1 (p_y t))) m))
+;;        (down
+;;          (+ ((D p_x) t) (((partial 0) V) (x t) (y t)))
+;;          (+ ((D p_y) t) (((partial 1) V) (x t) (y t)))))
 
-(do
-  (simplify
-      ((Lagrangian->Hamiltonian
-         (L-rectangular
-           'm
-           (literal-function 'V (-> (X Real Real) Real))))
-        (up 't (up 'x 'y) (down 'p_x 'p_y))))
-  ;;=> '(/
-  ;;          (+
-  ;;            (* m (V x y))
-  ;;            (* (/ 1 2) (expt p_x 2))
-  ;;            (* (/ 1 2) (expt p_y 2)))
-  ;;          m)
-  )
+(simplify
+    ((Lagrangian->Hamiltonian
+       (L-rectangular
+         'm
+         (literal-function 'V (-> (X Real Real) Real))))
+      (up 't (up 'x 'y) (down 'p_x 'p_y))))
+;;=> '(/
+;;        (+
+;;          (* m (V x y))
+;;          (* (/ 1 2) (expt p_x 2))
+;;          (* (/ 1 2) (expt p_y 2)))
+;;        m)
 
 ;; --- Example: phase portrait of the harmonic oscillator at three energies ---
 
@@ -1912,17 +1919,19 @@
 ;;  or clojure.core. Calls below resolve to that referred binding.)
 ;; (def simplify (comp e/freeze e/simplify))
 
-(do
-  (let [F (literal-function 'F (Hamiltonian 2))
-        G (literal-function 'G (Hamiltonian 2))
-        H (literal-function 'H (Hamiltonian 2))]
-    (zero?
-        (simplify
-          ((+
-             (Poisson-bracket F (Poisson-bracket G H))
-             (Poisson-bracket G (Poisson-bracket H F))
-             (Poisson-bracket H (Poisson-bracket F G)))
-            (up 't (up 'x 'y) (down 'px 'py)))))))
+(def F (literal-function 'F (Hamiltonian 2)))
+
+(def G (literal-function 'G (Hamiltonian 2)))
+
+(def H (literal-function 'H (Hamiltonian 2)))
+
+(zero?
+    (simplify
+      ((+
+         (Poisson-bracket F (Poisson-bracket G H))
+         (Poisson-bracket G (Poisson-bracket H F))
+         (Poisson-bracket H (Poisson-bracket F G)))
+        (up 't (up 'x 'y) (down 'px 'py)))))
 
 ;; --- Example: phase-space vector field generated by H = ½(p² + q²) — direction of flow ---
 
@@ -1971,168 +1980,166 @@
 ;;  or clojure.core. Calls below resolve to that referred binding.)
 ;; (def simplify (comp e/freeze e/simplify))
 
-(do
-  (simplify
-      ((Lagrangian->Hamiltonian
-         (L-central-polar 'm (literal-function 'V)))
-        (up 't (up 'r 'phi) (down 'p_r 'p_phi))))
-  ;;=> '(/
-  ;;          (+
-  ;;            (* m (expt r 2) (V r))
-  ;;            (* (/ 1 2) (expt p_r 2) (expt r 2))
-  ;;            (* (/ 1 2) (expt p_phi 2)))
-  ;;          (* m (expt r 2)))
-  (simplify
-      (((Hamilton-equations
-          (Lagrangian->Hamiltonian
-            (L-central-polar 'm (literal-function 'V))))
-         (up (literal-function 'r) (literal-function 'phi))
-         (down (literal-function 'p_r) (literal-function 'p_phi)))
-        't))
+(simplify
+    ((Lagrangian->Hamiltonian
+       (L-central-polar 'm (literal-function 'V)))
+      (up 't (up 'r 'phi) (down 'p_r 'p_phi))))
+;;=> '(/
+;;        (+
+;;          (* m (expt r 2) (V r))
+;;          (* (/ 1 2) (expt p_r 2) (expt r 2))
+;;          (* (/ 1 2) (expt p_phi 2)))
+;;        (* m (expt r 2)))
+
+(simplify
+    (((Hamilton-equations
+        (Lagrangian->Hamiltonian
+          (L-central-polar 'm (literal-function 'V))))
+       (up (literal-function 'r) (literal-function 'phi))
+       (down (literal-function 'p_r) (literal-function 'p_phi)))
+      't))
+;;=> '(up
+;;        0
+;;        (up
+;;          (/ (+ (* m ((D r) t)) (* -1 (p_r t))) m)
+;;          (/
+;;            (+ (* m (expt (r t) 2) ((D phi) t)) (* -1 (p_phi t)))
+;;            (* m (expt (r t) 2))))
+;;        (down
+;;          (/
+;;            (+
+;;              (* m (expt (r t) 3) ((D p_r) t))
+;;              (* m (expt (r t) 3) ((D V) (r t)))
+;;              (* -1 (expt (p_phi t) 2)))
+;;            (* m (expt (r t) 3)))
+;;          ((D p_phi) t)))
+
+(simplify
+    ((Lagrangian->Hamiltonian (top/L-axisymmetric 'A 'C 'gMR))
+      (up 't (up 'theta 'phi 'psi) (down 'p_theta 'p_phi 'p_psi))))
+;;=> '(/
+;;        (+
+;;          (* A C gMR (expt (sin theta) 2) (cos theta))
+;;          (* (/ 1 2) A (expt p_psi 2) (expt (sin theta) 2))
+;;          (* (/ 1 2) C (expt p_psi 2) (expt (cos theta) 2))
+;;          (* (/ 1 2) C (expt p_theta 2) (expt (sin theta) 2))
+;;          (* -1 C p_phi p_psi (cos theta))
+;;          (* (/ 1 2) C (expt p_phi 2)))
+;;        (* A C (expt (sin theta) 2)))
+
+(def top-state
+ (up 't (up 'theta 'phi 'psi) (down 'p_theta 'p_phi 'p_psi)))
+
+(def H (Lagrangian->Hamiltonian (top/L-axisymmetric 'A 'C 'gMR)))
+
+(def sysder (Hamiltonian->state-derivative H))
+
+(simplify (H top-state))
+;;=> '(/
+;;        (+
+;;          (* A C gMR (expt (sin theta) 2) (cos theta))
+;;          (* (/ 1 2) A (expt p_psi 2) (expt (sin theta) 2))
+;;          (* (/ 1 2) C (expt p_psi 2) (expt (cos theta) 2))
+;;          (* (/ 1 2) C (expt p_theta 2) (expt (sin theta) 2))
+;;          (* -1 C p_phi p_psi (cos theta))
+;;          (* (/ 1 2) C (expt p_phi 2)))
+;;        (* A C (expt (sin theta) 2)))
+
+(binding [pg/*poly-gcd-time-limit* [2 :seconds]]
+  (simplify (sysder top-state))
   ;;=> '(up
-  ;;          0
+  ;;          1
   ;;          (up
-  ;;            (/ (+ (* m ((D r) t)) (* -1 (p_r t))) m)
+  ;;            (/ p_theta A)
   ;;            (/
-  ;;              (+ (* m (expt (r t) 2) ((D phi) t)) (* -1 (p_phi t)))
-  ;;              (* m (expt (r t) 2))))
+  ;;              (+ (* -1 p_psi (cos theta)) p_phi)
+  ;;              (* A (expt (sin theta) 2)))
+  ;;            (/
+  ;;              (+
+  ;;                (* A p_psi (expt (sin theta) 2))
+  ;;                (* C p_psi (expt (cos theta) 2))
+  ;;                (* -1 C p_phi (cos theta)))
+  ;;              (* A C (expt (sin theta) 2))))
   ;;          (down
   ;;            (/
   ;;              (+
-  ;;                (* m (expt (r t) 3) ((D p_r) t))
-  ;;                (* m (expt (r t) 3) ((D V) (r t)))
-  ;;                (* -1 (expt (p_phi t) 2)))
-  ;;              (* m (expt (r t) 3)))
-  ;;            ((D p_phi) t)))
+  ;;                (* A gMR (expt (cos theta) 4))
+  ;;                (* -2 A gMR (expt (cos theta) 2))
+  ;;                (* -1 p_phi p_psi (expt (cos theta) 2))
+  ;;                (* (expt p_phi 2) (cos theta))
+  ;;                (* (expt p_psi 2) (cos theta))
+  ;;                (* A gMR)
+  ;;                (* -1 p_phi p_psi))
+  ;;              (* A (expt (sin theta) 3)))
+  ;;            0
+  ;;            0))
   )
 
-(do
-  (simplify
-      ((Lagrangian->Hamiltonian (top/L-axisymmetric 'A 'C 'gMR))
-        (up 't (up 'theta 'phi 'psi) (down 'p_theta 'p_phi 'p_psi))))
-  ;;=> '(/
-  ;;          (+
-  ;;            (* A C gMR (expt (sin theta) 2) (cos theta))
-  ;;            (* (/ 1 2) A (expt p_psi 2) (expt (sin theta) 2))
-  ;;            (* (/ 1 2) C (expt p_psi 2) (expt (cos theta) 2))
-  ;;            (* (/ 1 2) C (expt p_theta 2) (expt (sin theta) 2))
-  ;;            (* -1 C p_phi p_psi (cos theta))
-  ;;            (* (/ 1 2) C (expt p_phi 2)))
-  ;;          (* A C (expt (sin theta) 2)))
-  )
-
-(do
-  (let [top-state (up
-                    't
-                    (up 'theta 'phi 'psi)
-                    (down 'p_theta 'p_phi 'p_psi))
-        H (Lagrangian->Hamiltonian (top/L-axisymmetric 'A 'C 'gMR))
-        sysder (Hamiltonian->state-derivative H)]
-    (simplify (H top-state))
-    ;;=> '(/
-    ;;            (+
-    ;;              (* A C gMR (expt (sin theta) 2) (cos theta))
-    ;;              (* (/ 1 2) A (expt p_psi 2) (expt (sin theta) 2))
-    ;;              (* (/ 1 2) C (expt p_psi 2) (expt (cos theta) 2))
-    ;;              (* (/ 1 2) C (expt p_theta 2) (expt (sin theta) 2))
-    ;;              (* -1 C p_phi p_psi (cos theta))
-    ;;              (* (/ 1 2) C (expt p_phi 2)))
-    ;;            (* A C (expt (sin theta) 2)))
-    (binding [pg/*poly-gcd-time-limit* [2 :seconds]]
-      (simplify (sysder top-state))
-      ;;=> '(up
-      ;;              1
-      ;;              (up
-      ;;                (/ p_theta A)
-      ;;                (/
-      ;;                  (+ (* -1 p_psi (cos theta)) p_phi)
-      ;;                  (* A (expt (sin theta) 2)))
-      ;;                (/
-      ;;                  (+
-      ;;                    (* A p_psi (expt (sin theta) 2))
-      ;;                    (* C p_psi (expt (cos theta) 2))
-      ;;                    (* -1 C p_phi (cos theta)))
-      ;;                  (* A C (expt (sin theta) 2))))
-      ;;              (down
-      ;;                (/
-      ;;                  (+
-      ;;                    (* A gMR (expt (cos theta) 4))
-      ;;                    (* -2 A gMR (expt (cos theta) 2))
-      ;;                    (* -1 p_phi p_psi (expt (cos theta) 2))
-      ;;                    (* (expt p_phi 2) (cos theta))
-      ;;                    (* (expt p_psi 2) (cos theta))
-      ;;                    (* A gMR)
-      ;;                    (* -1 p_phi p_psi))
-      ;;                  (* A (expt (sin theta) 3)))
-      ;;                0
-      ;;                0))
-      )
-    (c/compile-state-fn
-        (fn [] sysder)
-        []
-        top-state
-        {:mode :js, :gensym-fn (a/monotonic-symbol-generator 2)})
-    ;;=> [\"[y01, [y02, y03, y04], [y05, y06, y07]]\"
-    ;;          \"_\"
-    ;;          (maybe-defloatify
-    ;;            (s/join
-    ;;              \"\\n\"
-    ;;              [\"  const _08 = 1.0;\"
-    ;;               \"  const _09 = y05 / A;\"
-    ;;               \"  const _10 = -1.0;\"
-    ;;               \"  const _11 = _10 * y07;\"
-    ;;               \"  const _12 = Math.cos(y02);\"
-    ;;               \"  const _13 = _11 * _12;\"
-    ;;               \"  const _14 = _13 + y06;\"
-    ;;               \"  const _15 = Math.sin(y02);\"
-    ;;               \"  const _16 = 2.0;\"
-    ;;               \"  const _17 = Math.pow(_15, _16);\"
-    ;;               \"  const _18 = A * _17;\"
-    ;;               \"  const _19 = _14 / _18;\"
-    ;;               \"  const _20 = A * y07;\"
-    ;;               \"  const _21 = _20 * _17;\"
-    ;;               \"  const _22 = C * y07;\"
-    ;;               \"  const _23 = Math.pow(_12, _16);\"
-    ;;               \"  const _24 = _22 * _23;\"
-    ;;               \"  const _25 = _21 + _24;\"
-    ;;               \"  const _26 = _10 * C;\"
-    ;;               \"  const _27 = _26 * y06;\"
-    ;;               \"  const _28 = _27 * _12;\"
-    ;;               \"  const _29 = _25 + _28;\"
-    ;;               \"  const _30 = A * C;\"
-    ;;               \"  const _31 = _30 * _17;\"
-    ;;               \"  const _32 = _29 / _31;\"
-    ;;               \"  const _33 = [_09, _19, _32];\"
-    ;;               \"  const _34 = A * gMR;\"
-    ;;               \"  const _35 = 4.0;\"
-    ;;               \"  const _36 = Math.pow(_12, _35);\"
-    ;;               \"  const _37 = _34 * _36;\"
-    ;;               \"  const _38 = -2.0;\"
-    ;;               \"  const _39 = _38 * A;\"
-    ;;               \"  const _40 = _39 * gMR;\"
-    ;;               \"  const _41 = _40 * _23;\"
-    ;;               \"  const _42 = _37 + _41;\"
-    ;;               \"  const _43 = _10 * y06;\"
-    ;;               \"  const _44 = _43 * y07;\"
-    ;;               \"  const _45 = _44 * _23;\"
-    ;;               \"  const _46 = _42 + _45;\"
-    ;;               \"  const _47 = Math.pow(y06, _16);\"
-    ;;               \"  const _48 = _47 * _12;\"
-    ;;               \"  const _49 = _46 + _48;\"
-    ;;               \"  const _50 = Math.pow(y07, _16);\"
-    ;;               \"  const _51 = _50 * _12;\"
-    ;;               \"  const _52 = _49 + _51;\"
-    ;;               \"  const _53 = _52 + _34;\"
-    ;;               \"  const _54 = _53 + _44;\"
-    ;;               \"  const _55 = 3.0;\"
-    ;;               \"  const _56 = Math.pow(_15, _55);\"
-    ;;               \"  const _57 = A * _56;\"
-    ;;               \"  const _58 = _54 / _57;\"
-    ;;               \"  const _59 = 0.0;\"
-    ;;               \"  const _60 = [_58, _59, _59];\"
-    ;;               \"  const _61 = [_08, _33, _60];\"
-    ;;               \"  return _61;\"]))]
-    ))
+(c/compile-state-fn
+    (fn [] sysder)
+    []
+    top-state
+    {:mode :js, :gensym-fn (a/monotonic-symbol-generator 2)})
+;;=> [\"[y01, [y02, y03, y04], [y05, y06, y07]]\"
+;;      \"_\"
+;;      (maybe-defloatify
+;;        (s/join
+;;          \"\\n\"
+;;          [\"  const _08 = 1.0;\"
+;;           \"  const _09 = y05 / A;\"
+;;           \"  const _10 = -1.0;\"
+;;           \"  const _11 = _10 * y07;\"
+;;           \"  const _12 = Math.cos(y02);\"
+;;           \"  const _13 = _11 * _12;\"
+;;           \"  const _14 = _13 + y06;\"
+;;           \"  const _15 = Math.sin(y02);\"
+;;           \"  const _16 = 2.0;\"
+;;           \"  const _17 = Math.pow(_15, _16);\"
+;;           \"  const _18 = A * _17;\"
+;;           \"  const _19 = _14 / _18;\"
+;;           \"  const _20 = A * y07;\"
+;;           \"  const _21 = _20 * _17;\"
+;;           \"  const _22 = C * y07;\"
+;;           \"  const _23 = Math.pow(_12, _16);\"
+;;           \"  const _24 = _22 * _23;\"
+;;           \"  const _25 = _21 + _24;\"
+;;           \"  const _26 = _10 * C;\"
+;;           \"  const _27 = _26 * y06;\"
+;;           \"  const _28 = _27 * _12;\"
+;;           \"  const _29 = _25 + _28;\"
+;;           \"  const _30 = A * C;\"
+;;           \"  const _31 = _30 * _17;\"
+;;           \"  const _32 = _29 / _31;\"
+;;           \"  const _33 = [_09, _19, _32];\"
+;;           \"  const _34 = A * gMR;\"
+;;           \"  const _35 = 4.0;\"
+;;           \"  const _36 = Math.pow(_12, _35);\"
+;;           \"  const _37 = _34 * _36;\"
+;;           \"  const _38 = -2.0;\"
+;;           \"  const _39 = _38 * A;\"
+;;           \"  const _40 = _39 * gMR;\"
+;;           \"  const _41 = _40 * _23;\"
+;;           \"  const _42 = _37 + _41;\"
+;;           \"  const _43 = _10 * y06;\"
+;;           \"  const _44 = _43 * y07;\"
+;;           \"  const _45 = _44 * _23;\"
+;;           \"  const _46 = _42 + _45;\"
+;;           \"  const _47 = Math.pow(y06, _16);\"
+;;           \"  const _48 = _47 * _12;\"
+;;           \"  const _49 = _46 + _48;\"
+;;           \"  const _50 = Math.pow(y07, _16);\"
+;;           \"  const _51 = _50 * _12;\"
+;;           \"  const _52 = _49 + _51;\"
+;;           \"  const _53 = _52 + _34;\"
+;;           \"  const _54 = _53 + _44;\"
+;;           \"  const _55 = 3.0;\"
+;;           \"  const _56 = Math.pow(_15, _55);\"
+;;           \"  const _57 = A * _56;\"
+;;           \"  const _58 = _54 / _57;\"
+;;           \"  const _59 = 0.0;\"
+;;           \"  const _60 = [_58, _59, _59];\"
+;;           \"  const _61 = [_08, _33, _60];\"
+;;           \"  return _61;\"]))]
 
 ;; --- Example: the orbital plane: central-force motion in (x, y) reduces to (r) + L ---
 
@@ -2176,104 +2183,106 @@
 ;;  or clojure.core. Calls below resolve to that referred binding.)
 ;; (def simplify (comp e/freeze e/simplify))
 
-(do
-  (let [H ((Lagrangian->Hamiltonian (driven/L 'm 'l 'g 'a 'omega))
-            (up 't 'theta 'p_theta))]
-    (simplify H)
-    ;;=> '(/
-    ;;            (+
-    ;;              (*
-    ;;                (/ -1 2)
-    ;;                (expt a 2)
-    ;;                (expt l 2)
-    ;;                (expt m 2)
-    ;;                (expt omega 2)
-    ;;                (expt (sin (* omega t)) 2)
-    ;;                (expt (cos theta) 2))
-    ;;              (* a g (expt l 2) (expt m 2) (cos (* omega t)))
-    ;;              (* a l m omega p_theta (sin (* omega t)) (sin theta))
-    ;;              (* -1 g (expt l 3) (expt m 2) (cos theta))
-    ;;              (* (/ 1 2) (expt p_theta 2)))
-    ;;            (* (expt l 2) m))
-    )
-  (let [sysder (simplify
-                 ((Hamiltonian->state-derivative
-                    (Lagrangian->Hamiltonian
-                      (driven/L 'm 'l 'g 'a 'omega)))
-                   (up 't 'theta 'p_theta)))]
-    sysder
-    ;;=> '(up
-    ;;            1
-    ;;            (/
-    ;;              (+ (* a l m omega (sin (* omega t)) (sin theta)) p_theta)
-    ;;              (* (expt l 2) m))
-    ;;            (/
-    ;;              (+
-    ;;                (*
-    ;;                  -1
-    ;;                  (expt a 2)
-    ;;                  l
-    ;;                  m
-    ;;                  (expt omega 2)
-    ;;                  (expt (sin (* omega t)) 2)
-    ;;                  (sin theta)
-    ;;                  (cos theta))
-    ;;                (* -1 a omega p_theta (sin (* omega t)) (cos theta))
-    ;;                (* -1 g (expt l 2) m (sin theta)))
-    ;;              l))
-    (c/compile-state-fn
-        (fn []
-          (Hamiltonian->state-derivative
-            (Lagrangian->Hamiltonian (driven/L 'm 'l 'g 'a 'omega))))
-        []
-        (up 't 'theta 'p_theta)
-        {:mode :js, :gensym-fn (a/monotonic-symbol-generator 2)})
-    ;;=> [\"[y01, y02, y03]\"
-    ;;          \"_\"
-    ;;          (maybe-defloatify
-    ;;            (s/join
-    ;;              \"\\n\"
-    ;;              [\"  const _04 = 1.0;\"
-    ;;               \"  const _05 = a * l;\"
-    ;;               \"  const _06 = _05 * m;\"
-    ;;               \"  const _07 = _06 * omega;\"
-    ;;               \"  const _08 = omega * y01;\"
-    ;;               \"  const _09 = Math.sin(_08);\"
-    ;;               \"  const _10 = _07 * _09;\"
-    ;;               \"  const _11 = Math.sin(y02);\"
-    ;;               \"  const _12 = _10 * _11;\"
-    ;;               \"  const _13 = _12 + y03;\"
-    ;;               \"  const _14 = 2.0;\"
-    ;;               \"  const _15 = Math.pow(l, _14);\"
-    ;;               \"  const _16 = _15 * m;\"
-    ;;               \"  const _17 = _13 / _16;\"
-    ;;               \"  const _18 = -1.0;\"
-    ;;               \"  const _19 = Math.pow(a, _14);\"
-    ;;               \"  const _20 = _18 * _19;\"
-    ;;               \"  const _21 = _20 * l;\"
-    ;;               \"  const _22 = _21 * m;\"
-    ;;               \"  const _23 = Math.pow(omega, _14);\"
-    ;;               \"  const _24 = _22 * _23;\"
-    ;;               \"  const _25 = Math.pow(_09, _14);\"
-    ;;               \"  const _26 = _24 * _25;\"
-    ;;               \"  const _27 = _26 * _11;\"
-    ;;               \"  const _28 = Math.cos(y02);\"
-    ;;               \"  const _29 = _27 * _28;\"
-    ;;               \"  const _30 = _18 * a;\"
-    ;;               \"  const _31 = _30 * omega;\"
-    ;;               \"  const _32 = _31 * y03;\"
-    ;;               \"  const _33 = _32 * _09;\"
-    ;;               \"  const _34 = _33 * _28;\"
-    ;;               \"  const _35 = _29 + _34;\"
-    ;;               \"  const _36 = _18 * g;\"
-    ;;               \"  const _37 = _36 * _15;\"
-    ;;               \"  const _38 = _37 * m;\"
-    ;;               \"  const _39 = _38 * _11;\"
-    ;;               \"  const _40 = _35 + _39;\"
-    ;;               \"  const _41 = _40 / l;\"
-    ;;               \"  const _42 = [_04, _17, _41];\"
-    ;;               \"  return _42;\"]))]
-    ))
+(def H
+ ((Lagrangian->Hamiltonian (driven/L 'm 'l 'g 'a 'omega))
+   (up 't 'theta 'p_theta)))
+
+(simplify H)
+;;=> '(/
+;;        (+
+;;          (*
+;;            (/ -1 2)
+;;            (expt a 2)
+;;            (expt l 2)
+;;            (expt m 2)
+;;            (expt omega 2)
+;;            (expt (sin (* omega t)) 2)
+;;            (expt (cos theta) 2))
+;;          (* a g (expt l 2) (expt m 2) (cos (* omega t)))
+;;          (* a l m omega p_theta (sin (* omega t)) (sin theta))
+;;          (* -1 g (expt l 3) (expt m 2) (cos theta))
+;;          (* (/ 1 2) (expt p_theta 2)))
+;;        (* (expt l 2) m))
+
+(def sysder
+ (simplify
+   ((Hamiltonian->state-derivative
+      (Lagrangian->Hamiltonian (driven/L 'm 'l 'g 'a 'omega)))
+     (up 't 'theta 'p_theta))))
+
+sysder
+;;=> '(up
+;;        1
+;;        (/
+;;          (+ (* a l m omega (sin (* omega t)) (sin theta)) p_theta)
+;;          (* (expt l 2) m))
+;;        (/
+;;          (+
+;;            (*
+;;              -1
+;;              (expt a 2)
+;;              l
+;;              m
+;;              (expt omega 2)
+;;              (expt (sin (* omega t)) 2)
+;;              (sin theta)
+;;              (cos theta))
+;;            (* -1 a omega p_theta (sin (* omega t)) (cos theta))
+;;            (* -1 g (expt l 2) m (sin theta)))
+;;          l))
+
+(c/compile-state-fn
+    (fn []
+      (Hamiltonian->state-derivative
+        (Lagrangian->Hamiltonian (driven/L 'm 'l 'g 'a 'omega))))
+    []
+    (up 't 'theta 'p_theta)
+    {:mode :js, :gensym-fn (a/monotonic-symbol-generator 2)})
+;;=> [\"[y01, y02, y03]\"
+;;      \"_\"
+;;      (maybe-defloatify
+;;        (s/join
+;;          \"\\n\"
+;;          [\"  const _04 = 1.0;\"
+;;           \"  const _05 = a * l;\"
+;;           \"  const _06 = _05 * m;\"
+;;           \"  const _07 = _06 * omega;\"
+;;           \"  const _08 = omega * y01;\"
+;;           \"  const _09 = Math.sin(_08);\"
+;;           \"  const _10 = _07 * _09;\"
+;;           \"  const _11 = Math.sin(y02);\"
+;;           \"  const _12 = _10 * _11;\"
+;;           \"  const _13 = _12 + y03;\"
+;;           \"  const _14 = 2.0;\"
+;;           \"  const _15 = Math.pow(l, _14);\"
+;;           \"  const _16 = _15 * m;\"
+;;           \"  const _17 = _13 / _16;\"
+;;           \"  const _18 = -1.0;\"
+;;           \"  const _19 = Math.pow(a, _14);\"
+;;           \"  const _20 = _18 * _19;\"
+;;           \"  const _21 = _20 * l;\"
+;;           \"  const _22 = _21 * m;\"
+;;           \"  const _23 = Math.pow(omega, _14);\"
+;;           \"  const _24 = _22 * _23;\"
+;;           \"  const _25 = Math.pow(_09, _14);\"
+;;           \"  const _26 = _24 * _25;\"
+;;           \"  const _27 = _26 * _11;\"
+;;           \"  const _28 = Math.cos(y02);\"
+;;           \"  const _29 = _27 * _28;\"
+;;           \"  const _30 = _18 * a;\"
+;;           \"  const _31 = _30 * omega;\"
+;;           \"  const _32 = _31 * y03;\"
+;;           \"  const _33 = _32 * _09;\"
+;;           \"  const _34 = _33 * _28;\"
+;;           \"  const _35 = _29 + _34;\"
+;;           \"  const _36 = _18 * g;\"
+;;           \"  const _37 = _36 * _15;\"
+;;           \"  const _38 = _37 * m;\"
+;;           \"  const _39 = _38 * _11;\"
+;;           \"  const _40 = _35 + _39;\"
+;;           \"  const _41 = _40 / l;\"
+;;           \"  const _42 = [_04, _17, _41];\"
+;;           \"  return _42;\"]))]
 
 ;; --- Example: pendulum phase portrait — librations near θ=0, separatrix, rotations above ---
 
@@ -2317,17 +2326,15 @@
 ;;  or clojure.core. Calls below resolve to that referred binding.)
 ;; (def simplify (comp e/freeze e/simplify))
 
-(do
-  (simplify
-      ((compose (H-central 'm (literal-function 'V)) (F->CT p->r))
-        (up 't (up 'r 'phi) (down 'p_r 'p_phi))))
-  ;;=> '(/
-  ;;          (+
-  ;;            (* m (expt r 2) (V r))
-  ;;            (* (/ 1 2) (expt p_r 2) (expt r 2))
-  ;;            (* (/ 1 2) (expt p_phi 2)))
-  ;;          (* m (expt r 2)))
-  )
+(simplify
+    ((compose (H-central 'm (literal-function 'V)) (F->CT p->r))
+      (up 't (up 'r 'phi) (down 'p_r 'p_phi))))
+;;=> '(/
+;;        (+
+;;          (* m (expt r 2) (V r))
+;;          (* (/ 1 2) (expt p_r 2) (expt r 2))
+;;          (* (/ 1 2) (expt p_phi 2)))
+;;        (* m (expt r 2)))
 
 ;; --- Example: a Lissajous figure in rectangular coordinates ---
 
@@ -2364,88 +2371,90 @@
 
 (def J-func (fn [[_ dh1 dh2]] (up 0 dh2 (- dh1))))
 
-(do
-  (simplify
-      ((compositional-canonical?
-         (F->CT p->r)
-         (H-central 'm (literal-function 'V)))
-        (up 't (up 'r 'phi) (down 'p_r 'p_phi))))
-  ;;=> '(up 0 (up 0 0) (down 0 0))
-  (simplify
-      ((time-independent-canonical? (polar-canonical 'alpha))
-        (up 't 'theta 'I)))
-  ;;=> '(up 0 0 0)
-  (let [a-non-canonical-transform (fn 
-                                    [[t theta p]]
-                                    (let 
-                                      [x (* p (sin theta))
-                                       p_x (* p (cos theta))]
-                                      (up t x p_x)))]
-    (not=
-        '(up 0 0 0)
-        (simplify
-          ((time-independent-canonical? a-non-canonical-transform)
-            (up 't 'theta 'p)))))
-  (simplify
-      (let [s (up 't (up 'x 'y) (down 'px 'py))
-            s* (compatible-shape s)]
-        (s->m s* ((D J-func) s*) s*)))
-  ;;=> '(matrix-by-rows
-  ;;          [0 0 0 0 0]
-  ;;          [0 0 0 1 0]
-  ;;          [0 0 0 0 1]
-  ;;          [0 -1 0 0 0]
-  ;;          [0 0 -1 0 0])
-  (let [symplectic? (fn [C]
-                      (fn [s]
-                        (let [s* (compatible-shape s)
-                              J (s->m s* ((D J-func) s*) s*)
-                              DCs (s->m s* ((D C) s) s)]
-                          (- J (* DCs J (transpose DCs))))))]
-    (simplify
-        ((symplectic? (F->CT p->r))
-          (up 't (up 'r 'varphi) (down 'p_r 'p_varphi))))
-    ;;=> '(matrix-by-rows
-    ;;            [0 0 0 0 0]
-    ;;            [0 0 0 0 0]
-    ;;            [0 0 0 0 0]
-    ;;            [0 0 0 0 0]
-    ;;            [0 0 0 0 0])
-    ))
+(simplify
+    ((compositional-canonical?
+       (F->CT p->r)
+       (H-central 'm (literal-function 'V)))
+      (up 't (up 'r 'phi) (down 'p_r 'p_phi))))
+;;=> '(up 0 (up 0 0) (down 0 0))
 
-(do
-  (simplify
-      ((symplectic-transform? (F->CT p->r))
-        (up 't (up 'r 'theta) (down 'p_r 'p_theta))))
-  ;;=> '(matrix-by-rows [0 0 0 0] [0 0 0 0] [0 0 0 0] [0 0 0 0])
-  )
+(simplify
+    ((time-independent-canonical? (polar-canonical 'alpha))
+      (up 't 'theta 'I)))
+;;=> '(up 0 0 0)
 
-(do
-  (let [rotating (fn [n]
-                   (fn [[t [x y z]]]
-                     (up
-                       (+ (* (cos (* n t)) x) (* (sin (* n t)) y))
-                       (- (* (cos (* n t)) y) (* (sin (* n t)) x))
-                       z)))
-        C-rotating (fn [Omega] (F->CT (rotating Omega)))
-        K (fn [Omega]
-            (fn [[_ [x y _] [p_x p_y _]]]
-              (* Omega (- (* x p_y) (* y p_x)))))]
+(def a-non-canonical-transform
+ (fn [[t theta p]]
+   (let [x (* p (sin theta)) p_x (* p (cos theta))] (up t x p_x))))
+
+(not=
+    '(up 0 0 0)
     (simplify
-        ((symplectic-transform? (C-rotating 'Omega))
-          (up 't (up 'x 'y 'z) (down 'p_x 'p_y 'p_z))))
-    ;;=> '(matrix-by-rows
-    ;;            [0 0 0 0 0 0]
-    ;;            [0 0 0 0 0 0]
-    ;;            [0 0 0 0 0 0]
-    ;;            [0 0 0 0 0 0]
-    ;;            [0 0 0 0 0 0]
-    ;;            [0 0 0 0 0 0])
-    (simplify
-        ((canonical-K? (C-rotating 'Omega) (K 'Omega))
-          (up 't (up 'x 'y 'z) (down 'p_x 'p_y 'p_z))))
-    ;;=> '(up 0 (up 0 0 0) (down 0 0 0))
-    ))
+      ((time-independent-canonical? a-non-canonical-transform)
+        (up 't 'theta 'p))))
+
+(simplify
+    (let [s (up 't (up 'x 'y) (down 'px 'py)) s* (compatible-shape s)]
+      (s->m s* ((D J-func) s*) s*)))
+;;=> '(matrix-by-rows
+;;        [0 0 0 0 0]
+;;        [0 0 0 1 0]
+;;        [0 0 0 0 1]
+;;        [0 -1 0 0 0]
+;;        [0 0 -1 0 0])
+
+(def symplectic?
+ (fn [C]
+   (fn [s]
+     (let [s* (compatible-shape s)
+           J (s->m s* ((D J-func) s*) s*)
+           DCs (s->m s* ((D C) s) s)]
+       (- J (* DCs J (transpose DCs)))))))
+
+(simplify
+    ((symplectic? (F->CT p->r))
+      (up 't (up 'r 'varphi) (down 'p_r 'p_varphi))))
+;;=> '(matrix-by-rows
+;;        [0 0 0 0 0]
+;;        [0 0 0 0 0]
+;;        [0 0 0 0 0]
+;;        [0 0 0 0 0]
+;;        [0 0 0 0 0])
+
+(simplify
+    ((symplectic-transform? (F->CT p->r))
+      (up 't (up 'r 'theta) (down 'p_r 'p_theta))))
+;;=> '(matrix-by-rows [0 0 0 0] [0 0 0 0] [0 0 0 0] [0 0 0 0])
+
+(def rotating
+ (fn [n]
+   (fn [[t [x y z]]]
+     (up
+       (+ (* (cos (* n t)) x) (* (sin (* n t)) y))
+       (- (* (cos (* n t)) y) (* (sin (* n t)) x))
+       z))))
+
+(def C-rotating (fn [Omega] (F->CT (rotating Omega))))
+
+(def K
+ (fn [Omega]
+   (fn [[_ [x y _] [p_x p_y _]]] (* Omega (- (* x p_y) (* y p_x))))))
+
+(simplify
+    ((symplectic-transform? (C-rotating 'Omega))
+      (up 't (up 'x 'y 'z) (down 'p_x 'p_y 'p_z))))
+;;=> '(matrix-by-rows
+;;        [0 0 0 0 0 0]
+;;        [0 0 0 0 0 0]
+;;        [0 0 0 0 0 0]
+;;        [0 0 0 0 0 0]
+;;        [0 0 0 0 0 0]
+;;        [0 0 0 0 0 0])
+
+(simplify
+    ((canonical-K? (C-rotating 'Omega) (K 'Omega))
+      (up 't (up 'x 'y 'z) (down 'p_x 'p_y 'p_z))))
+;;=> '(up 0 (up 0 0 0) (down 0 0 0))
 
 ;; --- Example: a coordinate grid rotated by 30° in phase space — canonical ---
 
@@ -2804,7 +2813,7 @@
       ((+ ((Lie-derivative (W 'alpha 'beta)) (H0 'alpha)) (H1 'beta))
         a-state)))
 
-(freeze (simplify (take 6 E)))
+(simplify (take 6 E))
 ;;=> '((/ (* (/ 1 2) (expt p_theta 2)) α)
 ;;        0
 ;;        (/
@@ -2814,7 +2823,7 @@
 ;;        0
 ;;        0)
 
-(freeze (simplify (series:sum E 2)))
+(simplify (series:sum E 2))
 ;;=> '(/
 ;;        (+
 ;;          (*
@@ -2826,7 +2835,7 @@
 ;;          (* (/ 1 2) (expt p_theta 4)))
 ;;        (* (expt p_theta 2) α))
 
-(freeze (simplify ((C 'α 'β 'ε 2) a-state)))
+(simplify ((C 'α 'β 'ε 2) a-state))
 ;;=> '(up
 ;;        t
 ;;        (/
@@ -2925,36 +2934,36 @@
 
 (def near (within 1.0E-6))
 
-(do
-  (simplify ((literal-function 'g [0 0] 0) 'x 'y))
-  ;;=> '(g x y)
-  )
+(simplify ((literal-function 'g [0 0] 0) 'x 'y))
+;;=> '(g x y)
 
-(do
-  (let [s (up 't (up 'x 'y) (down 'p_x 'p_y))
-        H (literal-function 'H (up 0 (up 0 0) (down 0 0)) 0)]
-    (simplify (H s))
-    ;;=> '(H (up t (up x y) (down p_x p_y)))
-    (comment
-      (thrown?
-        IllegalArgumentException
-        (H (up 0 (up 1 2) (down 1 2 3)))))
-    (comment
-      (thrown? IllegalArgumentException (H (up 0 (up 1) (down 1 2)))))
-    (comment
-      (thrown?
-        IllegalArgumentException
-        (H (up (up 1 2) (up 1 2) (down 1 2)))))
-    (freeze (simplify ((D H) s)))
-    ;;=> '(down
-    ;;            (((partial 0) H) (up t (up x y) (down p_x p_y)))
-    ;;            (down
-    ;;              (((partial 1 0) H) (up t (up x y) (down p_x p_y)))
-    ;;              (((partial 1 1) H) (up t (up x y) (down p_x p_y))))
-    ;;            (up
-    ;;              (((partial 2 0) H) (up t (up x y) (down p_x p_y)))
-    ;;              (((partial 2 1) H) (up t (up x y) (down p_x p_y)))))
-    ))
+(def s (up 't (up 'x 'y) (down 'p_x 'p_y)))
+
+(def H (literal-function 'H (up 0 (up 0 0) (down 0 0)) 0))
+
+(simplify (H s))
+;;=> '(H (up t (up x y) (down p_x p_y)))
+
+(comment
+  (thrown? IllegalArgumentException (H (up 0 (up 1 2) (down 1 2 3)))))
+
+(comment
+  (thrown? IllegalArgumentException (H (up 0 (up 1) (down 1 2)))))
+
+(comment
+  (thrown?
+    IllegalArgumentException
+    (H (up (up 1 2) (up 1 2) (down 1 2)))))
+
+(simplify ((D H) s))
+;;=> '(down
+;;        (((partial 0) H) (up t (up x y) (down p_x p_y)))
+;;        (down
+;;          (((partial 1 0) H) (up t (up x y) (down p_x p_y)))
+;;          (((partial 1 1) H) (up t (up x y) (down p_x p_y))))
+;;        (up
+;;          (((partial 2 0) H) (up t (up x y) (down p_x p_y)))
+;;          (((partial 2 1) H) (up t (up x y) (down p_x p_y)))))
 
 ;; --- Example: pendulum θ(t) and p_θ(t) via state-trajectory ---
 
@@ -3030,7 +3039,7 @@
 
 (def g (fn [x y] (up (square (+ x y)) (cube (- y x)) (exp (+ x y)))))
 
-(freeze (simplify ((D g) 'x 'y)))
+(simplify ((D g) 'x 'y))
 ;;=> '(down
 ;;        (up
 ;;          (+ (* 2 x) (* 2 y))

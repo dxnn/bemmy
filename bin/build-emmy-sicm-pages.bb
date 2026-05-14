@@ -668,6 +668,36 @@
       [defs body])
     [[] [form]]))
 
+(defn unwrap-nested-blocks
+  "Recursively splice nested `let` / `let*` / `do` / `testing` blocks at
+  the top of each form in `forms`. A `(let [bs] body…)` expands to
+  `(def …)` forms for the bindings plus the recursively-unwrapped body;
+  `(do body…)` and `(testing label body…)` splice their body directly.
+  Other forms pass through unchanged. The point is to lift every
+  `(is …)` assertion to its own top-level position so its value reaches
+  the BEmmy result pane — otherwise the enclosing let/do body's
+  return-last semantics throws away all but the final assertion's
+  result, while the `;;=>` comments still imply each step renders."
+  [forms]
+  (mapcat (fn [form]
+            (cond
+              (and (seq? form)
+                   (or (= 'let (first form)) (= 'let* (first form))))
+              (let [[_ binds & body] form
+                    pairs (partition 2 binds)
+                    defs  (mapv (fn [[k v]] (list 'def k v)) pairs)]
+                (concat defs (unwrap-nested-blocks body)))
+
+              (and (seq? form) (= 'do (first form)))
+              (unwrap-nested-blocks (rest form))
+
+              (and (seq? form) (= 'testing (first form)))
+              (unwrap-nested-blocks (drop 2 form))
+
+              :else
+              [form]))
+          forms))
+
 (def known-aliases
   "Namespace aliases used in Emmy's test files whose bare-name form
   is already available in BEmmy's user ns via :refer :all. emmy.env,
@@ -843,21 +873,44 @@
 (defn strip-namespaces [form]
   (walk/postwalk strip-known-namespace form))
 
+(def freeze-heads
+  "Forms `(freeze x)` / `(g/freeze x)` / `(e/freeze x)` /
+  `(emmy.generic/freeze x)` whose page-rendered semantics are just `x`.
+  The deftest needs freeze to make `=` succeed against a quoted
+  s-expression; the page renders the value through the result-pane
+  pretty-printer, which freeze defeats by collapsing the wrapped
+  expression tree to a plain list."
+  '#{freeze g/freeze e/freeze emmy.generic/freeze})
+
+(defn strip-freeze [form]
+  (walk/postwalk
+    (fn [x]
+      (if (and (seq? x)
+               (= 2 (count x))
+               (contains? freeze-heads (first x)))
+        (second x)
+        x))
+    form))
+
 (defn render-body-form [form]
   ;; Each form in the deftest body. with-literal-functions is unwrapped;
-  ;; leading let is unwrapped. Then assertion markers are inserted.
+  ;; leading let is unwrapped; then any nested let / do / testing blocks
+  ;; at the top of the body are recursively spliced so each `is`-
+  ;; assertion reaches its own top-level position (otherwise the
+  ;; enclosing block's return-last semantics would discard all but the
+  ;; final assertion's value).
   (let [unwrapped (unwrap-with-literal-functions form)]
     (if (= 1 (count unwrapped))
       (let [single (first unwrapped)
             [defs body] (unwrap-top-let single)]
-        (concat defs body))
+        (concat defs (unwrap-nested-blocks body)))
       ;; with-literal-functions case: defs + remaining body. The body
       ;; might itself be a let — recurse on the last element only.
       (let [[defs-from-wlf body-forms] [(butlast unwrapped) [(last unwrapped)]]
             ;; Find inner let in the (only) body form
             inner (first body-forms)
             [more-defs final-body] (unwrap-top-let inner)]
-        (concat defs-from-wlf more-defs final-body)))))
+        (concat defs-from-wlf more-defs (unwrap-nested-blocks final-body))))))
 
 (defn- aliases-used
   "Walk `forms` and return the set of namespace-prefix strings used by
@@ -997,7 +1050,7 @@
         body-forms (deftest-body deftest-form)
         rendered (->> body-forms
                       (mapcat render-body-form)
-                      (map (comp assertion-marker strip-namespaces))
+                      (map (comp assertion-marker strip-freeze strip-namespaces))
                       (map pp-str)
                       (str/join "\n\n"))
         ;; Helpers keep their namespace prefixes — the canonical case
