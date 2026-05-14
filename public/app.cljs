@@ -1531,7 +1531,29 @@ gfx-win   ; auto-shows the accumulated curves
 ;;        (* (/ 1 2) C (expt φdot 2) (expt (cos θ) 2))
 ;;        (* C φdot ψdot (cos θ))
 ;;        (* (/ 1 2) A (expt θdot 2))
-;;        (* (/ 1 2) C (expt ψdot 2)))"
+;;        (* (/ 1 2) C (expt ψdot 2)))
+
+;; --- Example: torque-free precession of the symmetry axis ---
+
+;; In a torque-free axisymmetric top with fixed nutation (θ̇ = 0), the
+;; symmetry axis precesses at constant φ̇ around the vertical. The tip
+;; of the body's symmetry axis traces a circle of radius sin θ in the
+;; horizontal plane — this is what the Lagrangian above generates as
+;; its motion of least action.
+(let [θ      (/ Math/PI 4)
+      φ-dot  1.0
+      t-end  (* 2 Math/PI)]
+  [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; Horizontal-plane projection of the symmetry-axis tip:
+   ;; (sin θ · cos(φ̇ t), sin θ · sin(φ̇ t)).
+   [mafs.plot/Parametric
+    {:t [0 t-end]
+     :xy (fn [t] [(* (Math/sin θ) (Math/cos (* φ-dot t)))
+                  (* (Math/sin θ) (Math/sin (* φ-dot t)))])
+     :color \"#3090ff\"}]
+   ;; Pin the origin — the precession's center.
+   [mafs.core/Point {:x 0 :y 0}]])"
     "SICM 3.1 Hamilton's Equations (Emmy)"
     ";; ============================================================
 ;; SICM 3.1 Hamilton's Equations (Emmy)
@@ -1949,7 +1971,23 @@ gfx-win   ; auto-shows the accumulated curves
   ;;            (* (/ 1 2) (expt p_r 2) (expt r 2))
   ;;            (* (/ 1 2) (expt p_phi 2)))
   ;;          (* m (expt r 2)))
-  )"
+  )
+
+;; --- Example: a Lissajous figure in rectangular coordinates ---
+
+(let [omega-x 1.0
+      omega-y 2.0
+      phi     (/ Math/PI 4)]
+  [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; (x, y) = (cos ωₓt, sin(ω_y t + φ)). Rational ωₓ:ω_y gives a closed
+   ;; curve; irrational ratios fill the box densely. SICM's F→C / F-tilde
+   ;; takes such (q(t), q'(t)) tuples to the canonical state form.
+   [mafs.plot/Parametric
+    {:t [0 (* 2 Math/PI)]
+     :xy (fn [t] [(Math/cos (* omega-x t))
+                  (Math/sin (+ (* omega-y t) phi))])
+     :color \"#3090ff\"}]])"
     "SICM 5.2 General Canonical Transformations (Emmy)"
     ";; ============================================================
 ;; SICM 5.2 General Canonical Transformations (Emmy)
@@ -2381,7 +2419,19 @@ gfx-win   ; auto-shows the accumulated curves
 ;;=> '(f x)
 
 (simplify ((compose (literal-function 'f) (literal-function 'g)) 'x))
-;;=> '(f (g x))"
+;;=> '(f (g x))
+
+;; --- Example: (sin ∘ cos)(x) vs sin(x) ---
+
+(let [domain [(- Math/PI) Math/PI]
+      sin-cos (comp #(Math/sin %) #(Math/cos %))]
+  [mafs.core/Mafs {:viewBox {:x domain :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; Bare sine for reference, gray …
+   [mafs.plot/OfX {:y (fn [x] (Math/sin x)) :domain domain :color \"#888888\"}]
+   ;; … and the composition, blue. Note the squeezed range — cos maps R
+   ;; into [-1, 1], so sin∘cos lives within sin([-1, 1]) ≈ [-0.84, 0.84].
+   [mafs.plot/OfX {:y sin-cos :domain domain :color \"#3090ff\"}]])"
     "SICM 7.2 Pendulum as a Perturbed Rotor (Emmy)"
     ";; ============================================================
 ;; SICM 7.2 Pendulum as a Perturbed Rotor (Emmy)
@@ -2426,7 +2476,26 @@ gfx-win   ; auto-shows the accumulated curves
     ;;            (up
     ;;              (((partial 2 0) H) (up t (up x y) (down p_x p_y)))
     ;;              (((partial 2 1) H) (up t (up x y) (down p_x p_y)))))
-    ))"
+    ))
+
+;; --- Example: pendulum θ(t) and p_θ(t) via state-trajectory ---
+
+(let [H   (Lagrangian->Hamiltonian (L-pendulum 1.0 1.0 9.8))
+      t0  0.0
+      t1  6.0
+      adv (state-trajectory H (up t0 1.0 0.0) t0 t1 64)]
+  [mafs.core/Mafs {:viewBox {:x [t0 t1] :y [-3 3]}}
+   [mafs.coordinates/Cartesian]
+   ;; State is (up t θ p_θ). θ(t) — blue.
+   [mafs.plot/Parametric
+    {:t [t0 t1]
+     :xy (fn [t] [t (nth (adv (up t0 1.0 0.0) t) 1)])
+     :color \"#3090ff\"}]
+   ;; p_θ(t) — red.
+   [mafs.plot/Parametric
+    {:t [t0 t1]
+     :xy (fn [t] [t (nth (adv (up t0 1.0 0.0) t) 2)])
+     :color \"#e63946\"}]])"
     "SICM 7.3 Two Frequencies (Emmy)"
     ";; ============================================================
 ;; SICM 7.3 Two Frequencies (Emmy)
@@ -2448,7 +2517,24 @@ gfx-win   ; auto-shows the accumulated curves
 ;;=> '(cos x)
 
 (simplify (((* (- D I) (+ D I)) (literal-function 'f)) 'x))
-;;=> '(+ (((expt D 2) f) x) (* -1 (f x)))"
+;;=> '(+ (((expt D 2) f) x) (* -1 (f x)))
+
+;; --- Example: sin and its derivative cos ---
+
+;; Lower-level mafs hiccup (mafs.core/Mafs etc.) takes plain CLJS
+;; fns; the higher-level emmy.mafs/of-x compiles via Emmy's symbolic
+;; pipeline and would NaN out on raw Math/sin. The (simplify ((D sin) 'x))
+;; ;;=> (cos x) above is the symbolic version of what these two curves
+;; show numerically.
+(let [domain [(- Math/PI) Math/PI]]
+  [mafs.core/Mafs {:viewBox {:x domain :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   [mafs.plot/OfX {:y      (fn [x] (Math/sin x))
+                   :domain domain
+                   :color  \"#3090ff\"}]
+   [mafs.plot/OfX {:y      (fn [x] (Math/cos x))
+                   :domain domain
+                   :color  \"#e63946\"}]])"
     "SICM 7.4 Higher Order (Emmy)"
     ";; ============================================================
 ;; SICM 7.4 Higher Order (Emmy)
@@ -2475,7 +2561,18 @@ gfx-win   ; auto-shows the accumulated curves
 ;;        (up
 ;;          (+ (* 2 x) (* 2 y))
 ;;          (+ (* 3 (expt x 2)) (* -6 x y) (* 3 (expt y 2)))
-;;          (* (exp x) (exp y))))"
+;;          (* (exp x) (exp y))))
+
+;; --- Example: sin, cos = D sin, and -sin = D² sin ---
+
+;; The page's `((* (- D I) (+ D I)) f) = (D² − I) f` identity gives
+;; D²sin − sin = −2 sin. Three overlaid curves below: f, Df, D²f for f = sin.
+(let [domain [(- Math/PI) Math/PI]]
+  [mafs.core/Mafs {:viewBox {:x domain :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   [mafs.plot/OfX {:y (fn [x] (Math/sin x))      :domain domain :color \"#3090ff\"}]
+   [mafs.plot/OfX {:y (fn [x] (Math/cos x))      :domain domain :color \"#e63946\"}]
+   [mafs.plot/OfX {:y (fn [x] (- (Math/sin x)))  :domain domain :color \"#2a9d8f\"}]])"
     "SICM 1.12 Projects"
     ";; ===========================================
 ;; SICM §1.12 — Projects

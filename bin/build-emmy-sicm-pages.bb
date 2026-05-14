@@ -67,6 +67,115 @@
    "section-3"     "SICM 7.3 Two Frequencies (Emmy)"
    "section-4"     "SICM 7.4 Higher Order (Emmy)"})
 
+;; ----------------------------------------------------------------------
+;; Per-page enrichments — added BELOW the deftest-derived body to give
+;; otherwise def-only pages a concrete invocation, usually a plot. The
+;; deftest pages are great as a reference but read as a wall of `(def …)`
+;; and `(simplify …) ;;=> '(…)` annotations; a small graphic makes the
+;; concept tangible. Each entry's text is appended verbatim after a
+;; `;; --- Example: title ---` divider.
+;;
+;; Keep these brief — they're meant to invite further play, not to be
+;; tutorials. Prefer plain `(plot …)` / `(emmy.mafs/…)` / `(emmy.mathbox/…)`
+;; over hand-rolled hiccup; the result-pane handles each.
+(def page-extras
+  {"SICM 7.3 Two Frequencies (Emmy)"
+   ["sin and its derivative cos"
+    ";; Lower-level mafs hiccup (mafs.core/Mafs etc.) takes plain CLJS
+;; fns; the higher-level emmy.mafs/of-x compiles via Emmy's symbolic
+;; pipeline and would NaN out on raw Math/sin. The (simplify ((D sin) 'x))
+;; ;;=> (cos x) above is the symbolic version of what these two curves
+;; show numerically.
+(let [domain [(- Math/PI) Math/PI]]
+  [mafs.core/Mafs {:viewBox {:x domain :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   [mafs.plot/OfX {:y      (fn [x] (Math/sin x))
+                   :domain domain
+                   :color  \"#3090ff\"}]
+   [mafs.plot/OfX {:y      (fn [x] (Math/cos x))
+                   :domain domain
+                   :color  \"#e63946\"}]])"]
+
+   "SICM 7.4 Higher Order (Emmy)"
+   ["sin, cos = D sin, and -sin = D² sin"
+    ";; The page's `((* (- D I) (+ D I)) f) = (D² − I) f` identity gives
+;; D²sin − sin = −2 sin. Three overlaid curves below: f, Df, D²f for f = sin.
+(let [domain [(- Math/PI) Math/PI]]
+  [mafs.core/Mafs {:viewBox {:x domain :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   [mafs.plot/OfX {:y (fn [x] (Math/sin x))      :domain domain :color \"#3090ff\"}]
+   [mafs.plot/OfX {:y (fn [x] (Math/cos x))      :domain domain :color \"#e63946\"}]
+   [mafs.plot/OfX {:y (fn [x] (- (Math/sin x)))  :domain domain :color \"#2a9d8f\"}]])"]
+
+   "SICM 7.1 Composition of Functions (Emmy)"
+   ["(sin ∘ cos)(x) vs sin(x)"
+    "(let [domain [(- Math/PI) Math/PI]
+      sin-cos (comp #(Math/sin %) #(Math/cos %))]
+  [mafs.core/Mafs {:viewBox {:x domain :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; Bare sine for reference, gray …
+   [mafs.plot/OfX {:y (fn [x] (Math/sin x)) :domain domain :color \"#888888\"}]
+   ;; … and the composition, blue. Note the squeezed range — cos maps R
+   ;; into [-1, 1], so sin∘cos lives within sin([-1, 1]) ≈ [-0.84, 0.84].
+   [mafs.plot/OfX {:y sin-cos :domain domain :color \"#3090ff\"}]])"]
+
+   "SICM 5.1 Point Transformations (Emmy)"
+   ["a Lissajous figure in rectangular coordinates"
+    "(let [omega-x 1.0
+      omega-y 2.0
+      phi     (/ Math/PI 4)]
+  [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; (x, y) = (cos ωₓt, sin(ω_y t + φ)). Rational ωₓ:ω_y gives a closed
+   ;; curve; irrational ratios fill the box densely. SICM's F→C / F-tilde
+   ;; takes such (q(t), q'(t)) tuples to the canonical state form.
+   [mafs.plot/Parametric
+    {:t [0 (* 2 Math/PI)]
+     :xy (fn [t] [(Math/cos (* omega-x t))
+                  (Math/sin (+ (* omega-y t) phi))])
+     :color \"#3090ff\"}]])"]
+
+   "SICM 2.10 Axisymmetric Tops (Emmy)"
+   ["torque-free precession of the symmetry axis"
+    ";; In a torque-free axisymmetric top with fixed nutation (θ̇ = 0), the
+;; symmetry axis precesses at constant φ̇ around the vertical. The tip
+;; of the body's symmetry axis traces a circle of radius sin θ in the
+;; horizontal plane — this is what the Lagrangian above generates as
+;; its motion of least action.
+(let [θ      (/ Math/PI 4)
+      φ-dot  1.0
+      t-end  (* 2 Math/PI)]
+  [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; Horizontal-plane projection of the symmetry-axis tip:
+   ;; (sin θ · cos(φ̇ t), sin θ · sin(φ̇ t)).
+   [mafs.plot/Parametric
+    {:t [0 t-end]
+     :xy (fn [t] [(* (Math/sin θ) (Math/cos (* φ-dot t)))
+                  (* (Math/sin θ) (Math/sin (* φ-dot t)))])
+     :color \"#3090ff\"}]
+   ;; Pin the origin — the precession's center.
+   [mafs.core/Point {:x 0 :y 0}]])"]
+
+   "SICM 7.2 Pendulum as a Perturbed Rotor (Emmy)"
+   ["pendulum θ(t) and p_θ(t) via state-trajectory"
+    "(let [H   (Lagrangian->Hamiltonian (L-pendulum 1.0 1.0 9.8))
+      t0  0.0
+      t1  6.0
+      adv (state-trajectory H (up t0 1.0 0.0) t0 t1 64)]
+  [mafs.core/Mafs {:viewBox {:x [t0 t1] :y [-3 3]}}
+   [mafs.coordinates/Cartesian]
+   ;; State is (up t θ p_θ). θ(t) — blue.
+   [mafs.plot/Parametric
+    {:t [t0 t1]
+     :xy (fn [t] [t (nth (adv (up t0 1.0 0.0) t) 1)])
+     :color \"#3090ff\"}]
+   ;; p_θ(t) — red.
+   [mafs.plot/Parametric
+    {:t [t0 t1]
+     :xy (fn [t] [t (nth (adv (up t0 1.0 0.0) t) 2)])
+     :color \"#e63946\"}]])"]})
+
 (def reader-opts
   {:eof ::eof
    :read-cond :allow
@@ -477,11 +586,17 @@
                                   "(test/emmy/sicm/" source-file ")\n"
                     ";; License: GPL-3.0\n"
                     ";; deftest: " slug "\n"
-                    ";; ============================================================\n")]
+                    ";; ============================================================\n")
+        ;; Extras: a concrete example invocation / graphic appended below
+        ;; the def-and-assertion body. Keeps def-only pages from feeling
+        ;; like a wall of definitions; gives the reader something to run.
+        extras (when-let [[title body] (get page-extras page-name)]
+                 (str ";; --- Example: " title " ---\n\n" body))]
     (->> [header
           (when helper-text
             (str ";; --- helpers from " source-file " ---\n" helper-text))
-          rendered]
+          rendered
+          extras]
          (remove nil?)
          (str/join "\n\n")
          render-markers
