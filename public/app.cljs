@@ -3289,7 +3289,42 @@ gfx-win   ; auto-shows the accumulated curves
 
 
 (defn M->omega-body [M-of-q]
-  (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))"
+  (Gamma-bar (M-of-q->omega-body-of-t M-of-q)))
+
+;; --- Example: a rotating frame's axis after a sequence of small rotations ---
+
+;; Apply infinitesimal rotations Rₓ(α) ∘ R_y(α) repeatedly to (0, 0, 1)
+;; and project the resulting tip onto the xy-plane. The trace shows how
+;; the composition of rotations doesn't commute — even small steps walk
+;; the symmetry axis away from where pure z-rotation would leave it.
+(let [α       0.04
+      n-steps 200
+      step    (fn [v]
+                (let [v0 (nth v 0)
+                      v1 (nth v 1)
+                      v2 (nth v 2)
+                      ;; Rₓ(α) then R_y(α). Math/sin/cos for plain doubles.
+                      ca (Math/cos α)
+                      sa (Math/sin α)
+                      v1' (- (* ca v1) (* sa v2))
+                      v2' (+ (* sa v1) (* ca v2))
+                      v0' (+ (* ca v0) (* sa v2'))
+                      v2'' (- (* ca v2') (* sa v0))]
+                  [v0' v1' v2'']))
+      tips (->> (iterate step [0.0 0.0 1.0])
+                (take n-steps)
+                vec)]
+  [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; Plot the (x, y) projection of each tip — z scales the radius.
+   [mafs.plot/Parametric
+    {:t [0 (dec n-steps)]
+     :xy (fn [t]
+           (let [i (Math/floor t)
+                 i (max 0 (min (dec n-steps) i))
+                 tip (nth tips i)]
+             [(nth tip 0) (nth tip 1)]))
+     :color \"#3090ff\"}]])"
     "SICM 2.5 Principal Moments of Inertia"
     ";; ===========================================
 ;; SICM §2.5 — Principal Moments of Inertia

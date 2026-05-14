@@ -263,6 +263,48 @@
          (pr-str (vec def-names))
          "]\n  (when-not (ns-resolve *ns* s) (intern *ns* s)))")))
 
+;; ----------------------------------------------------------------------
+;; Per-section enrichments — appended below the scrape-derived body to
+;; give otherwise def-only pages a concrete invocation, usually a plot.
+;; Mirrors `page-extras` in build-emmy-sicm-pages.bb; here the key is
+;; `[chapter section]` so the table sticks with the build script's own
+;; section grouping rather than depending on titles that may drift.
+(def section-extras
+  {["2" "2.2"]
+   ["a rotating frame's axis after a sequence of small rotations"
+    ";; Apply infinitesimal rotations Rₓ(α) ∘ R_y(α) repeatedly to (0, 0, 1)
+;; and project the resulting tip onto the xy-plane. The trace shows how
+;; the composition of rotations doesn't commute — even small steps walk
+;; the symmetry axis away from where pure z-rotation would leave it.
+(let [α       0.04
+      n-steps 200
+      step    (fn [v]
+                (let [v0 (nth v 0)
+                      v1 (nth v 1)
+                      v2 (nth v 2)
+                      ;; Rₓ(α) then R_y(α). Math/sin/cos for plain doubles.
+                      ca (Math/cos α)
+                      sa (Math/sin α)
+                      v1' (- (* ca v1) (* sa v2))
+                      v2' (+ (* sa v1) (* ca v2))
+                      v0' (+ (* ca v0) (* sa v2'))
+                      v2'' (- (* ca v2') (* sa v0))]
+                  [v0' v1' v2'']))
+      tips (->> (iterate step [0.0 0.0 1.0])
+                (take n-steps)
+                vec)]
+  [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; Plot the (x, y) projection of each tip — z scales the radius.
+   [mafs.plot/Parametric
+    {:t [0 (dec n-steps)]
+     :xy (fn [t]
+           (let [i (Math/floor t)
+                 i (max 0 (min (dec n-steps) i))
+                 tip (nth tips i)]
+             [(nth tip 0) (nth tip 1)]))
+     :color \"#3090ff\"}]])"]})
+
 (defn render-page
   [section]
   (let [{:keys [chapter section-title chapter-title source entries]} section
@@ -272,6 +314,7 @@
         entries (filterv keep-runnable entries)
         all-entries (concat prereqs entries)
         def-names   (page-def-names all-entries)
+        extras      (get section-extras [(:chapter section) (:section section)])
         sb      (StringBuilder.)]
     (.append sb (comment-block
                   (str "===========================================\n"
@@ -305,6 +348,9 @@
                                      :prev-subheading prev-sub}))
         (.append sb "\n\n")
         (recur rest (:subheading e))))
+    (when extras
+      (let [[title body] extras]
+        (.append sb (str ";; --- Example: " title " ---\n\n" body "\n"))))
     (str/trimr (.toString sb))))
 
 (defn escape-clj-string [s]
