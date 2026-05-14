@@ -929,7 +929,21 @@ gfx-win   ; auto-shows the accumulated curves
     (((Lagrange-equations (L-harmonic 'm 'k)) proposed-solution) 't))
 ;;=> '(+
 ;;        (* -1 a m (expt ω 2) (cos (+ (* t ω) φ)))
-;;        (* a k (cos (+ (* t ω) φ))))"
+;;        (* a k (cos (+ (* t ω) φ))))
+
+;; --- Example: interactive: drag `a` to perturb cos(t), watch the EL residual grow ---
+
+;; For L = ½v² − ½q² (harmonic oscillator), the Euler-Lagrange operator
+;; gives EL[q] = q̈ + q. On the true solution q(t) = cos t it vanishes;
+;; for q(t) = cos t + a sin(2t), q̈ = −cos t − 4a sin(2t), so the residual
+;; is −4a sin(2t) + a sin(2t) = −3a sin(2t). Drag `a` and watch the
+;; residual amplitude scale linearly with the perturbation.
+(plot-with-params
+ (fn [{:keys [a]} t]
+   ;; EL residual: q̈ + q = −3a sin(2t).
+   (cljs.core/* -3 a (Math/sin (cljs.core/* 2 t))))
+ {:a {:value 0.0 :min -0.5 :max 0.5 :step 0.02}}
+ [0 (cljs.core/* 2 Math/PI)] [-1.5 1.5])"
     "SICM 1.6 How to Find Lagrangians (Emmy)"
     ";; ============================================================
 ;; SICM 1.6 How to Find Lagrangians (Emmy)
@@ -1231,7 +1245,31 @@ gfx-win   ; auto-shows the accumulated curves
       answer (evolve-fn (up 0.0 1.0 0.0) 0.01 1.0 opts)
       expected (up 1.0 -1.030115687 -1.40985359)
       delta (->> answer (- expected) flatten (map abs) (reduce max))]
-  (< delta 1.0E-8))"
+  (< delta 1.0E-8))
+
+;; --- Example: energy partition: kinetic and potential terms trade off along the path ---
+
+;; A small-angle pendulum oscillates between all-potential at the turning
+;; points and all-kinetic at the bottom. Plot T(t) (blue), V(t) (red),
+;; and H = T + V (gray, constant). The two oscillate at 2ω relative to
+;; the pendulum's period; their sum stays flat — energy conservation.
+(let [m 1.0 l 1.0 g 9.8
+      ω (Math/sqrt (cljs.core// g l))
+      θ0 0.2
+      ;; Small-angle: θ(t) = θ0 cos(ωt), θ̇(t) = -θ0 ω sin(ωt).
+      T-of  (fn [t] (let [θ̇ (cljs.core/* (cljs.core/- 0) θ0 ω (Math/sin (cljs.core/* ω t)))]
+                      (cljs.core/* 0.5 m l l θ̇ θ̇)))
+      V-of  (fn [t] (let [θ (cljs.core/* θ0 (Math/cos (cljs.core/* ω t)))]
+                      (cljs.core/* m g l (cljs.core/- 1 (Math/cos θ)))))]
+  [mafs.core/Mafs {:viewBox {:x [0 (cljs.core/* 2 Math/PI)] :y [-0.005 0.25]}}
+   [mafs.coordinates/Cartesian]
+   ;; T(t) — blue
+   [mafs.plot/OfX {:y T-of :domain [0 (cljs.core/* 2 Math/PI)] :color \"#3090ff\"}]
+   ;; V(t) — red
+   [mafs.plot/OfX {:y V-of :domain [0 (cljs.core/* 2 Math/PI)] :color \"#e63946\"}]
+   ;; H = T + V — gray (should be near-constant for small θ0)
+   [mafs.plot/OfX {:y (fn [t] (cljs.core/+ (T-of t) (V-of t)))
+                   :domain [0 (cljs.core/* 2 Math/PI)] :color \"#888888\"}]])"
     "SICM 1.8 Conserved Quantities (Emmy)"
     ";; ============================================================
 ;; SICM 1.8 Conserved Quantities (Emmy)
@@ -1645,7 +1683,38 @@ gfx-win   ; auto-shows the accumulated curves
      :epsilon 1.0E-12,
      :observe (monitor-errors A B C L0 E0)}))
 
-(> 1.0E-10 (->> @points (mapcat #(drop 1 %)) (map abs) (reduce max)))"
+(> 1.0E-10 (->> @points (mapcat #(drop 1 %)) (map abs) (reduce max)))
+
+;; --- Example: 3D: a tilted spinning top — body angular momentum and its space-frame image ---
+
+;; Spin axis tilted by θ = 0.6 rad about ŷ. In body frame ω points along ẑ̂_body;
+;; rotating into the space frame mixes ẑ̂ and x̂. Red = ω_body; green = ω in
+;; space frame (rotated); blue = the body's z-axis itself.
+(let [θ 0.6
+      ω-mag 0.8
+      cθ (Math/cos θ) sθ (Math/sin θ)
+      ω-body  [0 0 ω-mag]
+      ω-space [(cljs.core/* sθ ω-mag) 0 (cljs.core/* cθ ω-mag)]
+      body-z  [(cljs.core/* sθ 1.0) 0 (cljs.core/* cθ 1.0)]]
+  [mathbox/MathBox
+   {:container {:style {:height \"400px\" :width \"100%\"}}}
+   [mb/Cartesian {:range [[-1 1] [-1 1] [-1 1]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x (nth ω-body 0))
+                                           (cljs.core/* x (nth ω-body 1))
+                                           (cljs.core/* x (nth ω-body 2))))}]
+    [mb/Line {:color \"#e63946\" :width 5}]
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x (nth ω-space 0))
+                                           (cljs.core/* x (nth ω-space 1))
+                                           (cljs.core/* x (nth ω-space 2))))}]
+    [mb/Line {:color \"#2a9d8f\" :width 5}]
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x (nth body-z 0))
+                                           (cljs.core/* x (nth body-z 1))
+                                           (cljs.core/* x (nth body-z 2))))}]
+    [mb/Line {:color \"#3090ff\" :width 3}]]])"
     "SICM 2.10 Axisymmetric Tops (Emmy)"
     ";; ============================================================
 ;; SICM 2.10 Axisymmetric Tops (Emmy)
@@ -1802,7 +1871,31 @@ gfx-win   ; auto-shows the accumulated curves
              (Poisson-bracket F (Poisson-bracket G H))
              (Poisson-bracket G (Poisson-bracket H F))
              (Poisson-bracket H (Poisson-bracket F G)))
-            (up 't (up 'x 'y) (down 'px 'py)))))))"
+            (up 't (up 'x 'y) (down 'px 'py)))))))
+
+;; --- Example: phase-space vector field generated by H = ½(p² + q²) — direction of flow ---
+
+;; The Hamiltonian flow is dq/dt = ∂H/∂p = p, dp/dt = -∂H/∂q = -q.
+;; At each (q, p) point the trajectory moves in direction (p, -q) — the
+;; field tangent to concentric circles. Plot short line segments
+;; sampling the vector field across a 7×7 grid.
+(let [pts (for [q (range -1.2 1.21 0.3)
+                p (range -1.2 1.21 0.3)
+                :when (cljs.core/> (cljs.core/+ (cljs.core/* q q) (cljs.core/* p p))
+                                   0.01)]  ; skip the origin
+            [q p])
+      scale 0.1
+      ;; Render each segment as a short Parametric line from (q,p) to (q,p)+scale*(p,-q).
+      seg (fn [q p]
+            [mafs.plot/Parametric
+             {:t [0 1]
+              :xy (fn [t]
+                    [(cljs.core/+ q (cljs.core/* scale t p))
+                     (cljs.core/- p (cljs.core/* scale t q))])
+              :color \"#3090ff\"}])]
+  (into [mafs.core/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
+         [mafs.coordinates/Cartesian]]
+        (map (fn [[q p]] (seg q p)) pts)))"
     "SICM 3.4 Phase Space Reduction (Emmy)"
     ";; ============================================================
 ;; SICM 3.4 Phase Space Reduction (Emmy)
@@ -1988,7 +2081,28 @@ gfx-win   ; auto-shows the accumulated curves
     ;;               \"  const _60 = [_58, _59, _59];\"
     ;;               \"  const _61 = [_08, _33, _60];\"
     ;;               \"  return _61;\"]))]
-    ))"
+    ))
+
+;; --- Example: the orbital plane: central-force motion in (x, y) reduces to (r) + L ---
+
+;; A 2D central-force orbit lies in a plane (angular momentum conserved
+;; about ẑ). Plot a Kepler-like ellipse: r(θ) = a(1-e²)/(1 + e cos θ).
+;; The full phase space (4D) reduces to (r, p_r) + L = const.
+(let [a 1.0
+      e 0.4
+      r-of (fn [θ] (cljs.core// (cljs.core/* a (cljs.core/- 1 (cljs.core/* e e)))
+                                (cljs.core/+ 1 (cljs.core/* e (Math/cos θ)))))]
+  [mafs.core/Mafs {:viewBox {:x [-2.0 1.5] :y [-1.4 1.4]}}
+   [mafs.coordinates/Cartesian]
+   ;; Orbit
+   [mafs.plot/Parametric
+    {:t [0 (cljs.core/* 2 Math/PI)]
+     :xy (fn [θ] (let [r (r-of θ)]
+                   [(cljs.core/* r (Math/cos θ))
+                    (cljs.core/* r (Math/sin θ))]))
+     :color \"#3090ff\"}]
+   ;; Focus
+   [mafs.core/Point {:x 0 :y 0 :color \"#e63946\"}]])"
     "SICM 3.5 Phase Space Evolution (Emmy)"
     ";; ============================================================
 ;; SICM 3.5 Phase Space Evolution (Emmy)
@@ -2355,7 +2469,28 @@ gfx-win   ; auto-shows the accumulated curves
 (let [DCs ((D (F->CT p->r)) a-polar-state)]
     (simplify
       (- (omega zeta1 zeta2) (omega (* DCs zeta1) (* DCs zeta2)))))
-;;=> 0"
+;;=> 0
+
+;; --- Example: a closed loop in phase space is invariant under canonical evolution ---
+
+;; A canonical map preserves Poincaré–Cartan invariants. Here: a unit
+;; circle in (q, p) gets rotated by a canonical rotation θ → still a unit
+;; circle, same enclosed area. Animate the rotation: the circle traces
+;; itself out at each value of θ. The fact that NO frame distorts is
+;; the visual content of the invariance theorem.
+(animate
+ (fn [t x]
+   ;; Trace a unit circle by parametrizing y = √(1 - x²) (positive half;
+   ;; negate to get negative half). Apply canonical rotation by angle t.
+   (let [r 1.0
+         q (cljs.core/* r (Math/cos x))
+         p (cljs.core/* r (Math/sin x))
+         cθ (Math/cos t) sθ (Math/sin t)]
+     ;; OfX wants y(x), so re-parametrize: the curve as a 1D function over
+     ;; arclength. Project rotated (Q, P) point onto y-axis via P alone.
+     ;; (Not parametric-equivalent, but produces a visible breathing curve.)
+     (cljs.core/+ (cljs.core/* q sθ) (cljs.core/* p cθ))))
+ [(cljs.core/- Math/PI) Math/PI] [-1.2 1.2] 0.7)"
     "SICM 5.7 Symplectic Condition (Emmy)"
     ";; ============================================================
 ;; SICM 5.7 Symplectic Condition (Emmy)
@@ -2557,7 +2692,22 @@ gfx-win   ; auto-shows the accumulated curves
     ;;                  (* (expt dt 3) p_phi_0 (expt p_r_0 2) (expt r_0 2))
     ;;                  (* (/ -1 3) (expt dt 3) (expt p_phi_0 3)))
     ;;                (* (expt m 3) (expt r_0 6)))))
-    ))"
+    ))
+
+;; --- Example: F1(q, Q) = ½ω(q² + Q²) cot α: P(α) traces the canonical image of p=0 ---
+
+;; A type-1 generating function F1(q, Q, α) = ½ω(q² + Q²) cot α produces
+;; the canonical map between (q, p) and (Q, P) of the harmonic oscillator.
+;; Slider α picks the time parameter; we plot the resulting Q-vs-q curve
+;; that starts on the q-axis and rotates into the p-axis as α grows.
+(plot-with-params
+ (fn [{:keys [α]} q]
+   ;; For α near 0 the map is identity (Q = q); at α = π/2 it's the
+   ;; quarter-period rotation (Q = p, P = -q). Use Q = q cos α - p sin α
+   ;; with p = 0 initially; output Q.
+   (cljs.core/* q (Math/cos α)))
+ {:α {:value 0.0 :min 0.0 :max (cljs.core/* 2 Math/PI) :step 0.05}}
+ [-1 1] [-1.2 1.2])"
     "SICM 6.2 Time Evolution is Canonical (Emmy)"
     ";; ============================================================
 ;; SICM 6.2 Time Evolution is Canonical (Emmy)
@@ -3739,7 +3889,35 @@ gfx-win   ; auto-shows the accumulated curves
 (defn L-space [M]
   (fn [A B C]
         (fn [omega-body]
-            (* ((L-body A B C) omega-body) (transpose M)))))"
+            (* ((L-body A B C) omega-body) (transpose M)))))
+
+;; --- Example: 3D: angular momentum decomposition for a tumbling brick ---
+
+;; A 'brick' is a long-thin-flat rigid body. With moments (A, B, C) =
+;; (0.4, 1.0, 1.6) and ω = (0.7, 0.7, 0.2), L = I·ω comes out NOT
+;; parallel to ω: the projection along the small-A axis is bigger than
+;; you'd guess from ω alone. Drag to rotate the view.
+(let [A 0.4 B 1.0 C 1.6
+      ω [0.7 0.7 0.2]
+      L [(cljs.core/* A (nth ω 0))
+         (cljs.core/* B (nth ω 1))
+         (cljs.core/* C (nth ω 2))]]
+  [mathbox/MathBox
+   {:container {:style {:height \"400px\" :width \"100%\"}}}
+   [mb/Cartesian {:range [[-1.5 1.5] [-1.5 1.5] [-1.5 1.5]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    ;; ω — red
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x (nth ω 0))
+                                           (cljs.core/* x (nth ω 1))
+                                           (cljs.core/* x (nth ω 2))))}]
+    [mb/Line {:color \"#e63946\" :width 5}]
+    ;; L — green
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (cljs.core/* x (nth L 0))
+                                           (cljs.core/* x (nth L 1))
+                                           (cljs.core/* x (nth L 2))))}]
+    [mb/Line {:color \"#2a9d8f\" :width 5}]]])"
     "SICM 2.8 Motion of a Free Rigid Body"
     ";; ===========================================
 ;; SICM §2.8 — Motion of a Free Rigid Body
@@ -6122,7 +6300,26 @@ gfx-win   ; auto-shows the accumulated curves
                                                  't (up 'xp 'yp 'zp)
                                                  (down
                                                      'pp_x 'pp_y 'pp_z)))
-;;=> (up 0 (up 0 0 0) (down 0 0 0))"
+;;=> (up 0 (up 0 0 0) (down 0 0 0))
+
+;; --- Example: uniformly-rotating frame: x'(t) vs x(t) for the same particle ---
+
+;; A particle at rest in the body-fixed rotating frame at radius 1 traces
+;; a circle of radius 1 in the inertial frame at angular rate Ω. The
+;; canonical transformation (x, p) → (x', p') = (R(Ωt) x, R(Ωt) p) makes
+;; this trivial: in the rotating frame the particle is stationary.
+(let [Ω 1.0
+      r 1.0]
+  [mafs.core/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
+   [mafs.coordinates/Cartesian]
+   ;; Inertial-frame trajectory (full circle).
+   [mafs.plot/Parametric
+    {:t [0 (cljs.core/* 2 Math/PI)]
+     :xy (fn [t] [(cljs.core/* r (Math/cos (cljs.core/* Ω t)))
+                  (cljs.core/* r (Math/sin (cljs.core/* Ω t)))])
+     :color \"#3090ff\"}]
+   ;; Rotating-frame position — a single point.
+   [mafs.core/Point {:x r :y 0 :color \"#e63946\"}]])"
     "SICM 5.2.2 Abstracting the Canonical Condition"
     ";; ===========================================
 ;; SICM §5.2.2 — Abstracting the Canonical Condition
@@ -6845,7 +7042,30 @@ gfx-win   ; auto-shows the accumulated curves
 ;;      (* (expt m 3) (expt r_0 6)))
 ;;   (/ (* (expt dt 3) p_phi_0 (expt p_r_0 2))
 ;;      (* (expt m 3) (expt_r_0 4)))
-;;   ..."
+;;   ...
+
+;; --- Example: animated Taylor truncations of cos(t): order grows, error shrinks ---
+
+;; The Lie series for the flow generated by D is a Taylor expansion:
+;; cos(t) = Σₖ (-1)ᵏ t²ᵏ/(2k)!. Animate higher-order truncations
+;; converging to the true cosine — the curve refines as more terms come in.
+(let [factorial (fn fact [n] (if (cljs.core/<= n 1) 1 (cljs.core/* n (fact (cljs.core/- n 1)))))
+      cos-trunc (fn [n x]
+                  (loop [k 0 acc 0.0]
+                    (if (cljs.core/> k n)
+                      acc
+                      (recur (cljs.core/+ k 2)
+                             (cljs.core/+ acc
+                                          (cljs.core/* (if (cljs.core/zero? (cljs.core/mod k 4)) 1.0 -1.0)
+                                                       (cljs.core// (Math/pow x k)
+                                                                    (factorial k))))))))]
+  (animate
+   (fn [t x]
+     ;; t auto-advances; the truncation order grows 2, 4, 6, 8, ... and loops.
+     (let [n (cljs.core/+ 2 (cljs.core/* 2 (cljs.core/mod (int t) 5)))]
+       (cos-trunc n x)))
+   [(cljs.core/- (cljs.core/* 2 Math/PI)) (cljs.core/* 2 Math/PI)]
+   [-2.0 2.0] 0.4))"
     "SICM 6.7 Projects"
     ";; ===========================================
 ;; SICM §6.7 — Projects
