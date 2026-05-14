@@ -436,7 +436,7 @@
  (fn [{:keys [a]} t]
    ;; EL residual: q̈ + q = −3a sin(2t).
    (cljs.core/* -3 a (Math/sin (cljs.core/* 2 t))))
- {:a {:value 0.0 :min -0.5 :max 0.5 :step 0.02}}
+ {:a {:value 0.1 :min -0.5 :max 0.5 :step 0.02}}
  [0 (cljs.core/* 2 Math/PI)] [-1.5 1.5])"]
 
    "SICM 1.7 Evolution of Dynamical State – part 2 (Emmy)"

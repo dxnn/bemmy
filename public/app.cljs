@@ -1004,7 +1004,7 @@
  (fn [{:keys [a]} t]
    ;; EL residual: q̈ + q = −3a sin(2t).
    (cljs.core/* -3 a (Math/sin (cljs.core/* 2 t))))
- {:a {:value 0.0 :min -0.5 :max 0.5 :step 0.02}}
+ {:a {:value 0.1 :min -0.5 :max 0.5 :step 0.02}}
  [0 (cljs.core/* 2 Math/PI)] [-1.5 1.5])"
     "SICM 1.6 How to Find Lagrangians (Emmy)"
     ";; ============================================================
@@ -3650,7 +3650,110 @@ sysder
                                                                 (up
                                                                     'v_r↑x
                                                                     'v_r↑y)))
-;;=> (+ (* 1/2 m (expt v_r↑x 2)) (* 1/2 m (expt v_r↑y 2)) (/ (* -1 GM_0 m) (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2)))) (/ (* -1 GM_1 m) (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2)))) (* -1/2 m (expt Omega 2) (expt x_r 2)) (* -1/2 m (expt Omega 2) (expt y_r 2)))"
+;;=> (+ (* 1/2 m (expt v_r↑x 2)) (* 1/2 m (expt v_r↑y 2)) (/ (* -1 GM_0 m) (sqrt (+ (expt (+ x_r a_0) 2) (expt y_r 2)))) (/ (* -1 GM_1 m) (sqrt (+ (expt (- x_r a_1) 2) (expt y_r 2)))) (* -1/2 m (expt Omega 2) (expt x_r 2)) (* -1/2 m (expt Omega 2) (expt y_r 2)))
+
+;; --- Example: 2D animation in the rotating co-frame — edit the call to vary μ / IC ---
+
+;; Numerical RK4 integration of the LR3B1 equations of motion in the
+;; rotating frame. The two primaries sit fixed on the x-axis at
+;; x = -μ (heavier, mass 1-μ) and x = 1-μ (lighter, mass μ); the
+;; massless test particle's EOM carries Coriolis (2ẏ, -2ẋ) and
+;; centrifugal (x, y) terms beyond the gravity from each primary.
+;; Trajectory is precomputed; the red dot replays it on a 1s/unit-time
+;; loop. Edit the map below to change the mass ratio or initial state.
+(defn cr3bp-anim [{:keys [μ x0 y0 vx0 vy0 t-max]}]
+  (let [n-steps 3000
+        dt      (cljs.core// t-max n-steps)
+        μ'      (cljs.core/- 1 μ)
+        primary-0 (cljs.core/- μ)        ; heavier, mass 1-μ
+        primary-1 μ'                     ; lighter, mass μ
+        derivs (fn [x y vx vy]
+                 (let [dx0     (+ x μ)
+                       dx1     (- x μ')
+                       r0-sq   (+ (* dx0 dx0) (* y y))
+                       r1-sq   (+ (* dx1 dx1) (* y y))
+                       r0-cube (* r0-sq (Math/sqrt r0-sq))
+                       r1-cube (* r1-sq (Math/sqrt r1-sq))
+                       ax (+ (* 2.0 vy) x
+                             (- (/ (* μ' dx0) r0-cube))
+                             (- (/ (* μ dx1) r1-cube)))
+                       ay (+ (* -2.0 vx) y
+                             (- (/ (* μ' y) r0-cube))
+                             (- (/ (* μ y) r1-cube)))]
+                   [vx vy ax ay]))
+        ;; RK4 step on state vector [x y vx vy].
+        step (fn [[x y vx vy]]
+               (let [h  dt
+                     k1 (derivs x y vx vy)
+                     k2 (derivs (+ x  (* 0.5 h (nth k1 0)))
+                                (+ y  (* 0.5 h (nth k1 1)))
+                                (+ vx (* 0.5 h (nth k1 2)))
+                                (+ vy (* 0.5 h (nth k1 3))))
+                     k3 (derivs (+ x  (* 0.5 h (nth k2 0)))
+                                (+ y  (* 0.5 h (nth k2 1)))
+                                (+ vx (* 0.5 h (nth k2 2)))
+                                (+ vy (* 0.5 h (nth k2 3))))
+                     k4 (derivs (+ x  (* h (nth k3 0)))
+                                (+ y  (* h (nth k3 1)))
+                                (+ vx (* h (nth k3 2)))
+                                (+ vy (* h (nth k3 3))))
+                     w  (/ h 6.0)
+                     acc (fn [base i]
+                           (+ base (* w (+ (nth k1 i)
+                                           (* 2.0 (nth k2 i))
+                                           (* 2.0 (nth k3 i))
+                                           (nth k4 i)))))]
+                 [(acc x 0) (acc y 1) (acc vx 2) (acc vy 3)]))
+        positions (vec (take (inc n-steps)
+                             (map (fn [s] [(nth s 0) (nth s 1)])
+                                  (iterate step [x0 y0 vx0 vy0]))))
+        pos-at (fn [t]
+                 (let [i (max 0 (min n-steps
+                                     (cljs.core/int (Math/floor (cljs.core// t dt)))))]
+                   (nth positions i)))
+        !t     (reagent.core/atom 0.0)
+        !start (atom nil)
+        timer  (atom nil)]
+    (reagent.core/create-class
+      {:component-did-mount
+       (fn [_]
+         (reset! !start (.now js/Date))
+         (reset! timer
+                 (js/setInterval
+                   (fn []
+                     (let [elapsed (cljs.core// (cljs.core/- (.now js/Date)
+                                                              (deref !start))
+                                                1000.0)]
+                       (reset! !t (cljs.core/mod elapsed t-max))))
+                   33)))
+       :component-will-unmount
+       (fn [_] (when (deref timer) (js/clearInterval (deref timer))))
+       :reagent-render
+       (fn [_]
+         (let [t     @!t
+               [x y] (pos-at t)]
+           [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}}
+            [mafs.coordinates/Cartesian]
+            [mafs.plot/Parametric
+             {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
+            ;; Primaries — fixed in the rotating frame.
+            [mafs.core/Point {:x primary-0 :y 0 :color \"#444444\"}]
+            [mafs.core/Point {:x primary-1 :y 0 :color \"#888888\"}]
+            ;; Current test-particle position.
+            [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]))})))
+
+;; Default: μ = 0.1 (Sun-Jupiter-ish ratio). Test particle starts to the
+;; left of both primaries with moderate upward velocity — Jacobi
+;; integral lands between L3 (outer escape blocked) and L1/L2 (inner
+;; necks open), so the orbit weaves around the system, occasionally
+;; threading the L1 neck toward the secondary. Cmd-Enter to run.
+[cr3bp-anim {:μ 0.1 :x0 -0.7 :y0 0.0 :vx0 0.0 :vy0 0.6 :t-max 30.0}]
+
+;; Other invocations to try (un-comment one at a time):
+;; equal masses, looping orbit:
+;; [cr3bp-anim {:μ 0.5  :x0 0.0  :y0 1.2 :vx0 0.6 :vy0 0.0 :t-max 35.0}]
+;; Earth-Moon-like ratio (μ ≈ 0.012), near L4 with small perturbation:
+;; [cr3bp-anim {:μ 0.012 :x0 0.487 :y0 0.866 :vx0 0.0 :vy0 0.0 :t-max 60.0}]"
     "SICM 1.12 Projects"
     ";; ===========================================
 ;; SICM §1.12 — Projects
