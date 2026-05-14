@@ -7275,6 +7275,24 @@ p
   (or (fn? v)
       (and (seq? v) (not (vector? v)))))
 
+(def ^:private tex-len-cap
+  "Threshold above which we replace the TeX block with a 'too large
+   to render' placeholder. Empirical: SICM 'verification' forms (the
+   Jacobi identity Poisson-bracket sum, canonical-H?/canonical-K?
+   residual checks, Lagrange-equations applied to a literal path,
+   show-expression on unsimplified quaternion algebra) produce 10k–
+   600k char TeX blobs that flood the result pane and don't carry
+   meaning until simplified. Clean pages top out around 700 chars."
+  3000)
+
+(defn- huge-tex-placeholder
+  "Short TeX shown in place of a pathological result, with a hint to
+   wrap the form in simplify."
+  [tex]
+  (str "\\text{(rendered TeX is "
+       (Math/round (/ (count tex) 1000.0))
+       "k chars — wrap in \\texttt{simplify} to reduce.)}"))
+
 (defn- eval-with-tex [src]
   ;; maybe-show turns a SICM-style frame atom into Mafs hiccup so the
   ;; user can leave `win2` (or any frame) as the last form and see the
@@ -7285,19 +7303,39 @@ p
                      "        (catch :default _ nil))])")
         [v tex] (js/scittle.core.eval_string wrapped)]
     (cond
-      (emmy-fragment? v) {:value (expand-fragment v) :tex nil}
-      (skip-tex? v)      {:value v :tex nil}
-      :else              {:value v :tex tex})))
+      (emmy-fragment? v)
+      {:value (expand-fragment v) :tex nil}
+
+      (skip-tex? v)
+      {:value v :tex nil}
+
+      (and (string? tex) (> (count tex) tex-len-cap))
+      {:value v :tex (huge-tex-placeholder tex)}
+
+      :else
+      {:value v :tex tex})))
+
+(def ^:private pr-len-cap
+  "Mirror of tex-len-cap on the plain-text side — pr-str on an
+   unsimplified SICM verification form runs 10k+ chars and bloats the
+   result pane just like the TeX. Cap with a truncation hint."
+  2000)
 
 (defn- pr-display
   "pr-str-like rendering that avoids dumping JS function source for
   CLJS fn values. Emmy expressions that simplify to a function (e.g.
   `(simplify (((δ_η (φ F)) q) 't))` in SICM 1.5) would otherwise
   pr-str as the underlying JS .toString() — many KB of `switch
-  (arguments.length)` boilerplate. Render fns as `#<fn>` and call
-  pr-str on everything else."
+  (arguments.length)` boilerplate. Render fns as `#<fn>`, truncate
+  giant prints, and call pr-str on everything else."
   [v]
-  (if (fn? v) "#<fn>" (pr-str v)))
+  (cond
+    (fn? v) "#<fn>"
+    :else   (let [s (pr-str v)]
+              (if (> (count s) pr-len-cap)
+                (str (subs s 0 pr-len-cap)
+                     "… (truncated, " (count s) " chars total)")
+                s))))
 
 (defn- ws-char? [c]
   (case c (" " "\n" "\t" "\r" ",") true false))
