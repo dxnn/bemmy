@@ -76,20 +76,24 @@
   ";; ====================================================================
 ;; BEmmy — SICM
 ;; ====================================================================
-;; Lagrangian mechanics, action principles, find-path, etc. Lean on
-;; Emmy's emmy.env (pre-referred): D, square, sin, cos, up, down,
-;; coordinate, velocity, Lagrange-equations, find-path, etc.
+;; A gentle tour of *Structure and Interpretation of Classical Mechanics*
+;; running in the browser. Each section is independently runnable —
+;; Cmd-Enter on any form for that result.
 ;;
-;; Translating SICM book code: click 'SICM → Emmy' in the toolbar to
-;; open a translator panel — paste scmutils Scheme on the left, click
-;; 'Insert at cursor' to drop the converted Clojure into this editor.
+;; Emmy's emmy.env is pre-referred, so D, square, sin, cos, up, down,
+;; coordinate, velocity, Lagrange-equations, find-path, state-trajectory,
+;; H-pendulum and most SICM-book primitives are available as-is. To
+;; translate scmutils-Scheme from the book, click 'SICM → Emmy' in the
+;; toolbar.
+;;
+;; For chapter-by-chapter pages with worked exercises (and concrete
+;; graphic examples for most sections), pick a section from the dropdown.
 ;; ====================================================================
 
 
-;; ----- The harmonic-oscillator Lagrangian -----------------------------
-;; A Lagrangian L(t, q, v) for the harmonic oscillator is m·v²/2 −
-;; k·q²/2. Define it the SICM-book way: a curried function that takes
-;; the parameters first and returns a function of the local tuple.
+;; ----- 1. A Lagrangian — the harmonic oscillator -----------------------
+;; L(t, q, v) = ½m·v² − ½k·q². SICM-book curried style: parameters first,
+;; then a fn of the local tuple (t, q, v).
 
 (defn L-harmonic [m k]
   (fn [local]
@@ -99,39 +103,77 @@
          (* 1/2 k (square q))))))
 
 
-;; ----- Equations of motion --------------------------------------------
-;; Lagrange-equations turns a Lagrangian into the Euler–Lagrange
-;; equations as functions of t.
+;; ----- 2. Equations of motion — symbolic --------------------------------
+;; Lagrange-equations turns L into the Euler-Lagrange residual operator;
+;; apply it to a literal path q and a symbolic time t.
 
 (((Lagrange-equations (L-harmonic 'm 'k))
   (literal-function 'q))
  't)
 
-;; That's m·q''(t) + k·q(t) = 0.
+;; The simplified output reads m·q''(t) + k·q(t) = 0 — Newton's second
+;; law for the spring force.
 
 
-;; ----- Path-finding numerically ---------------------------------------
+;; ----- 3. Numeric path-finding ------------------------------------------
 ;; find-path minimizes the action functional over an n-coefficient
-;; polynomial path between (t0, q0) and (t1, q1).
-
-(find-path (L-harmonic 1.0 1.0)
-           0.0 1.0
-           (/ Math/PI 2) 0.0
-           2)
-
-;; The result is a polynomial path you can call as a function:
+;; polynomial path between (t0, q0) and (t1, q1). Returns a callable
+;; polynomial.
 
 (let [path (find-path (L-harmonic 1.0 1.0)
-                      0.0 1.0 (/ Math/PI 2) 0.0 2)]
-  (path 0.5))                          ; q(0.5)
-
-
-;; ----- Plot the path --------------------------------------------------
-;; (See Graphics for the full 2D visualization tour.)
-
-(let [path (find-path (L-harmonic 1.0 1.0)
-                      0.0 1.0 (/ Math/PI 2) 0.0 2)]
+                      0.0 1.0           ; (t0, q0) = (0, 1)
+                      (/ Math/PI 2) 0.0 ; (t1, q1) = (π/2, 0)
+                      4)]               ; basis size
   (plot path [0 (/ Math/PI 2)] [0 1.2]))
+
+;; The optimum tracks cos(t) — the true SHO solution — closely.
+
+
+;; ----- 4. Hamilton's equations & state evolution ------------------------
+;; The Hamiltonian side: H = ½p² + V(q). state-trajectory pre-integrates
+;; the phase-space evolution once at let-time and returns a closure that
+;; interpolates the cached table. Great for animation and parametric
+;; plots where you sample the same trajectory hundreds of times.
+
+(let [H   (Lagrangian->Hamiltonian (L-harmonic 1.0 1.0))
+      adv (state-trajectory H (up 0.0 1.0 0.0) 0.0 (* 2 Math/PI) 96)]
+  [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; (q, p) phase-space orbit — concentric circle for SHO.
+   [mafs.plot/Parametric
+    {:t  [0.0 (* 2 Math/PI)]
+     :xy (fn [t]
+           (let [s (adv (up 0.0 1.0 0.0) t)]
+             [(nth s 1) (nth s 2)]))
+     :color \"#3090ff\"}]])
+
+
+;; ----- 5. Pendulum — nonlinear, interactive -----------------------------
+;; A real pendulum (no small-angle approximation) has a Hamiltonian
+;; H = ½p² − cos θ + 1. Drag the initial angular momentum slider — small
+;; values stay near equilibrium (librations), larger ones rotate over.
+
+(let [H (Lagrangian->Hamiltonian (L-pendulum 1.0 1.0 1.0))
+      t-end (* 4 Math/PI)
+      memo-adv (memoize
+                (fn [p0]
+                  (state-trajectory H (up 0.0 0.0 p0) 0.0 t-end 96)))]
+  (plot-with-params
+    (fn [{:keys [p0]} t]
+      (nth ((memo-adv p0) (up 0.0 0.0 p0) t) 1))
+    {:p0 {:value 1.0 :min 0.1 :max 2.5 :step 0.05}}
+    [0 t-end] [-4 4]))
+
+;; (Around p0 ≈ 2 the pendulum hits the separatrix — at exactly 2 it
+;; would balance unstably at θ = π.)
+
+
+;; ----- 6. Where next ----------------------------------------------------
+;; The dropdown's chapter pages (§1.4 onwards) each open with the
+;; SICM-book code for that section and close with a worked example
+;; graphic. Try §1.7 for an animated trajectory trace, §2.5 for a 3D
+;; ellipsoid of inertia, §3.6.4 for a Hénon–Heiles surface of section,
+;; or §6.2 for time-evolution-is-canonical as a wave animation.
 ")
 
 (def graphics-3d-page
@@ -150,16 +192,6 @@
 ;; Surface, Point) consumes them. The 5th arg in :expr callbacks is
 ;; MathBox's global animation clock — reference it for free animation.
 ;; ====================================================================
-
-
-;; ----- The empty canvas — Cartesian with three axes ---------------------
-
-[mathbox/MathBox
-  {:container {:style {:height \"400px\" :width \"100%\"}}}
-  [mb/Cartesian {:range [[-2 2] [-2 2] [-2 2]] :scale [1 1 1]}
-    [mb/Axis {:axis 1 :width 3}]
-    [mb/Axis {:axis 2 :width 3}]
-    [mb/Axis {:axis 3 :width 3}]]]
 
 
 ;; ----- A helix — 1D-indexed parametric curve ---------------------------
@@ -459,48 +491,33 @@
 ;; BEmmy — Auto-graph
 ;; ====================================================================
 ;; The 'Auto-graph' button in the toolbar opens a shelf that wraps an
-;; Emmy expression in the appropriate graphics form. Pick a kind from
-;; the dropdown (Plot / Parametric 2D / Parametric 3D / Surface /
-;; Animate), paste your expression on the left, see the wrapped form
-;; on the right. 'Insert at cursor' drops it into the editor.
+;; Emmy expression in the appropriate graphics form. Pick a kind
+;; (Plot / Parametric 2D / Parametric 3D / Surface / Animate), paste
+;; your expression on the left, see the wrapped form on the right.
+;; 'Insert at cursor' drops it into the editor.
 ;;
-;; The shelf does NOT evaluate your code. It's purely textual, so it
-;; can never freeze the page on something expensive like (find-path …).
-;;
-;; It handles three shapes:
-;;
-;;   1. A function       — wrapped directly:
-;;        Math/sin              → (plot Math/sin)
-;;
-;;   2. A symbolic body  — quotes stripped:
-;;        (sin 'x)              → (plot (fn [x] (sin x)))
-;;
-;;   3. A Lagrangian     — find-path-based template per kind:
-;;        (L-harmonic 'm 'k)    → (let [m 1.0 k 1.0 …
-;;                                       L (L-harmonic m k)
-;;                                       path (find-path L …)]
-;;                                  (plot path …))
-;;
-;; The examples below show each shape — try copying any input into the
-;; shelf with the suggested kind, or just evaluate the wrapped form
-;; that follows.
+;; The shelf is *textual* — it never evaluates your code, so a paste of
+;; (find-path …) can't freeze the page. The wrapping happens by regex
+;; + structural detection; here's a tour of what it recognizes.
+;; ====================================================================
 
 
-;; ----- Function → Plot -----------------------------------------------
+;; ----- 1. A plain callable -------------------------------------------
 ;; Source: Math/sin
+;; Wrapped to:
 
 (plot Math/sin)
 
 
-;; ----- Symbolic body in 'x → Plot ------------------------------------
-;; Source: (sin 'x)
-;; The shelf strips 'x and wraps the body in (fn [x] …).
+;; ----- 2. A symbolic body with a quoted free var ---------------------
+;; Source: (sin 'x)        ; Cmd-Enter on the shelf with Plot picked
+;; The shelf strips 'x and wraps in (fn [x] …):
 
 (plot (fn [x] (sin x)))
 
 
-;; ----- Vector-returning fn → Parametric 2D ---------------------------
-;; Source: (fn [t] [(Math/cos t) (Math/sin t)])
+;; ----- 3. A vector-returning fn → Parametric 2D ----------------------
+;; Source: (fn [t] [(Math/cos t) (Math/sin t)])  with Parametric 2D:
 
 [mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
  [mafs.coordinates/Cartesian]
@@ -510,18 +527,16 @@
 
 
 ;; ====================================================================
-;; Lagrangian magic
+;; Lagrangian magic — (L-name args)
 ;; ====================================================================
-;; Paste any expression containing a SICM-style (L-name args) sub-form —
-;; even the full Euler-Lagrange wrapping — and the shelf builds a
-;; find-path-based plot. The outer (Lagrange-equations …) wrapping is
-;; intentionally discarded; what you actually want to see is q(t),
-;; not the EL residual.
+;; Paste an expression containing a SICM-style (L-name …) sub-form and
+;; the shelf builds a find-path-based plot. The outer (Lagrange-equations
+;; …) wrapping is intentionally discarded — what you want to see is q(t),
+;; not the residual.
 ;;
-;; Evaluate this defn before running the examples below — they all
-;; reference L-harmonic. (Pasting (defn L-harmonic …) into the shelf
-;; would also produce this defn alongside its plot, see the 'defn'd
-;; Lagrangian' example further down.)
+;; Run this defn before the examples below. (Pasting (defn L-… …) into
+;; the shelf would emit this defn alongside its plot — see 'defn'd L-/H-'
+;; further down.)
 
 (defn L-harmonic [m k]
   (fn [local]
@@ -531,34 +546,27 @@
          (* 1/2 k (square q))))))
 
 
-;; ----- Lagrangian → Plot (q(t)) --------------------------------------
+;; ----- Lagrangian → Plot — q(t) --------------------------------------
 ;; Source: (((Lagrange-equations (L-harmonic 'm 'k))
-;;           (literal-function 'q))
-;;          't)
+;;           (literal-function 'q)) 't)
+;; Free symbols 'm and 'k become let-bindings defaulting to 1.0.
 
-(let [m 1.0       ; 'm
-      k 1.0       ; 'k
-      t0 0.0
-      t1 (/ Math/PI 2)
-      q0 1.0
-      q1 0.0
+(let [m 1.0 k 1.0
+      t0 0.0  t1 (/ Math/PI 2)
+      q0 1.0  q1 0.0
       L    (L-harmonic m k)
       path (find-path L t0 q0 t1 q1 4)]
   (plot path [t0 t1] [-1.5 1.5]))
 
 
-;; ----- Lagrangian → Parametric 2D (phase plane) ----------------------
+;; ----- Lagrangian → Parametric 2D — phase plane ----------------------
 ;; Same source, pick Parametric 2D. Plots (q(t), q'(t)) — the canonical
-;; SICM phase-plane visualization for a 1-DOF system.
+;; SICM phase-plane figure for a 1-DOF system.
 
-(let [m 1.0       ; 'm
-      k 1.0       ; 'k
-      t0 0.0
-      t1 (/ Math/PI 2)
-      q0 1.0
-      q1 0.0
-      L    (L-harmonic m k)
-      path (find-path L t0 q0 t1 q1 4)]
+(let [m 1.0 k 1.0
+      t0 0.0  t1 (/ Math/PI 2)
+      q0 1.0  q1 0.0
+      path (find-path (L-harmonic m k) t0 q0 t1 q1 4)]
   [mafs/Mafs {:viewBox {:x [-1.5 1.5] :y [-1.5 1.5]}}
    [mafs.coordinates/Cartesian]
    [mafs.plot/Parametric
@@ -566,33 +574,74 @@
      :xy (fn [t] [(path t) ((D path) t)])}]])
 
 
-;; ----- Lagrangian → Animate (sliders) --------------------------------
-;; Pick Animate. find-path is memoized so dragging a slider re-solves
-;; the variational problem only on slider changes, not on every x
-;; sample within a frame.
+;; ----- Lagrangian → Animate — interactive sliders --------------------
+;; Pick Animate. find-path is memoized per slider tuple so dragging a
+;; slider re-solves the variational problem once, not at every x sample.
 
-(let [t0 0.0
-      t1 (/ Math/PI 2)
-      q0 1.0
-      q1 0.0
+(let [t0 0.0 t1 (/ Math/PI 2)
+      q0 1.0 q1 0.0
       memo-path (memoize
                   (fn [m k]
                     (find-path (L-harmonic m k) t0 q0 t1 q1 4)))]
   (plot-with-params
-    (fn [{:keys [m k]} t]
-      ((memo-path m k) t))
+    (fn [{:keys [m k]} t] ((memo-path m k) t))
     {:m {:value 1.0 :min 0.1 :max 5.0 :step 0.1}
      :k {:value 1.0 :min 0.1 :max 5.0 :step 0.1}}
     [t0 t1] [-1.5 1.5]))
 
 
-;; ----- defn'd Lagrangian ---------------------------------------------
-;; Paste a (defn L-… …) form. The L- prefix tells the shelf to route
-;; through the Lagrangian template, treating the defn's args as
-;; quoted free symbols. Output: the defn itself, then a let-prelude
-;; using the new name.
-;;
-;; Try pasting this free-particle Lagrangian into the shelf:
+;; ====================================================================
+;; Hamiltonian magic — (H-name args)
+;; ====================================================================
+;; (H-name args) sub-forms route through the dual Hamilton template:
+;; build a state-trajectory once at let-time, then plot the
+;; (q(t), p(t)) trajectory via interpolation. No re-integration per
+;; sample — the whole curve is just a lookup.
+
+(defn H-harmonic [m k]
+  (fn [state]
+    (let [q (coordinate state)
+          p (momentum state)]
+      (+ (* 1/2 (square p) (cljs.core// 1.0 m))
+         (* 1/2 k (square q))))))
+
+
+;; ----- Hamiltonian → Plot — q(t) -------------------------------------
+;; Source: (H-harmonic 'm 'k)        with Plot picked.
+
+(let [m 1.0 k 1.0
+      t0 0.0  t1 (/ Math/PI 2)
+      q0 1.0  p0 0.0
+      H        (H-harmonic m k)
+      advancer (state-trajectory H (up t0 q0 p0) t0 t1 64)]
+  (plot (fn [t] (nth (advancer (up t0 q0 p0) t) 1))
+        [t0 t1] [-1.5 1.5]))
+
+
+;; ----- Hamiltonian → Animate — interactive slider on m ---------------
+;; Slider tuple memoized: one ODE integration per (m, k) combination.
+
+(let [t0 0.0 t1 (/ Math/PI 2)
+      q0 1.0 p0 0.0
+      memo-adv (memoize
+                (fn [m k]
+                  (state-trajectory (H-harmonic m k)
+                                    (up t0 q0 p0) t0 t1 64)))]
+  (plot-with-params
+    (fn [{:keys [m k]} t]
+      (nth ((memo-adv m k) (up t0 q0 p0) t) 1))
+    {:m {:value 1.0 :min 0.1 :max 5.0 :step 0.1}
+     :k {:value 1.0 :min 0.1 :max 5.0 :step 0.1}}
+    [t0 t1] [-1.5 1.5]))
+
+
+;; ====================================================================
+;; defn'd L-/H- — paste your defn, get its plot
+;; ====================================================================
+;; Paste a (defn L-name …) or (defn H-name …) form. The shelf emits the
+;; defn itself, then a let-prelude using the new name with its args
+;; promoted to slider-bindings. Try pasting this free-particle
+;; Lagrangian into the shelf with Plot picked:
 
 (defn L-free-particle [mass]
   (fn [local]
@@ -600,10 +649,8 @@
       (* 1/2 mass (square v)))))
 
 (let [mass 1.0       ; 'mass
-      t0 0.0
-      t1 (/ Math/PI 2)
-      q0 1.0
-      q1 0.0
+      t0 0.0  t1 (/ Math/PI 2)
+      q0 1.0  q1 0.0
       L    (L-free-particle mass)
       path (find-path L t0 q0 t1 q1 4)]
   (plot path [t0 t1] [-1.5 1.5]))
@@ -7719,11 +7766,11 @@ p
 ;; bin/build-sicm-pages.bb.
 (def system-pages
   (into (array-map
-          "Welcome"    basics-page
-          "SICM"       sicm-page
-          "Graphics"   graphics-page
-          "Auto-graph" auto-graph-page
-          "3D"         graphics-3d-page)
+          "Welcome"     basics-page
+          "SICM"        sicm-page
+          "Graphics"    graphics-page
+          "3D Graphics" graphics-3d-page
+          "Auto-graph"  auto-graph-page)
         sicm-section-pages))
 
 ;; --- Pages: named source buffers persisted in localStorage. ----------------
@@ -8940,7 +8987,7 @@ p
 ;; order; the autogenerated SICM section pages follow, sorted by
 ;; semantic section number ([1 5 2] < [1 6] < [1 12]).
 (def ^:private intro-page-names
-  ["Welcome" "SICM" "Graphics" "Auto-graph" "3D"])
+  ["Welcome" "SICM" "Graphics" "3D Graphics" "Auto-graph"])
 
 (defn- section-version
   "Parse 'SICM 1.5.2 …' → [1 5 2]. Returns [9999] for anything that
