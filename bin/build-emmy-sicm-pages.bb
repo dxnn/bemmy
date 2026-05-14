@@ -174,7 +174,154 @@
    [mafs.plot/Parametric
     {:t [t0 t1]
      :xy (fn [t] [t (nth (adv (up t0 1.0 0.0) t) 2)])
-     :color \"#e63946\"}]])"]})
+     :color \"#e63946\"}]])"]
+
+   "SICM 1.6 How to Find Lagrangians (Emmy)"
+   ["a numerical path from find-path tracks the analytic cosine"
+    ";; The harmonic-oscillator Lagrangian L = ½v² − ½q² between (0, 1) and
+;; (π/2, 0) has cos(t) as its true minimum. find-path approximates that
+;; minimum with a polynomial — small `n` (basis size) drifts off, larger
+;; `n` tracks closely.
+(let [t0 0.0
+      t1 (/ Math/PI 2)
+      path-3 (find-path (L-harmonic 1.0 1.0) t0 1.0 t1 0.0 3)
+      path-5 (find-path (L-harmonic 1.0 1.0) t0 1.0 t1 0.0 5)]
+  [mafs.core/Mafs {:viewBox {:x [t0 t1] :y [-0.1 1.1]}}
+   [mafs.coordinates/Cartesian]
+   ;; Analytic cos(t) — gray reference.
+   [mafs.plot/OfX {:y (fn [t] (Math/cos t)) :domain [t0 t1] :color \"#888888\"}]
+   ;; find-path with 3-basis — drifts visibly.
+   [mafs.plot/OfX {:y (fn [t] (path-3 t)) :domain [t0 t1] :color \"#e63946\"}]
+   ;; find-path with 5-basis — tracks cos closely.
+   [mafs.plot/OfX {:y (fn [t] (path-5 t)) :domain [t0 t1] :color \"#3090ff\"}]])"]
+
+   "SICM 1.7 Evolution of Dynamical State – part 1 (Emmy)"
+   ["the pendulum trajectory traces itself out — autoplaying animation"
+    ";; A real animation: q(x) only renders for x ≤ t (t auto-advances at
+;; 0.5× real-time). After the first sweep the full trajectory stays
+;; visible. Stop with the next evaluation; the timer cleans up on remount.
+(animate
+ (fn [t x]
+   (if (<= x t)
+     (Math/cos x)
+     js/NaN))
+ [0 (* 2 Math/PI)] [-1.2 1.2] 0.8)"]
+
+   "SICM 1.8 Conserved Quantities (Emmy)"
+   ["energy is conserved: E(t) hovers near its t=0 value along a pendulum trajectory"
+    ";; Integrate the pendulum, evaluate H(state(t)) at each sample,
+;; subtract H(state(0)). For a true conservation law the residual is
+;; only the numerical-integration error (RK4 with 64 steps ≈ 10⁻⁴).
+(let [m 1.0 l 1.0 g 9.8
+      H   (Lagrangian->Hamiltonian (L-pendulum m l g))
+      s0  (up 0.0 1.0 0.0)
+      t0  0.0
+      t1  6.0
+      adv (state-trajectory H s0 t0 t1 128)
+      E0  (cljs.core/double (H (adv s0 t0)))]
+  [mafs.core/Mafs {:viewBox {:x [t0 t1] :y [-0.01 0.01]}}
+   [mafs.coordinates/Cartesian]
+   [mafs.plot/Parametric
+    {:t [t0 t1]
+     :xy (fn [t]
+           [t (cljs.core/- (cljs.core/double (H (adv s0 t))) E0)])
+     :color \"#3090ff\"}]])"]
+
+   "SICM 2.7 Euler Angles (Emmy)"
+   ["3D: the body axes after rotation by Euler angles (θ, φ, ψ) = (π/4, π/6, 0)"
+    ";; Rz(φ) · Rx(θ) acting on the standard basis (e₁, e₂, e₃) gives the
+;; rotated body frame. Three colored rays from the origin — red x̂',
+;; green ŷ', blue ẑ' — drawn out to length 1. Drag to rotate the view.
+(let [θ (/ Math/PI 4)
+      φ (/ Math/PI 6)
+      cθ (Math/cos θ) sθ (Math/sin θ)
+      cφ (Math/cos φ) sφ (Math/sin φ)
+      e1 [cφ sφ 0]
+      e2 [(- (* sφ cθ)) (* cφ cθ) sθ]
+      e3 [(* sφ sθ) (- (* cφ sθ)) cθ]]
+  [mathbox/MathBox
+   {:container {:style {:height \"400px\" :width \"100%\"}}}
+   [mb/Cartesian {:range [[-1.2 1.2] [-1.2 1.2] [-1.2 1.2]] :scale [1 1 1]}
+    [mb/Axis {:axis 1}] [mb/Axis {:axis 2}] [mb/Axis {:axis 3}]
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (* x (nth e1 0)) (* x (nth e1 1)) (* x (nth e1 2))))}]
+    [mb/Line {:color \"#e63946\" :width 4}]
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (* x (nth e2 0)) (* x (nth e2 1)) (* x (nth e2 2))))}]
+    [mb/Line {:color \"#2a9d8f\" :width 4}]
+    [mb/Interval {:range [0 1] :width 2 :channels 3
+                  :expr (fn [emit x] (emit (* x (nth e3 0)) (* x (nth e3 1)) (* x (nth e3 2))))}]
+    [mb/Line {:color \"#3090ff\" :width 4}]]])"]
+
+   "SICM 3.1 Hamilton's Equations (Emmy)"
+   ["phase portrait of the harmonic oscillator at three energies"
+    ";; H = ½(p² + q²) — the level sets are concentric circles in (q, p).
+;; Three trajectories from initial states (q₀, 0) at q₀ ∈ {0.4, 0.7, 1.0}.
+(let [H   (fn [s] (let [q (nth s 1) p (nth s 2)]
+                    (* 1/2 (+ (* p p) (* q q)))))
+      adv (fn [q0]
+            (state-trajectory H (up 0.0 q0 0.0) 0.0 (* 2 Math/PI) 96))]
+  [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}}
+   [mafs.coordinates/Cartesian]
+   ;; Three trajectories at three energies.
+   (let [a (adv 0.4)]
+     [mafs.plot/Parametric
+      {:t [0.0 (* 2 Math/PI)]
+       :xy (fn [t] (let [s (a (up 0.0 0.4 0.0) t)] [(nth s 1) (nth s 2)]))
+       :color \"#3090ff\"}])
+   (let [a (adv 0.7)]
+     [mafs.plot/Parametric
+      {:t [0.0 (* 2 Math/PI)]
+       :xy (fn [t] (let [s (a (up 0.0 0.7 0.0) t)] [(nth s 1) (nth s 2)]))
+       :color \"#2a9d8f\"}])
+   (let [a (adv 1.0)]
+     [mafs.plot/Parametric
+      {:t [0.0 (* 2 Math/PI)]
+       :xy (fn [t] (let [s (a (up 0.0 1.0 0.0) t)] [(nth s 1) (nth s 2)]))
+       :color \"#e63946\"}])])"]
+
+   "SICM 3.5 Phase Space Evolution (Emmy)"
+   ["pendulum phase portrait — librations near θ=0, separatrix, rotations above"
+    ";; Real pendulum H = ½p² − cos θ + 1. Below energy 2 the trajectory
+;; closes (libration); at exactly 2 it's the separatrix; above, the
+;; pendulum rotates over the top. Six initial momenta sample all three.
+(let [H   (Lagrangian->Hamiltonian (L-pendulum 1.0 1.0 1.0))
+      ;; p₀ values: three librations, near-separatrix, two rotations.
+      p0s [0.5 1.0 1.5 1.95 2.3 2.6]
+      ;; Cache one trajectory per initial momentum.
+      advs (mapv (fn [p0]
+                   (state-trajectory H (up 0.0 0.0 p0) 0.0 (* 4 Math/PI) 128))
+                 p0s)
+      colors [\"#3090ff\" \"#2a9d8f\" \"#7b68ee\"
+              \"#888888\" \"#e63946\" \"#e76f51\"]]
+  (into [mafs.core/Mafs {:viewBox {:x [-4 4] :y [-3 3]}}
+         [mafs.coordinates/Cartesian]]
+        (map-indexed
+          (fn [i adv]
+            [mafs.plot/Parametric
+             {:t [0.0 (* 4 Math/PI)]
+              :xy (fn [t] (let [s (adv (up 0.0 0.0 (nth p0s i)) t)]
+                            [(nth s 1) (nth s 2)]))
+              :color (nth colors i)}])
+          advs)))"]
+
+   "SICM 1.4 Computing Actions (Emmy)"
+   ["interactive: drag `a` to perturb the path, watch action diverge"
+    ";; The harmonic-oscillator action S = ∫(½v² − ½q²)dt has its minimum
+;; on q(t) = cos(t). Drag `a` to add a sin(2t) bump to that path —
+;; the curve diverges from cos and the plot fills in q(t) for x ≤ t-end.
+;; (Computing the action numerically is expensive at every slider move;
+;; here we just visualize the deformed path; the numeric S(a) is left
+;; for the user to compute via the Lagrangian-action helpers above.)
+(plot-with-params
+ (fn [{:keys [a t-end]} x]
+   (if (<= x t-end)
+     (cljs.core/+ (Math/cos x)
+                  (cljs.core/* a (Math/sin (cljs.core/* 2 x))))
+     js/NaN))
+ {:a     {:value 0.0 :min -0.5 :max 0.5 :step 0.02}
+  :t-end {:value (cljs.core/* 0.5 Math/PI) :min 0.0 :max Math/PI :step 0.05}}
+ [0.0 Math/PI] [-1.2 1.5])"]})
 
 (def reader-opts
   {:eof ::eof
