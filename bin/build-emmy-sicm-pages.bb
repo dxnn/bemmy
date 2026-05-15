@@ -324,20 +324,73 @@
  [0.0 Math/PI] [-1.2 1.5])"]
 
    "SICM 1.9 Abstraction of Path Functions (Emmy)"
-   ["three concrete instantiations of one path-function abstraction"
-    ";; (literal-function 'q) is the abstract path; instantiating it with
-;; concrete CLJS fns shows how downstream Lagrangians evaluate uniformly
-;; across paths. Three curves: cos, half-amplitude sin(2x), tanh — all
-;; valid (q t) callbacks for a Lagrangian's t→q lookup.
-(let [domain [(cljs.core/- (cljs.core/* 2 Math/PI)) (cljs.core/* 2 Math/PI)]]
-  [mafs.core/Mafs {:viewBox {:x domain :y [-1.5 1.5]}}
-   [mafs.coordinates/Cartesian]
-   [mafs.plot/OfX {:y (fn [x] (Math/cos x))
-                   :domain domain :color \"#3090ff\"}]
-   [mafs.plot/OfX {:y (fn [x] (cljs.core/* 0.5 (Math/sin (cljs.core/* 2 x))))
-                   :domain domain :color \"#e63946\"}]
-   [mafs.plot/OfX {:y (fn [x] (Math/tanh x))
-                   :domain domain :color \"#2a9d8f\"}]])"]
+   ["vector-valued path family — Lissajous figures via leva sliders"
+    ";; A `path` in SICM is just a function t ↦ q. It can return a scalar,
+;; or a tuple — the abstraction is the same. A vector-valued path
+;; t ↦ (up (sin (* a t)) (sin (+ (* b t) φ))) traces a *Lissajous*
+;; figure: closed curves for rational a/b, dense space-fillers for
+;; irrational ratios. Drag the sliders to walk the family; the red
+;; dot animates one period along the current curve. Scroll-wheel
+;; zooms; click-drag pans.
+(defn lissajous-anim [initial-params]
+  (let [n-steps 600
+        compute (memoize
+                  (fn [{:keys [a b φ]}]
+                    (let [t-max (cljs.core/* 2 Math/PI)
+                          dt    (cljs.core// t-max n-steps)
+                          pts   (vec
+                                  (for [i (range (inc n-steps))]
+                                    (let [t (cljs.core/* i dt)]
+                                      [(Math/sin (cljs.core/* a t))
+                                       (Math/sin (cljs.core/+ (cljs.core/* b t) φ))])))]
+                      {:positions pts :dt dt :t-max t-max})))
+        !params (reagent.core/atom initial-params)
+        !t      (reagent.core/atom 0.0)
+        !start  (atom nil)
+        timer   (atom nil)
+        schema  (fn [k mn mx step]
+                  {:value (get initial-params k) :min mn :max mx :step step :pad 3})]
+    (reagent.core/create-class
+      {:component-did-mount
+       (fn [_]
+         (reset! !start (.now js/Date))
+         (reset! timer
+                 (js/setInterval
+                   (fn []
+                     (let [elapsed (cljs.core// (cljs.core/- (.now js/Date)
+                                                              (deref !start))
+                                                1000.0)
+                           period  (cljs.core/* 2 Math/PI)]
+                       (reset! !t (cljs.core/mod elapsed period))))
+                   33)))
+       :component-will-unmount
+       (fn [_] (when (deref timer) (js/clearInterval (deref timer))))
+       :reagent-render
+       (fn [_]
+         (let [params @!params
+               {:keys [positions dt t-max]} (compute params)
+               pos-at (fn [s]
+                        (let [i (max 0 (min n-steps
+                                            (cljs.core/int (Math/floor (cljs.core// s dt)))))]
+                          (nth positions i)))
+               t @!t
+               [x y] (pos-at t)]
+           [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
+            [leva.core/Controls
+             {:atom   !params
+              :schema {:a (schema :a 1.0 8.0 1.0)
+                       :b (schema :b 1.0 8.0 1.0)
+                       :φ (schema :φ 0.0 (cljs.core/* 2 Math/PI) 0.01)}}]
+            [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}
+                             :zoom    true}
+             [mafs.coordinates/Cartesian]
+             [mafs.plot/Parametric
+              {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
+             [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]]))})))
+
+;; Default: 3:4 frequency ratio with zero phase — a classic Lissajous.
+;; Try (a, b, φ) = (2, 3, π/2), (5, 4, 0), (3, 5, π/4) for variations.
+[lissajous-anim {:a 3.0 :b 4.0 :φ 0.0}]"]
 
    "SICM 5.2 General Canonical Transformations (Emmy)"
    ["a coordinate grid rotated by 30° in phase space — canonical"

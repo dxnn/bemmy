@@ -517,8 +517,12 @@
         !t      (reagent.core/atom 0.0)
         !start  (atom nil)
         timer   (atom nil)
+        ;; `:pad 3` forces leva to display 3 decimal places. Leva's
+        ;; auto-derived precision from `:step` is clamped to ≤ 2
+        ;; (Math/log10(1/padStep), 0, 2), so without :pad a 0.001 step
+        ;; still shows only 0.01 in the input field.
         schema  (fn [k mn mx step]
-                  {:value (get initial-params k) :min mn :max mx :step step})]
+                  {:value (get initial-params k) :min mn :max mx :step step :pad 3})]
     (reagent.core/create-class
       {:component-did-mount
        (fn [_]
@@ -549,12 +553,16 @@
             [leva.core/Controls
              {:atom   !params
               :schema {:μ     (schema :μ     0.001 0.5   0.001)
-                       :x0    (schema :x0    -2.0  2.0   0.01)
-                       :y0    (schema :y0    -2.0  2.0   0.01)
-                       :vx0   (schema :vx0   -2.0  2.0   0.01)
-                       :vy0   (schema :vy0   -2.0  2.0   0.001)
+                       :x0    (schema :x0    -1.0  1.0   0.001)
+                       :y0    (schema :y0    -1.0  1.0   0.001)
+                       :vx0   (schema :vx0   -1.0  1.0   0.001)
+                       :vy0   (schema :vy0   -1.0  1.0   0.001)
                        :t-max (schema :t-max  1.0  100.0 1.0)}}]
-            [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}}
+            ;; `:zoom true` lets the user scroll-wheel zoom; pan is on
+            ;; by default (drag to pan). Same applies to every Mafs
+            ;; component throughout the site.
+            [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}
+                             :zoom    true}
              [mafs.coordinates/Cartesian]
              [mafs.plot/Parametric
               {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
@@ -568,11 +576,8 @@
 ;; with retrograde tangential velocity — gives a stable orbit looping
 ;; around the heavier primary, perturbed by the lighter one. Drag the
 ;; sliders to vary μ or the initial state and watch the trajectory
-;; re-render. Cmd-Enter to run.
-[cr3bp-anim {:μ 0.1 :x0 -0.63 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]
-
-;; Alternative: smaller mass ratio (μ = 0.05), wider retrograde orbit.
-;; [cr3bp-anim {:μ 0.05 :x0 -0.8 :y0 0.0 :vx0 0.0 :vy0 -0.5 :t-max 60.0}]"]})
+;; re-render. Scroll-wheel zooms; click-drag pans. Cmd-Enter to run.
+[cr3bp-anim {:μ 0.1 :x0 -0.63 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]"]})
 
 (defn render-page
   [section]

@@ -1507,21 +1507,74 @@
       't))
 ;;=> '(+ (* k (x t)) (* m (((expt D 2) x) t)))
 
-;; --- Example: three concrete instantiations of one path-function abstraction ---
+;; --- Example: vector-valued path family — Lissajous figures via leva sliders ---
 
-;; (literal-function 'q) is the abstract path; instantiating it with
-;; concrete CLJS fns shows how downstream Lagrangians evaluate uniformly
-;; across paths. Three curves: cos, half-amplitude sin(2x), tanh — all
-;; valid (q t) callbacks for a Lagrangian's t→q lookup.
-(let [domain [(cljs.core/- (cljs.core/* 2 Math/PI)) (cljs.core/* 2 Math/PI)]]
-  [mafs.core/Mafs {:viewBox {:x domain :y [-1.5 1.5]}}
-   [mafs.coordinates/Cartesian]
-   [mafs.plot/OfX {:y (fn [x] (Math/cos x))
-                   :domain domain :color \"#3090ff\"}]
-   [mafs.plot/OfX {:y (fn [x] (cljs.core/* 0.5 (Math/sin (cljs.core/* 2 x))))
-                   :domain domain :color \"#e63946\"}]
-   [mafs.plot/OfX {:y (fn [x] (Math/tanh x))
-                   :domain domain :color \"#2a9d8f\"}]])"
+;; A `path` in SICM is just a function t ↦ q. It can return a scalar,
+;; or a tuple — the abstraction is the same. A vector-valued path
+;; t ↦ (up (sin (* a t)) (sin (+ (* b t) φ))) traces a *Lissajous*
+;; figure: closed curves for rational a/b, dense space-fillers for
+;; irrational ratios. Drag the sliders to walk the family; the red
+;; dot animates one period along the current curve. Scroll-wheel
+;; zooms; click-drag pans.
+(defn lissajous-anim [initial-params]
+  (let [n-steps 600
+        compute (memoize
+                  (fn [{:keys [a b φ]}]
+                    (let [t-max (cljs.core/* 2 Math/PI)
+                          dt    (cljs.core// t-max n-steps)
+                          pts   (vec
+                                  (for [i (range (inc n-steps))]
+                                    (let [t (cljs.core/* i dt)]
+                                      [(Math/sin (cljs.core/* a t))
+                                       (Math/sin (cljs.core/+ (cljs.core/* b t) φ))])))]
+                      {:positions pts :dt dt :t-max t-max})))
+        !params (reagent.core/atom initial-params)
+        !t      (reagent.core/atom 0.0)
+        !start  (atom nil)
+        timer   (atom nil)
+        schema  (fn [k mn mx step]
+                  {:value (get initial-params k) :min mn :max mx :step step :pad 3})]
+    (reagent.core/create-class
+      {:component-did-mount
+       (fn [_]
+         (reset! !start (.now js/Date))
+         (reset! timer
+                 (js/setInterval
+                   (fn []
+                     (let [elapsed (cljs.core// (cljs.core/- (.now js/Date)
+                                                              (deref !start))
+                                                1000.0)
+                           period  (cljs.core/* 2 Math/PI)]
+                       (reset! !t (cljs.core/mod elapsed period))))
+                   33)))
+       :component-will-unmount
+       (fn [_] (when (deref timer) (js/clearInterval (deref timer))))
+       :reagent-render
+       (fn [_]
+         (let [params @!params
+               {:keys [positions dt t-max]} (compute params)
+               pos-at (fn [s]
+                        (let [i (max 0 (min n-steps
+                                            (cljs.core/int (Math/floor (cljs.core// s dt)))))]
+                          (nth positions i)))
+               t @!t
+               [x y] (pos-at t)]
+           [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
+            [leva.core/Controls
+             {:atom   !params
+              :schema {:a (schema :a 1.0 8.0 1.0)
+                       :b (schema :b 1.0 8.0 1.0)
+                       :φ (schema :φ 0.0 (cljs.core/* 2 Math/PI) 0.01)}}]
+            [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}
+                             :zoom    true}
+             [mafs.coordinates/Cartesian]
+             [mafs.plot/Parametric
+              {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
+             [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]]))})))
+
+;; Default: 3:4 frequency ratio with zero phase — a classic Lissajous.
+;; Try (a, b, φ) = (2, 3, π/2), (5, 4, 0), (3, 5, π/4) for variations.
+[lissajous-anim {:a 3.0 :b 4.0 :φ 0.0}]"
     "SICM 2.7 Euler Angles (Emmy)"
     ";; ============================================================
 ;; SICM 2.7 Euler Angles (Emmy)
@@ -3699,8 +3752,12 @@ sysder
         !t      (reagent.core/atom 0.0)
         !start  (atom nil)
         timer   (atom nil)
+        ;; `:pad 3` forces leva to display 3 decimal places. Leva's
+        ;; auto-derived precision from `:step` is clamped to ≤ 2
+        ;; (Math/log10(1/padStep), 0, 2), so without :pad a 0.001 step
+        ;; still shows only 0.01 in the input field.
         schema  (fn [k mn mx step]
-                  {:value (get initial-params k) :min mn :max mx :step step})]
+                  {:value (get initial-params k) :min mn :max mx :step step :pad 3})]
     (reagent.core/create-class
       {:component-did-mount
        (fn [_]
@@ -3731,12 +3788,16 @@ sysder
             [leva.core/Controls
              {:atom   !params
               :schema {:μ     (schema :μ     0.001 0.5   0.001)
-                       :x0    (schema :x0    -2.0  2.0   0.01)
-                       :y0    (schema :y0    -2.0  2.0   0.01)
-                       :vx0   (schema :vx0   -2.0  2.0   0.01)
-                       :vy0   (schema :vy0   -2.0  2.0   0.001)
+                       :x0    (schema :x0    -1.0  1.0   0.001)
+                       :y0    (schema :y0    -1.0  1.0   0.001)
+                       :vx0   (schema :vx0   -1.0  1.0   0.001)
+                       :vy0   (schema :vy0   -1.0  1.0   0.001)
                        :t-max (schema :t-max  1.0  100.0 1.0)}}]
-            [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}}
+            ;; `:zoom true` lets the user scroll-wheel zoom; pan is on
+            ;; by default (drag to pan). Same applies to every Mafs
+            ;; component throughout the site.
+            [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}
+                             :zoom    true}
              [mafs.coordinates/Cartesian]
              [mafs.plot/Parametric
               {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
@@ -3750,11 +3811,8 @@ sysder
 ;; with retrograde tangential velocity — gives a stable orbit looping
 ;; around the heavier primary, perturbed by the lighter one. Drag the
 ;; sliders to vary μ or the initial state and watch the trajectory
-;; re-render. Cmd-Enter to run.
-[cr3bp-anim {:μ 0.09 :x0 -0.63 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]
-
-;; Alternative: smaller mass ratio (μ = 0.05), wider retrograde orbit.
-;; [cr3bp-anim {:μ 0.05 :x0 -0.8 :y0 0.0 :vx0 0.0 :vy0 -0.5 :t-max 60.0}]"
+;; re-render. Scroll-wheel zooms; click-drag pans. Cmd-Enter to run.
+[cr3bp-anim {:μ 0.1 :x0 -0.63 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]"
     "SICM 1.12 Projects"
     ";; ===========================================
 ;; SICM §1.12 — Projects
