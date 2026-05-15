@@ -3751,7 +3751,7 @@ sysder
 ;; around the heavier primary, perturbed by the lighter one. Drag the
 ;; sliders to vary μ or the initial state and watch the trajectory
 ;; re-render. Cmd-Enter to run.
-[cr3bp-anim {:μ 0.1 :x0 -0.63 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]
+[cr3bp-anim {:μ 0.09 :x0 -0.63 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]
 
 ;; Alternative: smaller mass ratio (μ = 0.05), wider retrograde orbit.
 ;; [cr3bp-anim {:μ 0.05 :x0 -0.8 :y0 0.0 :vx0 0.0 :vy0 -0.5 :t-max 60.0}]"
