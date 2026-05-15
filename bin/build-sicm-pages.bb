@@ -468,67 +468,57 @@
  [-0.5 3.0] [-1.0 5.0])"]
 
    ["1" "1.8.4"]
-   ["2D animation in the rotating co-frame — edit the call to vary μ / IC"
+   ["2D animation in the rotating co-frame — leva sliders for μ / IC"
     ";; Numerical RK4 integration of the LR3B1 equations of motion in the
 ;; rotating frame. The two primaries sit fixed on the x-axis at
 ;; x = -μ (heavier, mass 1-μ) and x = 1-μ (lighter, mass μ); the
 ;; massless test particle's EOM carries Coriolis (2ẏ, -2ẋ) and
 ;; centrifugal (x, y) terms beyond the gravity from each primary.
-;; Trajectory is precomputed; the red dot replays it on a 1s/unit-time
-;; loop. Edit the map below to change the mass ratio or initial state.
-(defn cr3bp-anim [{:keys [μ x0 y0 vx0 vy0 t-max]}]
-  (let [n-steps 3000
-        dt      (cljs.core// t-max n-steps)
-        μ'      (cljs.core/- 1 μ)
-        primary-0 (cljs.core/- μ)        ; heavier, mass 1-μ
-        primary-1 μ'                     ; lighter, mass μ
-        derivs (fn [x y vx vy]
-                 (let [dx0     (+ x μ)
-                       dx1     (- x μ')
-                       r0-sq   (+ (* dx0 dx0) (* y y))
-                       r1-sq   (+ (* dx1 dx1) (* y y))
-                       r0-cube (* r0-sq (Math/sqrt r0-sq))
-                       r1-cube (* r1-sq (Math/sqrt r1-sq))
-                       ax (+ (* 2.0 vy) x
-                             (- (/ (* μ' dx0) r0-cube))
-                             (- (/ (* μ dx1) r1-cube)))
-                       ay (+ (* -2.0 vx) y
-                             (- (/ (* μ' y) r0-cube))
-                             (- (/ (* μ y) r1-cube)))]
-                   [vx vy ax ay]))
-        ;; RK4 step on state vector [x y vx vy].
-        step (fn [[x y vx vy]]
-               (let [h  dt
-                     k1 (derivs x y vx vy)
-                     k2 (derivs (+ x  (* 0.5 h (nth k1 0)))
-                                (+ y  (* 0.5 h (nth k1 1)))
-                                (+ vx (* 0.5 h (nth k1 2)))
-                                (+ vy (* 0.5 h (nth k1 3))))
-                     k3 (derivs (+ x  (* 0.5 h (nth k2 0)))
-                                (+ y  (* 0.5 h (nth k2 1)))
-                                (+ vx (* 0.5 h (nth k2 2)))
-                                (+ vy (* 0.5 h (nth k2 3))))
-                     k4 (derivs (+ x  (* h (nth k3 0)))
-                                (+ y  (* h (nth k3 1)))
-                                (+ vx (* h (nth k3 2)))
-                                (+ vy (* h (nth k3 3))))
-                     w  (/ h 6.0)
-                     acc (fn [base i]
-                           (+ base (* w (+ (nth k1 i)
-                                           (* 2.0 (nth k2 i))
-                                           (* 2.0 (nth k3 i))
-                                           (nth k4 i)))))]
-                 [(acc x 0) (acc y 1) (acc vx 2) (acc vy 3)]))
-        positions (vec (take (inc n-steps)
-                             (map (fn [s] [(nth s 0) (nth s 1)])
-                                  (iterate step [x0 y0 vx0 vy0]))))
-        pos-at (fn [t]
-                 (let [i (max 0 (min n-steps
-                                     (cljs.core/int (Math/floor (cljs.core// t dt)))))]
-                   (nth positions i)))
-        !t     (reagent.core/atom 0.0)
-        !start (atom nil)
-        timer  (atom nil)]
+;; Trajectory is precomputed and re-run whenever a slider changes;
+;; the red dot replays it on a 1s/unit-time loop. Drag the leva
+;; sliders to vary the mass ratio or initial state.
+(defn cr3bp-anim [initial-params]
+  (let [n-steps 1500
+        compute
+        (memoize
+          (fn [{:keys [μ x0 y0 vx0 vy0 t-max]}]
+            (let [dt      (cljs.core// t-max n-steps)
+                  μ'      (cljs.core/- 1 μ)
+                  derivs  (fn [x y vx vy]
+                            (let [dx0     (+ x μ)
+                                  dx1     (- x μ')
+                                  r0-sq   (+ (* dx0 dx0) (* y y))
+                                  r1-sq   (+ (* dx1 dx1) (* y y))
+                                  r0-cube (* r0-sq (Math/sqrt r0-sq))
+                                  r1-cube (* r1-sq (Math/sqrt r1-sq))]
+                              [vx vy
+                               (+ (* 2.0 vy) x
+                                  (- (/ (* μ' dx0) r0-cube))
+                                  (- (/ (* μ dx1) r1-cube)))
+                               (+ (* -2.0 vx) y
+                                  (- (/ (* μ' y) r0-cube))
+                                  (- (/ (* μ y) r1-cube)))]))
+                  step    (fn [[x y vx vy]]
+                            (let [h  dt
+                                  k1 (derivs x y vx vy)
+                                  k2 (derivs (+ x (* 0.5 h (nth k1 0))) (+ y (* 0.5 h (nth k1 1))) (+ vx (* 0.5 h (nth k1 2))) (+ vy (* 0.5 h (nth k1 3))))
+                                  k3 (derivs (+ x (* 0.5 h (nth k2 0))) (+ y (* 0.5 h (nth k2 1))) (+ vx (* 0.5 h (nth k2 2))) (+ vy (* 0.5 h (nth k2 3))))
+                                  k4 (derivs (+ x (* h (nth k3 0))) (+ y (* h (nth k3 1))) (+ vx (* h (nth k3 2))) (+ vy (* h (nth k3 3))))
+                                  w  (/ h 6.0)
+                                  acc (fn [b i] (+ b (* w (+ (nth k1 i) (* 2.0 (nth k2 i)) (* 2.0 (nth k3 i)) (nth k4 i)))))]
+                              [(acc x 0) (acc y 1) (acc vx 2) (acc vy 3)]))]
+              {:positions (vec (take (inc n-steps)
+                                     (map (fn [s] [(nth s 0) (nth s 1)])
+                                          (iterate step [x0 y0 vx0 vy0]))))
+               :dt        dt
+               :primary-0 (cljs.core/- μ)
+               :primary-1 μ'})))
+        !params (reagent.core/atom initial-params)
+        !t      (reagent.core/atom 0.0)
+        !start  (atom nil)
+        timer   (atom nil)
+        schema  (fn [k mn mx step]
+                  {:value (get initial-params k) :min mn :max mx :step step})]
     (reagent.core/create-class
       {:component-did-mount
        (fn [_]
@@ -538,37 +528,51 @@
                    (fn []
                      (let [elapsed (cljs.core// (cljs.core/- (.now js/Date)
                                                               (deref !start))
-                                                1000.0)]
-                       (reset! !t (cljs.core/mod elapsed t-max))))
+                                                1000.0)
+                           tmax    (:t-max (deref !params))]
+                       (reset! !t (cljs.core/mod elapsed tmax))))
                    33)))
        :component-will-unmount
        (fn [_] (when (deref timer) (js/clearInterval (deref timer))))
        :reagent-render
        (fn [_]
-         (let [t     @!t
-               [x y] (pos-at t)]
-           [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}}
-            [mafs.coordinates/Cartesian]
-            [mafs.plot/Parametric
-             {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
-            ;; Primaries — fixed in the rotating frame.
-            [mafs.core/Point {:x primary-0 :y 0 :color \"#444444\"}]
-            [mafs.core/Point {:x primary-1 :y 0 :color \"#888888\"}]
-            ;; Current test-particle position.
-            [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]))})))
+         (let [params @!params
+               {:keys [positions dt primary-0 primary-1]} (compute params)
+               pos-at  (fn [s]
+                         (let [i (max 0 (min n-steps
+                                             (cljs.core/int (Math/floor (cljs.core// s dt)))))]
+                           (nth positions i)))
+               t       @!t
+               [x y]   (pos-at t)
+               t-max   (:t-max params)]
+           [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
+            [leva.core/Controls
+             {:atom   !params
+              :schema {:μ     (schema :μ     0.001 0.5   0.001)
+                       :x0    (schema :x0    -2.0  2.0   0.01)
+                       :y0    (schema :y0    -2.0  2.0   0.01)
+                       :vx0   (schema :vx0   -2.0  2.0   0.01)
+                       :vy0   (schema :vy0   -2.0  2.0   0.001)
+                       :t-max (schema :t-max  1.0  100.0 1.0)}}]
+            [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}}
+             [mafs.coordinates/Cartesian]
+             [mafs.plot/Parametric
+              {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
+             ;; Primaries — fixed in the rotating frame.
+             [mafs.core/Point {:x primary-0 :y 0 :color \"#444444\"}]
+             [mafs.core/Point {:x primary-1 :y 0 :color \"#888888\"}]
+             ;; Current test-particle position.
+             [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]]))})))
 
-;; Default: μ = 0.1 (Sun-Jupiter-ish ratio). Test particle at (-0.6, 0)
+;; Default: μ = 0.1 (Sun-Jupiter-ish ratio). Test particle at (-0.63, 0)
 ;; with retrograde tangential velocity — gives a stable orbit looping
-;; around the heavier primary that gets perturbed by the lighter one
-;; into a precessing rosette filling roughly x∈[-0.6, 0.4], y∈[-0.5, 0.5].
-;; Cmd-Enter to run.
-[cr3bp-anim {:μ 0.1 :x0 -0.6 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]
+;; around the heavier primary, perturbed by the lighter one. Drag the
+;; sliders to vary μ or the initial state and watch the trajectory
+;; re-render. Cmd-Enter to run.
+[cr3bp-anim {:μ 0.1 :x0 -0.63 :y0 0.0 :vx0 0.0 :vy0 -0.742 :t-max 30.0}]
 
-;; Other invocations to try (un-comment one at a time):
-;; Tight retrograde just outside the lighter primary — a small clean loop:
-;; [cr3bp-anim {:μ 0.1  :x0 0.85 :y0 0.0 :vx0 0.0 :vy0 -1.5  :t-max 25.0}]
-;; Smaller mass ratio (μ = 0.05), nearly-Keplerian around primary 0:
-;; [cr3bp-anim {:μ 0.05 :x0 -0.5 :y0 0.0 :vx0 0.0 :vy0 -0.8  :t-max 30.0}]"]})
+;; Alternative: smaller mass ratio (μ = 0.05), wider retrograde orbit.
+;; [cr3bp-anim {:μ 0.05 :x0 -0.8 :y0 0.0 :vx0 0.0 :vy0 -0.5 :t-max 60.0}]"]})
 
 (defn render-page
   [section]
