@@ -9958,11 +9958,11 @@ p
    {:display-name "Logo"
     :component-did-mount
     (fn [_]
-      (when (exists? js/PshiftLoader)
-        (.mountAll js/PshiftLoader ".logo-cycle")))
+      (when (exists? js/NeonicLoader)
+        (.mountAll js/NeonicLoader ".logo-cycle")))
     :reagent-render
     (fn [_]
-      [:canvas.logo-cycle {:data-src "logo.pshift.png"}])}))
+      [:canvas.logo-cycle {:data-src "bemmy.neonic.png"}])}))
 
 (defn- app []
   [:<>
