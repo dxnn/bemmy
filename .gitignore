@@ -9,3 +9,8 @@
 
 # Per-user Claude Code settings
 .claude/settings.local.json
+
+# etc
+.DS_Store
+.playwright-mcp
+rsyncer
