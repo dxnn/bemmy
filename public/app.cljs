@@ -3307,7 +3307,7 @@ sysder
 ;; Self-contained: earlier-chapter prerequisites are
 ;; inlined below.
 
-(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2]]
+(doseq [s '[F F->C L-central-polar L-central-rectangular L-free-particle L-free-polar L-free-rectangular L-harmonic L-pend L-periodically-driven-pendulum L-rotating-polar L-rotating-rectangular L-uniform-acceleration L0 L3-central LR3B LR3B1 Lagrange-equations Lagrange-equations-first-order Lagrangian->acceleration Lagrangian->energy Lagrangian->state-derivative Lagrangian-action T-pend T3-spherical V V-pend ang-mom-z dp-coordinates f find-path gravitational-energy harmonic-state-derivative make-eta make-path monitor-theta p->r parametric-path-action pend-state-derivative periodic-drive plot-win proposed-solution q qv->state-path s->r test-path varied-free-particle-action win2]]
   (when-not (ns-resolve *ns* s) (intern *ns* s)))
 
 ;; --- Prerequisites from earlier sections of Chapter 1 ---
