@@ -760,6 +760,191 @@
 [falling-log-anim]
 ")
 
+(def springy-pendulum-page
+  ";; ====================================================================
+;; A pendulum primitive — composable with spring-mass building blocks
+;; ====================================================================
+;; Coordinates: q = (up x θ). Polar-from-the-support keeps one cross
+;; term m·l·θ̇·(ẋ_s·cos θ + ẏ_s·sin θ) instead of a Cartesian mess.
+
+;; ----- Primitive components -----------------------------------------
+
+(defn T-cart [M xdot-of]
+  (fn [local] (* 1/2 M (square (xdot-of (velocity local))))))
+
+(defn V-spring [k x-of]
+  (fn [local] (* 1/2 k (square (x-of (coordinate local))))))
+
+(defn T-pendulum [m l θ-of θdot-of support-vel]
+  (fn [local]
+    (let [θ  (θ-of    (coordinate local))
+          θd (θdot-of (velocity   local))
+          vs (support-vel local)]
+      (* 1/2 m (+ (square (nth vs 0)) (square (nth vs 1))
+                  (* l l θd θd)
+                  (* 2 l θd (+ (* (nth vs 0) (cos θ))
+                               (* (nth vs 1) (sin θ)))))))))
+
+(defn V-pendulum [m g l θ-of y_s-of]
+  (fn [local]
+    (let [q (coordinate local)]
+      (* m g (- (y_s-of q) (* l (cos (θ-of q))))))))
+
+;; ----- Selectors ----------------------------------------------------
+
+(def x-of    (fn [q] (nth q 0)))
+(def θ-of    (fn [q] (nth q 1)))
+(def xdot-of (fn [v] (nth v 0)))
+(def θdot-of (fn [v] (nth v 1)))
+
+;; ----- The combined Lagrangian --------------------------------------
+;; Pendulum hangs from the cart: support velocity = (ẋ, 0), y_s = 0.
+
+(defn L-spring-pendulum [M m k l g]
+  (let [T-c (T-cart M xdot-of)
+        T-p (T-pendulum m l θ-of θdot-of
+                        (fn [local] (up (xdot-of (velocity local)) 0)))
+        V-s (V-spring k x-of)
+        V-p (V-pendulum m g l θ-of (constantly 0))]
+    (fn [local]
+      (- (+ (T-c local) (T-p local))
+         (+ (V-s local) (V-p local))))))
+
+;; ----- Symbolic equations of motion ---------------------------------
+
+(simplify
+  (((Lagrange-equations (L-spring-pendulum 'M 'm 'k 'l 'g))
+    (up (literal-function 'x) (literal-function 'θ)))
+   't))
+
+
+;; ----- Animate with Leva sliders ------------------------------------
+;; rAF-driven, dt-clamped. Trail = ring buffer of actually-rendered
+;; bob positions (last ~60 frames); cleared when any physics param
+;; changes (the trail represents history, not prediction).
+
+[(let [p0        {:M 1.0 :m 0.5 :k 8.0 :l 1.0 :g 9.8
+                  :x0 0.6 :θ0 0.4 :speed 0.3}
+       t-total   12.0
+       n-samples 180
+       dt        (cljs.core// t-total n-samples)
+       trail-max 360        ; last ~1 wall-second of viewing at 60 Hz
+       anchor    -3.5
+       phys-keys [:M :m :k :l :g :x0 :θ0]
+       compute (memoize
+                 (fn [{:keys [M m k l g x0 θ0]}]
+                   (let [ld   (Lagrangian->state-derivative
+                                (L-spring-pendulum M m k l g))
+                         s0   (up 0.0 (up x0 θ0) (up 0.0 0.0))
+                         step (state-advancer (constantly ld))]
+                     (mapv (fn [s] (let [q (nth s 1)]
+                                     [(cljs.core/double (nth q 0))
+                                      (cljs.core/double (nth q 1))]))
+                           (reductions
+                             (fn [s i] (step s (cljs.core/* (cljs.core/inc i) dt)))
+                             s0
+                             (range n-samples))))))
+       lerp (fn [a b f] (cljs.core/+ a (cljs.core/* f (cljs.core/- b a))))
+       sample-at (fn [qs t]
+                   (let [idx (cljs.core// t dt)
+                         i0  (cljs.core/max 0
+                               (cljs.core/min (cljs.core/dec n-samples)
+                                              (cljs.core/int idx)))
+                         f   (cljs.core/- idx i0)
+                         [xa θa] (nth qs i0)
+                         [xb θb] (nth qs (cljs.core/inc i0))]
+                     [(lerp xa xb f) (lerp θa θb f)]))
+       !params    (reagent.core/atom p0)
+       !t         (reagent.core/atom 0.0)
+       !trail     (reagent.core/atom [])
+       !last-phys (atom (select-keys p0 phys-keys))
+       !tick      (atom nil)
+       raf        (atom nil)
+       step!
+         (fn []
+           (let [now  (.now js/Date)
+                 dt-w (cljs.core/min 0.05
+                        (cljs.core// (cljs.core/- now @!tick) 1000.0))
+                 p    @!params
+                 new-t (cljs.core/mod
+                         (cljs.core/+ @!t (cljs.core/* dt-w (:speed p)))
+                         t-total)
+                 qs    (compute (select-keys p phys-keys))
+                 [x θ] (sample-at qs new-t)
+                 l     (:l p)
+                 bx    (cljs.core/+ x (cljs.core/* l (Math/sin θ)))
+                 by    (cljs.core/* (cljs.core/- l) (Math/cos θ))]
+             (reset! !tick now)
+             (reset! !t new-t)
+             (swap! !trail
+               (fn [v]
+                 (let [v' (conj v [bx by])]
+                   (if (cljs.core/> (count v') trail-max)
+                     (subvec v' (cljs.core/- (count v') trail-max))
+                     v'))))))
+       loop! (fn lf []
+               (step!)
+               (reset! raf (js/requestAnimationFrame lf)))
+       sch (fn [k mn mx s] {:value (get p0 k) :min mn :max mx :step s :pad 3})]
+   (reagent.core/create-class
+    {:component-did-mount
+     (fn [_]
+       (reset! !tick (.now js/Date))
+       (reset! raf (js/requestAnimationFrame loop!)))
+     :component-will-unmount
+     (fn [_]
+       (when @raf (js/cancelAnimationFrame @raf)))
+     :reagent-render
+     (fn [_]
+       (let [p      @!params
+             phys   (select-keys p phys-keys)
+             cleared? (not= phys @!last-phys)
+             _      (when cleared?
+                      (reset! !last-phys phys)
+                      (reset! !trail []))
+             l      (:l p)
+             qs     (compute phys)
+             t      @!t
+             [x θ]  (sample-at qs t)
+             bx     (cljs.core/+ x (cljs.core/* l (Math/sin θ)))
+             by     (cljs.core/* (cljs.core/- l) (Math/cos θ))
+             trail  @!trail
+             ntrail (count trail)]
+         [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
+          [leva.core/Controls
+           {:atom !params
+            :schema {:M     (sch :M     0.2  5.0  0.05)
+                     :m     (sch :m     0.1  3.0  0.05)
+                     :k     (sch :k     1.0 30.0  0.5)
+                     :l     (sch :l     0.3  2.0  0.05)
+                     :g     (sch :g     1.0 20.0  0.1)
+                     :x0    (sch :x0   -1.5  1.5  0.05)
+                     :θ0    (sch :θ0   -1.5  1.5  0.05)
+                     :speed (sch :speed 0.05 1.0  0.05)}}]
+          [mafs.core/Mafs
+           {:viewBox {:x [-4.2 4.2] :y [-3.0 1.0]}}
+           [mafs.coordinates/Cartesian]
+           (when (cljs.core/> ntrail 1)
+             [mafs.plot/Parametric
+              {:t [0 (cljs.core/dec ntrail)]
+               :xy (fn [u]
+                     (let [i (cljs.core/min (cljs.core/dec ntrail)
+                              (cljs.core/max 0 (cljs.core/int u)))
+                           e (nth trail i)]
+                       [(nth e 0) (nth e 1)]))
+               :color \"#d33\" :opacity 0.48}])
+           [mafs.line/Segment {:point1 [-4.2 0] :point2 [4.2 0] :color \"#aaa\"}]
+           [mafs.plot/Parametric
+            {:t [0 1]
+             :xy (fn [u]
+                   [(cljs.core/+ anchor (cljs.core/* u (cljs.core/- x anchor)))
+                    (cljs.core/* 0.12 (Math/sin (cljs.core/* 24 Math/PI u)))])
+             :color \"#7a9\"}]
+           [mafs.core/Point {:x anchor :y 0 :color \"#444\"}]
+           [mafs.core/Point {:x x :y 0 :color \"#3090ff\"}]
+           [mafs.line/Segment {:point1 [x 0] :point2 [bx by] :color \"#444\"}]
+           [mafs.core/Point {:x bx :y by :color \"#d33\"}]]]))}))]")
+
 ;; --- System pages: read-only templates baked into the build. Editing
 ;; one transparently forks it into a fresh user page so the template
 ;; itself stays canonical and updates whenever we ship new content.
@@ -8612,11 +8797,12 @@ p
 ;; bin/build-sicm-pages.bb.
 (def system-pages
   (into (array-map
-          "Welcome"     basics-page
-          "SICM"        sicm-page
-          "Graphics"    graphics-page
-          "3D Graphics" graphics-3d-page
-          "Auto-graph"  auto-graph-page)
+          "Welcome"          basics-page
+          "SICM"             sicm-page
+          "Graphics"         graphics-page
+          "3D Graphics"      graphics-3d-page
+          "Auto-graph"       auto-graph-page
+          "Springy Pendulum" springy-pendulum-page)
         sicm-section-pages))
 
 ;; --- Pages: named source buffers persisted in localStorage. ----------------
