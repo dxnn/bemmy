@@ -945,6 +945,249 @@
            [mafs.line/Segment {:point1 [x 0] :point2 [bx by] :color \"#444\"}]
            [mafs.core/Point {:x bx :y by :color \"#d33\"}]]]))}))]")
 
+(def differential-equations-page
+  ";; ====================================================================
+;; BEmmy — Differential Equations, From Scratch
+;; ====================================================================
+;; A differential equation tells you the *slope* of a curve at every
+;; point — not the position itself. We'll build up from a single
+;; tangent line, climb to a slope field, watch solutions thread
+;; through it, then add time and finish with a Lotka–Volterra orbit
+;; you can poke at with sliders.
+
+
+;; ----- 1. The slope at a single point ------------------------------
+;; The blue parabola is y = x². At x = 1 it has slope 2 — the red
+;; line is the tangent there. Emmy's D operator computes this for us
+;; symbolically: the derivative of t² is 2t, so at t=1 it's 2.
+
+((D (fn [t] (* t t))) 't)
+;; => (* 2 t)
+
+((D (fn [t] (* t t))) 1)
+;; => 2
+
+[mafs.core/Mafs {:viewBox {:x [-1 3] :y [-1.5 4]}}
+ [mafs.coordinates/Cartesian]
+ [mafs.plot/OfX {:y (fn [x] (cljs.core/* x x)) :color \"#3090ff\"}]
+ ;; tangent at (1, 1) with slope 2: y = 2x - 1, drawn from x=0 to x=2.5
+ [mafs.line/Segment {:point1 [0 -1] :point2 [2.5 4] :color \"#d33\"}]
+ [mafs.core/Point {:x 1 :y 1 :color \"#d33\"}]]
+
+
+;; ----- 2. A field of slopes ---------------------------------------
+;; A differential equation gives a slope at *every* point in the
+;; plane, not just one. Here's dy/dx = -x/y drawn as little tilted
+;; segments — at each (x, y) the segment leans with that slope.
+;;
+;; The arrows seem to swirl around the origin. That's not an
+;; accident.
+
+(into [mafs.core/Mafs {:viewBox {:x [-3 3] :y [-3 3]}}
+       [mafs.coordinates/Cartesian]]
+      (for [x (range -2.5 2.6 0.4)
+            y (range -2.5 2.6 0.4)
+            :when (cljs.core/> (Math/abs y) 0.001)
+            :let [m   (cljs.core// (cljs.core/- x) y)
+                  len 0.16
+                  dx  (cljs.core// len (Math/sqrt (cljs.core/+ 1 (cljs.core/* m m))))
+                  dy  (cljs.core/* m dx)]]
+        [mafs.line/Segment
+         {:point1 [(cljs.core/- x dx) (cljs.core/- y dy)]
+          :point2 [(cljs.core/+ x dx) (cljs.core/+ y dy)]
+          :color \"#7a9\"}]))
+
+
+;; ----- 3. Solutions thread through the field ---------------------
+;; A *solution* of a differential equation is a curve that follows
+;; the arrows. For dy/dx = -x/y the solution curves are circles:
+;; x² + y² = r². Different starting radii give different circles —
+;; each one is a different solution. Same equation, many solutions.
+
+(into [mafs.core/Mafs {:viewBox {:x [-3 3] :y [-3 3]}}
+       [mafs.coordinates/Cartesian]]
+      (concat
+        (for [x (range -2.5 2.6 0.4)
+              y (range -2.5 2.6 0.4)
+              :when (cljs.core/> (Math/abs y) 0.001)
+              :let [m   (cljs.core// (cljs.core/- x) y)
+                    len 0.12
+                    dx  (cljs.core// len (Math/sqrt (cljs.core/+ 1 (cljs.core/* m m))))
+                    dy  (cljs.core/* m dx)]]
+          [mafs.line/Segment
+           {:point1 [(cljs.core/- x dx) (cljs.core/- y dy)]
+            :point2 [(cljs.core/+ x dx) (cljs.core/+ y dy)]
+            :color \"#445\"}])
+        (for [[r col] [[0.8 \"#3090ff\"] [1.5 \"#d33\"] [2.3 \"#ffaa00\"]]]
+          [mafs.plot/Parametric
+           {:t [0 (cljs.core/* 2 Math/PI)]
+            :xy (fn [t] [(cljs.core/* r (Math/cos t))
+                         (cljs.core/* r (Math/sin t))])
+            :color col}])))
+
+
+;; ----- 4. Growth and decay — bring in time ------------------------
+;; Now make the independent variable *time*. dy/dt = k·y means
+;; \"every instant, y changes proportional to itself.\" Bunny
+;; populations exploding (k>0), hot coffee cooling toward room
+;; temperature (k<0). The solution is y(t) = y₀·e^(k·t).
+;;
+;; Try the sliders. Tug k positive — exponential blow-up. Tug
+;; negative — gentle decay.
+
+(plot-with-params
+  (fn [{:keys [k y0]} t]
+    (cljs.core/* y0 (Math/exp (cljs.core/* k t))))
+  {:k  {:value 0.3 :min -1.0 :max 0.7 :step 0.05 :pad 3}
+   :y0 {:value 1.0 :min 0.2 :max 3.0 :step 0.05 :pad 3}}
+  [0 5] [0 8])
+
+
+;; You can also check the answer symbolically. The derivative of
+;; y₀·e^(k·t) had better come back as k·y₀·e^(k·t) — and it does:
+
+(simplify ((D (fn [t] (* 'y0 (exp (* 'k t))))) 't))
+;; => (* y0 k (exp (* k t)))
+
+
+;; ----- 5. Oscillation — phase portrait + animation -----------------
+;; Two coupled diffeqs at once: dx/dt = v, dv/dt = -x. Position
+;; and velocity feed each other. Plot the (x, v) point and it
+;; traces a perfect circle, forever. That's what *oscillation*
+;; looks like geometrically — a closed loop in (position, velocity)
+;; space. Watch the red dot orbit; the faint blue circle is the
+;; whole orbit at once.
+
+[(let [!t    (reagent.core/atom 0.0)
+       timer (atom nil)]
+   (reagent.core/create-class
+    {:component-did-mount
+     (fn [_]
+       (reset! timer
+         (js/setInterval
+           (fn []
+             (swap! !t #(cljs.core/mod (cljs.core/+ % 0.025)
+                                       (cljs.core/* 2 Math/PI))))
+           16)))
+     :component-will-unmount
+     (fn [_] (when @timer (js/clearInterval @timer)))
+     :reagent-render
+     (fn [_]
+       (let [t @!t
+             x (Math/cos t)
+             v (cljs.core/- 0 (Math/sin t))]
+         [mafs.core/Mafs {:viewBox {:x [-1.6 1.6] :y [-1.6 1.6]}}
+          [mafs.coordinates/Cartesian]
+          [mafs.plot/Parametric
+           {:t [0 (cljs.core/* 2 Math/PI)]
+            :xy (fn [u] [(Math/cos u)
+                         (cljs.core/- 0 (Math/sin u))])
+            :color \"#3090ff\" :opacity 0.5}]
+          [mafs.core/Point {:x x :y v :color \"#d33\"}]]))}))]
+
+
+;; ----- 6. Predator and prey — animated, parametrised ---------------
+;; Foxes (y) eat rabbits (x). Both populations cycle in lockstep:
+;; rabbits boom → foxes boom (because there's food) → rabbits crash
+;; (because they're being eaten) → foxes crash (because no food).
+;; Then it starts over.
+;;
+;; Lotka–Volterra:  dx/dt = α·x − β·x·y
+;;                  dy/dt = δ·x·y − γ·y
+;;
+;; The orange dot is the current population in (rabbits, foxes)
+;; space; the faint blue loop is the full cycle the system traces.
+;; Drag the sliders — each combo redraws the loop.
+
+[(let [p0        {:α 1.1 :β 0.4 :γ 0.4 :δ 0.1 :speed 0.6}
+       phys-keys [:α :β :γ :δ]
+       dt        0.05
+       n-samples 720
+       compute (memoize
+                 (fn [{:keys [α β γ δ]}]
+                   ;; The state-derivative uses Emmy's generic + - *
+                   ;; (no cljs.core/ prefix) so the integrator's
+                   ;; structure-aware dispatch composes correctly.
+                   (let [sd (fn [s]
+                              (let [x (nth s 1)
+                                    y (nth s 2)]
+                                (up 1
+                                    (- (* α x) (* β x y))
+                                    (- (* δ x y) (* γ y)))))
+                         step (state-advancer (constantly sd))]
+                     (vec (reductions
+                            (fn [s i]
+                              (step s (cljs.core/* (cljs.core/inc i) dt)))
+                            (up 0.0 4.0 2.0)
+                            (range n-samples))))))
+       !params    (reagent.core/atom p0)
+       !t         (reagent.core/atom 0.0)
+       !tick      (atom nil)
+       raf        (atom nil)
+       sch (fn [k mn mx s] {:value (get p0 k) :min mn :max mx :step s :pad 3})]
+   (reagent.core/create-class
+    {:component-did-mount
+     (fn [_]
+       (reset! !tick (.now js/Date))
+       (let [t-total (cljs.core/* n-samples dt)]
+         (letfn [(lf []
+                   (let [now  (.now js/Date)
+                         dtw  (cljs.core/min 0.05
+                                (cljs.core// (cljs.core/- now @!tick) 1000.0))]
+                     (reset! !tick now)
+                     (swap! !t #(cljs.core/mod
+                                  (cljs.core/+ % (cljs.core/* dtw
+                                                              (:speed @!params)))
+                                  t-total))
+                     (reset! raf (js/requestAnimationFrame lf))))]
+           (reset! raf (js/requestAnimationFrame lf)))))
+     :component-will-unmount
+     (fn [_] (when @raf (js/cancelAnimationFrame @raf)))
+     :reagent-render
+     (fn [_]
+       (let [p       @!params
+             samples (compute (select-keys p phys-keys))
+             n       (count samples)
+             t       @!t
+             i       (cljs.core/max 0
+                       (cljs.core/min (cljs.core/dec n)
+                                      (cljs.core/int (cljs.core// t dt))))
+             s       (nth samples i)
+             x       (cljs.core/double (nth s 1))
+             y       (cljs.core/double (nth s 2))]
+         [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
+          [leva.core/Controls
+           {:atom !params
+            :schema {:α     (sch :α     0.3 2.0  0.05)
+                     :β     (sch :β     0.1 1.0  0.05)
+                     :γ     (sch :γ     0.1 2.0  0.05)
+                     :δ     (sch :δ     0.05 0.4 0.01)
+                     :speed (sch :speed 0.1 2.0  0.1)}}]
+          [mafs.core/Mafs {:viewBox {:x [0 14] :y [0 10]}}
+           [mafs.coordinates/Cartesian]
+           [mafs.plot/Parametric
+            {:t [0 (cljs.core/dec n)]
+             :xy (fn [u]
+                   (let [k (cljs.core/min (cljs.core/dec n)
+                            (cljs.core/max 0 (cljs.core/int u)))
+                         ss (nth samples k)]
+                     [(cljs.core/double (nth ss 1))
+                      (cljs.core/double (nth ss 2))]))
+             :color \"#3090ff\" :opacity 0.45}]
+           [mafs.core/Point {:x x :y y :color \"#f80\"}]]]))}))]
+
+
+;; ----- 7. Where to go next ------------------------------------------
+;; The \"Springy Pendulum\" page builds a full physical system — cart
+;; on a spring with a pendulum hanging from it — composed from
+;; primitive Lagrangians and animated with the same machinery as
+;; above. The SICM chapter pages walk through Sussman & Wisdom's
+;; textbook treatment of mechanics chapter by chapter.
+;;
+;; Try replacing the bunny-fox equations with your own coupled pair
+;; and see what shape comes out. Limit cycles, fixed points,
+;; chaos — they're all just different patterns of arrows in a field.")
+
 ;; --- System pages: read-only templates baked into the build. Editing
 ;; one transparently forks it into a fresh user page so the template
 ;; itself stays canonical and updates whenever we ship new content.
@@ -8797,12 +9040,13 @@ p
 ;; bin/build-sicm-pages.bb.
 (def system-pages
   (into (array-map
-          "Welcome"          basics-page
-          "SICM"             sicm-page
-          "Graphics"         graphics-page
-          "3D Graphics"      graphics-3d-page
-          "Auto-graph"       auto-graph-page
-          "Springy Pendulum" springy-pendulum-page)
+          "Welcome"                basics-page
+          "SICM"                   sicm-page
+          "Graphics"               graphics-page
+          "3D Graphics"            graphics-3d-page
+          "Auto-graph"             auto-graph-page
+          "Springy Pendulum"       springy-pendulum-page
+          "Differential Equations" differential-equations-page)
         sicm-section-pages))
 
 ;; --- Pages: named source buffers persisted in localStorage. ----------------
