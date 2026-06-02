@@ -910,19 +910,22 @@
              by     (cljs.core/* (cljs.core/- l) (Math/cos θ))
              trail  @!trail
              ntrail (count trail)]
-         [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
-          [leva.core/Controls
-           {:atom !params
-            :schema {:M     (sch :M     0.2  5.0  0.05)
-                     :m     (sch :m     0.1  3.0  0.05)
-                     :k     (sch :k     1.0 30.0  0.5)
-                     :l     (sch :l     0.3  2.0  0.05)
-                     :g     (sch :g     1.0 20.0  0.1)
-                     :x0    (sch :x0   -1.5  1.5  0.05)
-                     :θ0    (sch :θ0   -1.5  1.5  0.05)
-                     :speed (sch :speed 0.05 1.0  0.05)}}]
-          [mafs.core/Mafs
-           {:viewBox {:x [-4.2 4.2] :y [-3.0 1.0]}}
+         [:div {:style {:display \"flex\" :flex-direction \"row\" :gap \"1rem\" :align-items \"flex-start\"}}
+          [:div {:style {:width \"280px\" :flex \"0 0 auto\"}}
+           [leva.core/SubPanel {:fill true}
+            [leva.core/Controls
+             {:atom !params
+              :schema {:M     (sch :M     0.2  5.0  0.05)
+                       :m     (sch :m     0.1  3.0  0.05)
+                       :k     (sch :k     1.0 30.0  0.5)
+                       :l     (sch :l     0.3  2.0  0.05)
+                       :g     (sch :g     1.0 20.0  0.1)
+                       :x0    (sch :x0   -1.5  1.5  0.05)
+                       :θ0    (sch :θ0   -1.5  1.5  0.05)
+                       :speed (sch :speed 0.05 1.0  0.05)}}]]]
+          [:div {:style {:flex \"1 1 auto\" :min-width \"0\"}}
+           [mafs.core/Mafs
+            {:viewBox {:x [-4.2 4.2] :y [-3.0 1.0]}}
            [mafs.coordinates/Cartesian]
            (when (cljs.core/> ntrail 1)
              [mafs.plot/Parametric
@@ -943,7 +946,7 @@
            [mafs.core/Point {:x anchor :y 0 :color \"#444\"}]
            [mafs.core/Point {:x x :y 0 :color \"#3090ff\"}]
            [mafs.line/Segment {:point1 [x 0] :point2 [bx by] :color \"#444\"}]
-           [mafs.core/Point {:x bx :y by :color \"#d33\"}]]]))}))]")
+           [mafs.core/Point {:x bx :y by :color \"#d33\"}]]]]))}))]")
 
 (def differential-equations-page
   ";; ====================================================================
@@ -1155,15 +1158,18 @@
              s       (nth samples i)
              x       (cljs.core/double (nth s 1))
              y       (cljs.core/double (nth s 2))]
-         [:div {:style {:display \"flex\" :flex-direction \"column\" :gap \"0.5rem\"}}
-          [leva.core/Controls
-           {:atom !params
-            :schema {:α     (sch :α     0.3 2.0  0.05)
-                     :β     (sch :β     0.1 1.0  0.05)
-                     :γ     (sch :γ     0.1 2.0  0.05)
-                     :δ     (sch :δ     0.05 0.4 0.01)
-                     :speed (sch :speed 0.1 2.0  0.1)}}]
-          [mafs.core/Mafs {:viewBox {:x [0 14] :y [0 10]}}
+         [:div {:style {:display \"flex\" :flex-direction \"row\" :gap \"1rem\" :align-items \"flex-start\"}}
+          [:div {:style {:width \"280px\" :flex \"0 0 auto\"}}
+           [leva.core/SubPanel {:fill true}
+            [leva.core/Controls
+             {:atom !params
+              :schema {:α     (sch :α     0.3 2.0  0.05)
+                       :β     (sch :β     0.1 1.0  0.05)
+                       :γ     (sch :γ     0.1 2.0  0.05)
+                       :δ     (sch :δ     0.05 0.4 0.01)
+                       :speed (sch :speed 0.1 2.0  0.1)}}]]]
+          [:div {:style {:flex \"1 1 auto\" :min-width \"0\"}}
+           [mafs.core/Mafs {:viewBox {:x [0 14] :y [0 10]}}
            [mafs.coordinates/Cartesian]
            [mafs.plot/Parametric
             {:t [0 (cljs.core/dec n)]
@@ -1174,7 +1180,7 @@
                      [(cljs.core/double (nth ss 1))
                       (cljs.core/double (nth ss 2))]))
              :color \"#3090ff\" :opacity 0.45}]
-           [mafs.core/Point {:x x :y y :color \"#f80\"}]]]))}))]
+           [mafs.core/Point {:x x :y y :color \"#f80\"}]]]]))}))]
 
 
 ;; ----- 7. Where to go next ------------------------------------------
