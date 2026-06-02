@@ -691,7 +691,7 @@
   []
   (try
     (let [{:keys [out exit]} (shell {:out :string :continue true}
-                                    "bb" "bin/build-emmy-sicm-pages.bb" "--edn")]
+                                    "bb" "bin/_deprecated/build-emmy-sicm-pages.bb" "--edn")]
       (if (zero? exit) (edn/read-string out) []))
     (catch Throwable _ [])))
 

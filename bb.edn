@@ -15,14 +15,14 @@
            :task (do (shell "node --test test/sicm2emmy.test.js test/sicm2emmy.corpus.test.js")
                      (shell "bb test/auto_graph_test.clj"))}
 
-  gen-pages {:doc  "Regenerate SICM section pages in public/app.cljs from the corpus."
+  gen-pages {:doc  "DEPRECATED. Regenerate SICM section pages from the corpus. Generators moved to bin/_deprecated/; many sections have since been hand-edited and re-running would clobber them."
              :task (do (shell "node test/translate-corpus.js")
-                       (shell "bb bin/build-sicm-pages.bb"))}
+                       (shell "bb bin/_deprecated/build-sicm-pages.bb"))}
 
-  test-eq {:doc  "Run SICM↔Emmy equivalence + section-page eval + translator-oracle tests."
+  test-eq {:doc  "DEPRECATED. SICM↔Emmy equivalence + section-page eval + translator-oracle tests; exercises the gen-pages pipeline."
            :task (do
                    (shell "node test/translate-corpus.js")
-                   (shell "bb bin/build-sicm-pages.bb")
+                   (shell "bb bin/_deprecated/build-sicm-pages.bb")
                    ;; Run all three Clojure suites; collect exit codes
                    ;; so a pre-existing failure in one doesn't mask the
                    ;; others. equivalence-test exercises the scrape →
