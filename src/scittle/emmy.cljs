@@ -245,16 +245,15 @@
             !params  (reagent.core/atom defaults)]
         (fn []
           (let [params @!params]
-            [:div {:style {:display \"flex\" :flex-direction \"row\" :gap \"1rem\" :align-items \"flex-start\"}}
-             [:div {:style {:width \"280px\" :flex \"0 0 auto\"}}
+            [:div {:style {:position \"relative\"}}
+             [mafs.core/Mafs {:viewBox {:x [(double x-min) (double x-max)]
+                                        :y [(double y-min) (double y-max)]}}
+              [mafs.coordinates/Cartesian]
+              [mafs.plot/OfX {:y      (fn [x] (double (f params x)))
+                              :domain [(double x-min) (double x-max)]}]]
+             [:div {:style {:position \"absolute\" :top \"0.5rem\" :right \"0.5rem\" :width \"280px\"}}
               [leva.core/SubPanel {:fill true}
-               [leva.core/Controls {:atom !params :schema params-spec}]]]
-             [:div {:style {:flex \"1 1 auto\" :min-width \"0\"}}
-              [mafs.core/Mafs {:viewBox {:x [(double x-min) (double x-max)]
-                                         :y [(double y-min) (double y-max)]}}
-               [mafs.coordinates/Cartesian]
-               [mafs.plot/OfX {:y      (fn [x] (double (f params x)))
-                               :domain [(double x-min) (double x-max)]}]]]]))))
+               [leva.core/Controls {:atom !params :schema params-spec}]]]]))))
 
     (defn state-trajectory
       \"Pre-compute a Hamiltonian trajectory and return an advancer-

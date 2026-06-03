@@ -910,22 +910,9 @@
              by     (cljs.core/* (cljs.core/- l) (Math/cos θ))
              trail  @!trail
              ntrail (count trail)]
-         [:div {:style {:display \"flex\" :flex-direction \"row\" :gap \"1rem\" :align-items \"flex-start\"}}
-          [:div {:style {:width \"280px\" :flex \"0 0 auto\"}}
-           [leva.core/SubPanel {:fill true}
-            [leva.core/Controls
-             {:atom !params
-              :schema {:M     (sch :M     0.2  5.0  0.05)
-                       :m     (sch :m     0.1  3.0  0.05)
-                       :k     (sch :k     1.0 30.0  0.5)
-                       :l     (sch :l     0.3  2.0  0.05)
-                       :g     (sch :g     1.0 20.0  0.1)
-                       :x0    (sch :x0   -1.5  1.5  0.05)
-                       :θ0    (sch :θ0   -1.5  1.5  0.05)
-                       :speed (sch :speed 0.05 1.0  0.05)}}]]]
-          [:div {:style {:flex \"1 1 auto\" :min-width \"0\"}}
-           [mafs.core/Mafs
-            {:viewBox {:x [-4.2 4.2] :y [-3.0 1.0]}}
+         [:div {:style {:position \"relative\"}}
+          [mafs.core/Mafs
+           {:viewBox {:x [-4.2 4.2] :y [-3.0 1.0]}}
            [mafs.coordinates/Cartesian]
            (when (cljs.core/> ntrail 1)
              [mafs.plot/Parametric
@@ -946,7 +933,19 @@
            [mafs.core/Point {:x anchor :y 0 :color \"#444\"}]
            [mafs.core/Point {:x x :y 0 :color \"#3090ff\"}]
            [mafs.line/Segment {:point1 [x 0] :point2 [bx by] :color \"#444\"}]
-           [mafs.core/Point {:x bx :y by :color \"#d33\"}]]]]))}))]")
+           [mafs.core/Point {:x bx :y by :color \"#d33\"}]]
+          [:div {:style {:position \"absolute\" :top \"0.5rem\" :right \"0.5rem\" :width \"280px\"}}
+           [leva.core/SubPanel {:fill true}
+            [leva.core/Controls
+             {:atom !params
+              :schema {:M     (sch :M     0.2  5.0  0.05)
+                       :m     (sch :m     0.1  3.0  0.05)
+                       :k     (sch :k     1.0 30.0  0.5)
+                       :l     (sch :l     0.3  2.0  0.05)
+                       :g     (sch :g     1.0 20.0  0.1)
+                       :x0    (sch :x0   -1.5  1.5  0.05)
+                       :θ0    (sch :θ0   -1.5  1.5  0.05)
+                       :speed (sch :speed 0.05 1.0  0.05)}}]]]]))}))]")
 
 (def differential-equations-page
   ";; ====================================================================
@@ -1169,18 +1168,8 @@
              yb      (cljs.core/double (nth sb 2))
              x       (cljs.core/+ xa (cljs.core/* f (cljs.core/- xb xa)))
              y       (cljs.core/+ ya (cljs.core/* f (cljs.core/- yb ya)))]
-         [:div {:style {:display \"flex\" :flex-direction \"row\" :gap \"1rem\" :align-items \"flex-start\"}}
-          [:div {:style {:width \"280px\" :flex \"0 0 auto\"}}
-           [leva.core/SubPanel {:fill true}
-            [leva.core/Controls
-             {:atom !params
-              :schema {:α     (sch :α     0.3 2.0  0.05)
-                       :β     (sch :β     0.1 1.0  0.05)
-                       :γ     (sch :γ     0.1 2.0  0.05)
-                       :δ     (sch :δ     0.05 0.4 0.01)
-                       :speed (sch :speed 0.1 2.0  0.1)}}]]]
-          [:div {:style {:flex \"1 1 auto\" :min-width \"0\"}}
-           [mafs.core/Mafs {:viewBox {:x [0 14] :y [0 10]}}
+         [:div {:style {:position \"relative\"}}
+          [mafs.core/Mafs {:viewBox {:x [0 14] :y [0 10]}}
            [mafs.coordinates/Cartesian]
            [mafs.plot/Parametric
             {:t [0 (cljs.core/dec n)]
@@ -1191,7 +1180,16 @@
                      [(cljs.core/double (nth ss 1))
                       (cljs.core/double (nth ss 2))]))
              :color \"#3090ff\" :opacity 0.45}]
-           [mafs.core/Point {:x x :y y :color \"#f80\"}]]]]))}))]
+           [mafs.core/Point {:x x :y y :color \"#f80\"}]]
+          [:div {:style {:position \"absolute\" :top \"0.5rem\" :right \"0.5rem\" :width \"280px\"}}
+           [leva.core/SubPanel {:fill true}
+            [leva.core/Controls
+             {:atom !params
+              :schema {:α     (sch :α     0.3 2.0  0.05)
+                       :β     (sch :β     0.1 1.0  0.05)
+                       :γ     (sch :γ     0.1 2.0  0.05)
+                       :δ     (sch :δ     0.05 0.4 0.01)
+                       :speed (sch :speed 0.1 2.0  0.1)}}]]]]))}))]
 
 
 ;; ----- 7. Where to go next ------------------------------------------
@@ -2004,21 +2002,20 @@
                           (nth positions i)))
                t @!t
                [x y] (pos-at t)]
-           [:div {:style {:display \"flex\" :flex-direction \"row\" :gap \"1rem\" :align-items \"flex-start\"}}
-            [:div {:style {:width \"280px\" :flex \"0 0 auto\"}}
+           [:div {:style {:position \"relative\"}}
+            [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}
+                             :zoom    true}
+             [mafs.coordinates/Cartesian]
+             [mafs.plot/Parametric
+              {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
+             [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]
+            [:div {:style {:position \"absolute\" :top \"0.5rem\" :right \"0.5rem\" :width \"280px\"}}
              [leva.core/SubPanel {:fill true}
               [leva.core/Controls
                {:atom   !params
                 :schema {:a (schema :a 1.0 8.0 1.0)
                          :b (schema :b 1.0 8.0 1.0)
-                         :φ (schema :φ 0.0 (cljs.core/* 2 Math/PI) 0.01)}}]]]
-            [:div {:style {:flex \"1 1 auto\" :min-width \"0\"}}
-             [mafs.core/Mafs {:viewBox {:x [-1.2 1.2] :y [-1.2 1.2]}
-                              :zoom    true}
-              [mafs.coordinates/Cartesian]
-              [mafs.plot/Parametric
-               {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
-              [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]]]))})))
+                         :φ (schema :φ 0.0 (cljs.core/* 2 Math/PI) 0.01)}}]]]]))})))
 
 ;; Default: 3:4 frequency ratio with zero phase — a classic Lissajous.
 ;; Try (a, b, φ) = (2, 3, π/2), (5, 4, 0), (3, 5, π/4) for variations.
@@ -4232,8 +4229,21 @@ sysder
                t       @!t
                [x y]   (pos-at t)
                t-max   (:t-max params)]
-           [:div {:style {:display \"flex\" :flex-direction \"row\" :gap \"1rem\" :align-items \"flex-start\"}}
-            [:div {:style {:width \"280px\" :flex \"0 0 auto\"}}
+           [:div {:style {:position \"relative\"}}
+            ;; `:zoom true` lets the user scroll-wheel zoom; pan is on
+            ;; by default (drag to pan). Same applies to every Mafs
+            ;; component throughout the site.
+            [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}
+                             :zoom    true}
+             [mafs.coordinates/Cartesian]
+             [mafs.plot/Parametric
+              {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
+             ;; Primaries — fixed in the rotating frame.
+             [mafs.core/Point {:x primary-0 :y 0 :color \"#444444\"}]
+             [mafs.core/Point {:x primary-1 :y 0 :color \"#888888\"}]
+             ;; Current test-particle position.
+             [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]
+            [:div {:style {:position \"absolute\" :top \"0.5rem\" :right \"0.5rem\" :width \"280px\"}}
              [leva.core/SubPanel {:fill true}
               [leva.core/Controls
                {:atom   !params
@@ -4242,21 +4252,7 @@ sysder
                          :y0    (schema :y0    -1.0  1.0   0.001)
                          :vx0   (schema :vx0   -1.0  1.0   0.001)
                          :vy0   (schema :vy0   -1.0  1.0   0.001)
-                         :t-max (schema :t-max  1.0  100.0 1.0)}}]]]
-            ;; `:zoom true` lets the user scroll-wheel zoom; pan is on
-            ;; by default (drag to pan). Same applies to every Mafs
-            ;; component throughout the site.
-            [:div {:style {:flex \"1 1 auto\" :min-width \"0\"}}
-             [mafs.core/Mafs {:viewBox {:x [-2 2] :y [-1.5 1.5]}
-                              :zoom    true}
-              [mafs.coordinates/Cartesian]
-              [mafs.plot/Parametric
-               {:t [0 t-max] :xy pos-at :color \"#3090ff\"}]
-              ;; Primaries — fixed in the rotating frame.
-              [mafs.core/Point {:x primary-0 :y 0 :color \"#444444\"}]
-              [mafs.core/Point {:x primary-1 :y 0 :color \"#888888\"}]
-              ;; Current test-particle position.
-              [mafs.core/Point {:x (double x) :y (double y) :color \"#e63946\"}]]]]))})))
+                         :t-max (schema :t-max  1.0  100.0 1.0)}}]]]]))})))
 
 ;; Default: μ = 0.1 (Sun-Jupiter-ish ratio). Test particle at (-0.63, 0)
 ;; with retrograde tangential velocity — gives a stable orbit looping
