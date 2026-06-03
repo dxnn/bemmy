@@ -1152,12 +1152,23 @@
              samples (compute (select-keys p phys-keys))
              n       (count samples)
              t       @!t
-             i       (cljs.core/max 0
-                       (cljs.core/min (cljs.core/dec n)
-                                      (cljs.core/int (cljs.core// t dt))))
-             s       (nth samples i)
-             x       (cljs.core/double (nth s 1))
-             y       (cljs.core/double (nth s 2))]
+             ;; Linearly interpolate the live (x, y) between adjacent
+             ;; integrated samples; without this the dot teleports
+             ;; one sample-step at a time, especially visible at slow
+             ;; speed where many wall-frames fall between samples.
+             idx     (cljs.core// t dt)
+             i0      (cljs.core/max 0
+                       (cljs.core/min (cljs.core/- n 2) (cljs.core/int idx)))
+             i1      (cljs.core/inc i0)
+             f       (cljs.core/- idx i0)
+             sa      (nth samples i0)
+             sb      (nth samples i1)
+             xa      (cljs.core/double (nth sa 1))
+             ya      (cljs.core/double (nth sa 2))
+             xb      (cljs.core/double (nth sb 1))
+             yb      (cljs.core/double (nth sb 2))
+             x       (cljs.core/+ xa (cljs.core/* f (cljs.core/- xb xa)))
+             y       (cljs.core/+ ya (cljs.core/* f (cljs.core/- yb ya)))]
          [:div {:style {:display \"flex\" :flex-direction \"row\" :gap \"1rem\" :align-items \"flex-start\"}}
           [:div {:style {:width \"280px\" :flex \"0 0 auto\"}}
            [leva.core/SubPanel {:fill true}
