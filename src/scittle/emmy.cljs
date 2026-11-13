@@ -445,9 +445,13 @@
     (def rotation-matrix->quaternion quat/from-rotation-matrix)
     (def quaternion-ref              (fn [q i] (nth (quat/->vector q) i)))
     (def quaternion->real-part       quat/get-r)
-    (def q:i                         quat/get-i)
-    (def q:j                         quat/get-j)
-    (def q:k                         quat/get-k)
+    ;; scmutils' q:i/q:j/q:k are 4x4 matrices on a quaternion 4-vector
+    ;; (book §2.12.1: qdot = -1/2 (ωa q:i + ωb q:j + ωc q:k) q), not
+    ;; component accessors. Each is minus right-multiplication by i/j/k;
+    ;; the other sign/side choices fail to conserve L in the §2.12.1 run.
+    (def q:i (matrix/by-rows [0 1 0 0] [-1 0 0 0] [0 0 0 -1] [0 0 1 0]))
+    (def q:j (matrix/by-rows [0 0 1 0] [0 0 0 1] [-1 0 0 0] [0 -1 0 0]))
+    (def q:k (matrix/by-rows [0 0 0 1] [0 0 -1 0] [0 1 0 0] [-1 0 0 0]))
 
     ;; SICM-book mathematical built-ins not in emmy.env.
     (defn vector-length [v]
