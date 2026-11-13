@@ -136,10 +136,13 @@
     ;; accepts extra args, so an earlier 2-arg `[win [x y]]` shape didn't
     ;; arity-error on 3-arg calls — it destructured `[x y]` from the
     ;; second (numeric) arg and failed with `nth not supported on Number`
-    ;; mid-integration. Match the book's signature.
+    ;; mid-integration. Match the book's signature. scmutils plots a
+    ;; pixel per point; Mafs's default r=6 smears thousand-point
+    ;; monitors (SICM §2.8.1, surfaces of section) into a band.
     (defn plot-point [win x y]
       (swap! win update :drawables conj
-             [mafs.core/Point {:x (double x) :y (double y)}])
+             [mafs.core/Point {:x (double x) :y (double y)
+                               :svg-circle-props {:r 1.5}}])
       win)
 
     (defn plot-path
@@ -153,10 +156,25 @@
        (plot-function win path t0 t1 step)
        win))
 
+    ;; scmutils frames stretch each axis to fill the window, so a
+    ;; (frame 0 100 -1e-12 1e-12) shows both ranges in full. Mafs's
+    ;; defaults break such frames: \"contain\" keeps 1:1 units, viewBox
+    ;; padding adds 0.5 *coordinate units* per side (swamping tiny
+    ;; ranges), and the grid draws a line every 1 unit. Grid step here
+    ;; is span/8 snapped to 1, 2 or 5 × 10^k; labels go through
+    ;; toPrecision to drop float noise like 6.000000000000001e-13.
     (defn show [win]
-      (let [{:keys [viewBox drawables]} (deref win)]
-        (into [mafs.core/Mafs {:viewBox viewBox}
-               [mafs.coordinates/Cartesian]]
+      (let [{:keys [viewBox drawables]} (deref win)
+            axis (fn [[lo hi]]
+                   (let [raw (/ (- hi lo) 8)
+                         mag (Math/pow 10 (Math/floor (Math/log10 raw)))
+                         f   (/ raw mag)]
+                     {:lines  (* mag (cond (< f 1.5) 1 (< f 3.5) 2 (< f 7.5) 5 :else 10))
+                      :labels (fn [n] (str (js/parseFloat (.toPrecision n 3))))}))]
+        (into [mafs.core/Mafs {:viewBox (assoc viewBox :padding 0)
+                               :preserve-aspect-ratio false}
+               [mafs.coordinates/Cartesian {:x-axis (axis (:x viewBox))
+                                            :y-axis (axis (:y viewBox))}]]
               drawables)))
 
     (defn plot
