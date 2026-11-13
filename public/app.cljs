@@ -6114,7 +6114,10 @@ sysder
   (let [L0 ((qw-state->L-space A B C) qw-state0)
            E0 ((T-body A B C) (ref qw-state0 2))]
        ((evolve qw-sysder A B C)
-            qw-state0 (monitor-errors win A B C L0 E0) 0.1 100.0 1.0e-12)))"
+            qw-state0 (monitor-errors win A B C L0 E0) 0.1 100.0 1.0e-12)
+       ;; Return the frame so the result pane plots it. Compare with
+       ;; §2.8.1: no Euler-angle singularity, ~10x smaller errors.
+       win))"
     "SICM 3.1.1 The Legendre Transformation"
     ";; ===========================================
 ;; SICM §3.1.1 — The Legendre Transformation
