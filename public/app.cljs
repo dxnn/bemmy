@@ -5512,7 +5512,23 @@ sysder
 (def win (frame 0.0 100.0 -1.0e-12 1.0e-12))
 
 ;; (book p. 143)
-(set-ode-integration-method! 'qcrk4)"
+(set-ode-integration-method! 'qcrk4)
+
+;; (book p. 143) Relative errors in the three space components of L
+;; and in E versus time — all four should stay near zero.
+;; The book asks for a 1e-12 tolerance under qcrk4. Emmy ignores the
+;; method switch and uses Gragg-Bulirsch-Stoer, which at 1e-12 drifts
+;; to ~2e-10 and pushes half the points off this ±1e-12 frame. 1e-14
+;; keeps them in view, as in the book's figure.
+(let [A 1.0
+      B (sqrt 2.0)
+      C 2.0
+      state0 (up 0.0 (up 1.0 0.0 0.0) (up 0.1 0.1 0.1))]
+  (let [L0 ((L-space-Euler A B C) state0)
+        E0 ((T-body-Euler A B C) state0)]
+    ((evolve rigid-sysder A B C)
+     state0 (monitor-errors win A B C L0 E0) 0.1 100.0 1.0e-14)
+    win))"
     "SICM 2.12 Nonsingular Coordinates and Quaternions"
     ";; ===========================================
 ;; SICM §2.12 — Nonsingular Coordinates and Quaternions
